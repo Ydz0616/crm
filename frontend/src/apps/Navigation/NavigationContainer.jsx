@@ -1,3 +1,5 @@
+// Note: Yuandong, you will use this page to add navigation
+
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button, Drawer, Layout, Menu } from 'antd';
@@ -26,6 +28,7 @@ import {
   FilterOutlined,
   WalletOutlined,
   ReconciliationOutlined,
+  GiftOutlined,
 } from '@ant-design/icons';
 
 const { Sider } = Layout;
@@ -55,9 +58,10 @@ function Sidebar({ collapsible, isMobile = false }) {
       label: <Link to={'/'}>{translate('dashboard')}</Link>,
     },
     {
+
       key: 'Merchandise',
       label: <Link to={'/merchandise'}>{translate('Merchandise')}</Link>,
-      icon: <ReconciliationOutlined />,
+      icon: <GiftOutlined />,
     },
     {
       key: 'customer',
