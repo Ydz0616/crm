@@ -17,14 +17,14 @@ async function setupApp() {
 
     const passwordHash = newAdminPassword.generateHash(salt, 'admin123');
 
-    const demoAdmin = {
-      email: 'admin@demo.com',
-      name: 'IDURAR',
+    const defaultAdmin = {
+      email: 'andy@plasmacut.com',
+      name: 'andy',
       surname: 'Admin',
       enabled: true,
       role: 'owner',
     };
-    const result = await new Admin(demoAdmin).save();
+    const result = await new Admin(defaultAdmin).save();
 
     const AdminPasswordData = {
       password: passwordHash,

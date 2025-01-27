@@ -55,6 +55,11 @@ function Sidebar({ collapsible, isMobile = false }) {
       label: <Link to={'/'}>{translate('dashboard')}</Link>,
     },
     {
+      key: 'Merchandise',
+      label: <Link to={'/merchandise'}>{translate('Merchandise')}</Link>,
+      icon: <ReconciliationOutlined />,
+    },
+    {
       key: 'customer',
       icon: <CustomerServiceOutlined />,
       label: <Link to={'/customer'}>{translate('customers')}</Link>,
@@ -96,6 +101,7 @@ function Sidebar({ collapsible, isMobile = false }) {
       label: <Link to={'/about'}>{translate('about')}</Link>,
       icon: <ReconciliationOutlined />,
     },
+
   ];
 
   useEffect(() => {
