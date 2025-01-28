@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { Select, Empty } from 'antd';
 import useLanguage from '@/locale/useLanguage';
 
-export default function AutoCompleteAsync({
+export default function MerchCompleteAsync({
   entity,
   displayLabels,
   searchFields,
@@ -18,6 +18,7 @@ export default function AutoCompleteAsync({
   urlToRedirect = '/',
   value, /// this is for update
   onChange, /// this is for update
+  onItemSelect, // New prop to handle item selection
 }) {
   const translate = useLanguage();
 
@@ -36,15 +37,17 @@ export default function AutoCompleteAsync({
 
   const navigate = useNavigate();
 
-  const handleSelectChange = (newValue) => {
+  const handleSelectChange = (newValue, option) => {
     isUpdating.current = false;
-    // setCurrentValue(value[outputValue] || value); // set nested value or value
-    // onChange(newValue[outputValue] || newValue);
     if (onChange) {
-      if (newValue) onChange(newValue[outputValue] || newValue);
+      if (newValue) onChange(newValue);
     }
     if (newValue === 'redirectURL' && withRedirect) {
       navigate(urlToRedirect);
+    }
+    // Call onItemSelect with the full item data
+    if (onItemSelect && option && option.data) {
+      onItemSelect(option.data);
     }
   };
 
@@ -70,6 +73,14 @@ export default function AutoCompleteAsync({
 
   const labels = (optionField) => {
     console.log('Labels function called with optionField:', optionField);
+    if (!optionField) return '';
+    
+    // Only show the serial number in the dropdown
+    if (displayLabels.includes('serialNumber')) {
+      return optionField.serialNumber;
+    }
+    
+    // Default behavior
     return displayLabels.map((x) => optionField[x]).join(' ');
   };
   
@@ -124,7 +135,7 @@ export default function AutoCompleteAsync({
   }, [value]);
 
   return (
-    console.log('AutoCompleteAsync rendered with currentValue:', currentValue),
+    console.log('MerchCompleteAsync rendered with currentValue:', currentValue),
     <Select
       loading={isLoading}
       showSearch
@@ -141,13 +152,15 @@ export default function AutoCompleteAsync({
         setSearching(false);
       }}
       onChange={handleSelectChange}
-      style={{ minWidth: '220px' }}
+      // style: the wideth of this should follow the parent component
+      style={{ width: '100%' }}
       // onSelect={handleOnSelect}
     >
       {selectOptions.map((optionField) => (
         <Select.Option
           key={optionField[outputValue] || optionField}
           value={optionField[outputValue] || optionField}
+          data={optionField} // Store full item data
         >
           {labels(optionField)}
         </Select.Option>

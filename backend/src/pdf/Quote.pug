@@ -295,26 +295,27 @@ html
         table.table-invoice
           thead
             tr.tableHeader
-              th.service #{translate('item')}
+              th.service #{translate('Serial Number')}
+              th #{translate('Description')}
               th #{translate('Quantity')}
               th #{translate('PRICE')}
               th #{translate('TOTAL')}
           tbody
             each item in model.items
               tr
-                td.service #{item.itemName}
-                  span #{item.description}
-                td.qty #{item.quantity}  
-                td.unit  #{moneyFormatter({amount:item.price})}
+                td.service= item.itemName
+                td= item.description
+                td.qty= item.quantity
+                td.unit #{moneyFormatter({amount:item.price})}
                 td.total #{moneyFormatter({amount:item.total})}
             tr
-              td(colspan='3') #{translate('SUB TOTAL')}
+              td(colspan='4') #{translate('SUB TOTAL')}
               td.total #{moneyFormatter({amount:model.subTotal})}
             tr
-              td(colspan='3') #{translate('TAX')} #{model.taxRate} %
+              td(colspan='4') #{translate('TAX')} #{model.taxRate} %
               td.total #{moneyFormatter({amount:model.taxTotal})}
             tr
-              td.grand.total(colspan='3')  #{translate('TOTAL')} 
+              td.grand.total(colspan='4') #{translate('TOTAL')}
               td.grand.total #{moneyFormatter({amount:model.total})}
         
       .col.col-24

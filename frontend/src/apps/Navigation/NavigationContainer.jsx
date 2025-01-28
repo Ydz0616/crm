@@ -14,6 +14,7 @@ import useResponsive from '@/hooks/useResponsive';
 
 import {
   SettingOutlined,
+  BuildOutlined,
   CustomerServiceOutlined,
   ContainerOutlined,
   FileSyncOutlined,
@@ -68,7 +69,6 @@ function Sidebar({ collapsible, isMobile = false }) {
       icon: <CustomerServiceOutlined />,
       label: <Link to={'/customer'}>{translate('customers')}</Link>,
     },
-
     {
       key: 'invoice',
       icon: <ContainerOutlined />,
@@ -78,6 +78,11 @@ function Sidebar({ collapsible, isMobile = false }) {
       key: 'quote',
       icon: <FileSyncOutlined />,
       label: <Link to={'/quote'}>{translate('quote')}</Link>,
+    },
+    {
+      key: 'factory',
+      icon: <BuildOutlined />,
+      label: <Link to={'/factory'}>{translate('factory')}</Link>,
     },
     {
       key: 'payment',

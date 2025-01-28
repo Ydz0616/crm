@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Form, Input, InputNumber, Row, Col } from 'antd';
+import { Form, Input, InputNumber, Row, Col, Button, Space } from 'antd';
 
 import { DeleteOutlined } from '@ant-design/icons';
 import { useMoney, useDate } from '@/settings';
 import calculate from '@/utils/calculate';
+import { request } from '@/request';
+import MerchCompleteAsync from '@/components/MerchCompleteAsync';
 
-export default function ItemRow({ field, remove, current = null }) {
+export default function ItemRow({ field, remove, current }) {
   const [totalState, setTotal] = useState(undefined);
   const [price, setPrice] = useState(0);
   const [quantity, setQuantity] = useState(0);
@@ -28,14 +30,14 @@ export default function ItemRow({ field, remove, current = null }) {
       const { items, invoice } = current;
 
       if (invoice) {
-        const item = invoice[field.fieldKey];
+        const item = invoice[field.name];
 
         if (item) {
           setQuantity(item.quantity);
           setPrice(item.price);
         }
       } else {
-        const item = items[field.fieldKey];
+        const item = items[field.name];
 
         if (item) {
           setQuantity(item.quantity);
@@ -51,28 +53,60 @@ export default function ItemRow({ field, remove, current = null }) {
     setTotal(currentTotal);
   }, [price, quantity]);
 
+  // Get form instance using Form.useFormInstance hook
+  const form = Form.useFormInstance();
+
+  const handleMerchSelect = (selectedMerch) => {
+    console.log('Selected Merch:', selectedMerch);
+    
+    if (!form) {
+      console.error('Form instance not found');
+      return;
+    }
+
+    // Get the items array from the form
+    const items = form.getFieldValue('items');
+    
+    // Update the specific item in the items array
+    items[field.name] = {
+      ...items[field.name],
+      itemName: selectedMerch.serialNumber,
+      description: selectedMerch.description_en || ''
+    };
+
+    // Set the entire items array back to the form
+    form.setFieldsValue({ items });
+
+    console.log('Updated form values:', form.getFieldsValue());
+  };
+
   return (
     <Row gutter={[12, 12]} style={{ position: 'relative' }}>
       <Col className="gutter-row" span={5}>
         <Form.Item
+          {...field}
+          validateTrigger={['onChange', 'onBlur']}
           name={[field.name, 'itemName']}
-          rules={[
-            {
-              required: true,
-              message: 'Missing itemName name',
-            },
-            {
-              pattern: /^(?!\s*$)[\s\S]+$/, // Regular expression to allow spaces, alphanumeric, and special characters, but not just spaces
-              message: 'Item Name must contain alphanumeric or special characters',
-            },
-          ]}
         >
-          <Input placeholder="Item Name" />
+          <MerchCompleteAsync
+            entity="merch"
+            displayLabels={['serialNumber']}
+            searchFields="serialNumber"
+            outputValue="serialNumber"
+            onItemSelect={handleMerchSelect}
+          />
         </Form.Item>
       </Col>
       <Col className="gutter-row" span={7}>
-        <Form.Item name={[field.name, 'description']}>
-          <Input placeholder="description Name" />
+        <Form.Item
+          {...field}
+          validateTrigger={['onChange', 'onBlur']}
+          name={[field.name, 'description']}
+        >
+          <Input.TextArea
+            rows={1}
+            style={{ minHeight: '32px' }}
+          />
         </Form.Item>
       </Col>
       <Col className="gutter-row" span={3}>
@@ -111,9 +145,9 @@ export default function ItemRow({ field, remove, current = null }) {
         </Form.Item>
       </Col>
 
-      <div style={{ position: 'absolute', right: '-20px', top: ' 5px' }}>
+      <Col flex="none" style={{ paddingTop: '5px' }}>
         <DeleteOutlined onClick={() => remove(field.name)} />
-      </div>
+      </Col>
     </Row>
   );
 }

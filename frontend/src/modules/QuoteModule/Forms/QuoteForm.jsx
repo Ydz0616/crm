@@ -178,6 +178,9 @@ function LoadQuoteForm({ subTotal = 0, current = null }) {
         </Col>
       </Row>
       <Divider dashed />
+      
+
+
       <Row gutter={[12, 12]} style={{ position: 'relative' }}>
         <Col className="gutter-row" span={5}>
           <p>{translate('Item')}</p>
@@ -195,6 +198,9 @@ function LoadQuoteForm({ subTotal = 0, current = null }) {
           <p>{translate('Total')}</p>
         </Col>
       </Row>
+
+
+
       <Form.List name="items">
         {(fields, { add, remove }) => (
           <>
@@ -215,6 +221,8 @@ function LoadQuoteForm({ subTotal = 0, current = null }) {
           </>
         )}
       </Form.List>
+
+      
       <Divider dashed />
       <div style={{ position: 'relative', width: ' 100%', float: 'right' }}>
         <Row gutter={[12, -5]}>

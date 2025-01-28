@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Form, Input, InputNumber, Row, Col } from 'antd';
-
+import AutoCompleteAsync from '@/components/AutoCompleteAsync';
 import { DeleteOutlined } from '@ant-design/icons';
 import { useMoney, useDate } from '@/settings';
 import calculate from '@/utils/calculate';
-import AutoCompleteAsync from '@/components/AutoCompleteAsync';
-
+import MerchCompleteAsync from '@/components/MerchCompleteAsync';
 export default function ItemRow({ field, remove, current = null }) {
   const [totalState, setTotal] = useState(undefined);
   const [price, setPrice] = useState(0);
@@ -52,6 +51,8 @@ export default function ItemRow({ field, remove, current = null }) {
     setTotal(currentTotal);
   }, [price, quantity]);
 
+
+  
   return (
     <Row gutter={[12, 12]} style={{ position: 'relative' }}>
       <Col className="gutter-row" span={5}>
@@ -66,12 +67,8 @@ export default function ItemRow({ field, remove, current = null }) {
             },
           ]}
         >
-          <AutoCompleteAsync
-            entity={'product'}
-            displayLabels={['name']}
-            searchFields={['name']}
-            onChange={(value) => console.log(value)}
-          ></AutoCompleteAsync>
+         
+
         </Form.Item>
       </Col>
       <Col className="gutter-row" span={7}>
