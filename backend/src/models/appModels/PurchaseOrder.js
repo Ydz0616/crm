@@ -29,18 +29,19 @@ const orderSchema = new mongoose.Schema({
     required: true,
   },
 
-  client: {
-    type: mongoose.Schema.ObjectId,
-    ref: 'Client',
-    required: true,
-    autopopulate: true,
-  },
+  // client: {
+  //   type: mongoose.Schema.ObjectId,
+  //   ref: 'Client',
+  //   required: true,
+  //   autopopulate: true,
+  // },
   factory: {
     type: mongoose.Schema.ObjectId,
     ref: 'Factory',
     required: true,
     autopopulate: true,
   },
+  
   items: [
     {
       itemName: {

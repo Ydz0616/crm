@@ -1,30 +1,31 @@
 import dayjs from 'dayjs';
 import { Tag } from 'antd';
 import { tagColor } from '@/utils/statusTagColor';
-import QuoteDataTableModule from '@/modules/QuoteModule/QuoteDataTableModule';
+import PODataTableModule from '@/modules/POModule/PODataTableModule';
 import { useMoney, useDate } from '@/settings';
 import useLanguage from '@/locale/useLanguage';
 
-export default function Quote() {
+export default function PurchaseOrder() {
   const translate = useLanguage();
   const { dateFormat } = useDate();
-  const entity = 'quote';
+  const entity = 'purchaseorder';
   const { moneyFormatter } = useMoney();
 
   const searchConfig = {
-    entity: 'client',
-    displayLabels: ['name'],
-    searchFields: 'name',
+    entity: 'factory',
+    displayLabels: ['factory_code', 'factory_name'],
+    searchFields: 'factory_code,factory_name',
   };
-  const deleteModalLabels = ['number', 'client.name'];
+  const deleteModalLabels = ['number', 'factory.factory_name'];
   const dataTableColumns = [
     {
       title: translate('Number'),
       dataIndex: 'number',
     },
     {
-      title: translate('Client'),
-      dataIndex: ['client', 'name'],
+      title: translate('Factory'),
+      dataIndex: ['factory', 'factory_name'],
+      render: (_, record) => `${record.factory?.factory_code} - ${record.factory?.factory_name}`,
     },
     {
       title: translate('Date'),
@@ -68,16 +69,13 @@ export default function Quote() {
       },
       render: (total, record) => moneyFormatter({ amount: total, currency_code: record.currency }),
     },
-
     {
       title: translate('Status'),
       dataIndex: 'status',
       render: (status) => {
         let tagStatus = tagColor(status);
-
         return (
           <Tag color={tagStatus.color}>
-            {/* {tagStatus.icon + ' '} */}
             {status && translate(tagStatus.label)}
           </Tag>
         );
@@ -86,10 +84,10 @@ export default function Quote() {
   ];
 
   const Labels = {
-    PANEL_TITLE: translate('proforma invoice'),
-    DATATABLE_TITLE: translate('proforma invoice_list'),
-    ADD_NEW_ENTITY: translate('add_new_proforma invoice'),
-    ENTITY_NAME: translate('proforma invoice'),
+    PANEL_TITLE: translate('purchase_order'),
+    DATATABLE_TITLE: translate('purchase_order_list'),
+    ADD_NEW_ENTITY: translate('add_new_purchase_order'),
+    ENTITY_NAME: translate('purchase_order'),
   };
 
   const configPage = {
@@ -102,5 +100,5 @@ export default function Quote() {
     searchConfig,
     deleteModalLabels,
   };
-  return <QuoteDataTableModule config={config} />;
+  return <PODataTableModule config={config} />;
 }

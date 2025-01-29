@@ -71,19 +71,19 @@ let routes = {
       element: <Factory />,
     },  
     {
-      path: '/purchase-order',
+      path: '/purchaseorder',
       element: <PurchaseOrder />,
     },
     {
-      path: '/purchase-order/create',
+      path: '/purchaseorder/create',
       element: <PurchaseOrderCreate />,
     },
     {
-      path: '/purchase-order/read/:id',
+      path: '/purchaseorder/read/:id',
       element: <PurchaseOrderRead />,
     },
     {
-      path: '/purchase-order/update/:id',
+      path: '/purchaseorder/update/:id',
       element: <PurchaseOrderUpdate />,
     },
 

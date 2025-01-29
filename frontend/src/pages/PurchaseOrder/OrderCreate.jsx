@@ -1,21 +1,21 @@
 import useLanguage from '@/locale/useLanguage';
-import CreateQuoteModule from '@/modules/QuoteModule/CreateQuoteModule';
+import CreatePOModule from '@/modules/POModule/CreatePOModule';
 
-export default function QuoteCreate() {
+export default function POCreate() {
   const translate = useLanguage();
 
-  const entity = 'quote';
+  const entity = 'purchaseorder';
 
   const Labels = {
-    PANEL_TITLE: translate('quote'),
-    DATATABLE_TITLE: translate('quote_list'),
-    ADD_NEW_ENTITY: translate('add_new_quote'),
-    ENTITY_NAME: translate('quote'),
+    PANEL_TITLE: translate('purchase_order'),
+    DATATABLE_TITLE: translate('purchase_order_list'),
+    ADD_NEW_ENTITY: translate('add_new_purchase_order'),
+    ENTITY_NAME: translate('purchase_order'),
   };
 
   const configPage = {
     entity,
     ...Labels,
   };
-  return <CreateQuoteModule config={configPage} />;
+  return <CreatePOModule config={configPage} />;
 }

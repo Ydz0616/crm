@@ -81,9 +81,9 @@ function Sidebar({ collapsible, isMobile = false }) {
       label: <Link to={'/quote'}>{translate('quote')}</Link>,
     },
     {
-      key: 'purchase-order',
+      key: 'purchaseorder',
       icon: <FileOutlined />,
-      label: <Link to={'/purchase-order'}>{translate('purchase_order')}</Link>,
+      label: <Link to={'/purchaseorder'}>{translate('purchase_order')}</Link>,
     },
     {
       key: 'factory',

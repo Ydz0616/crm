@@ -13,6 +13,18 @@
   },
   {
     "settingCategory": "finance_settings",
+    "settingKey": "last_purchase_order_number",
+    "settingValue": 0,
+    "valueType": "number"
+  },
+  {
+    "settingCategory": "finance_settings",
+    "settingKey": "purchase_order_prefix",
+    "settingValue": "po-",
+    "valueType": "string"
+  },
+  {
+    "settingCategory": "finance_settings",
     "settingKey": "last_offer_number",
     "settingValue": 0,
     "valueType": "number"
