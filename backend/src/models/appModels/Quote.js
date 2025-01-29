@@ -88,7 +88,7 @@ const quoteSchema = new mongoose.Schema({
   },
   currency: {
     type: String,
-    default: 'NA',
+    default: 'USD',
     uppercase: true,
     required: true,
   },

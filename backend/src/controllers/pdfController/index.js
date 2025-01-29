@@ -35,6 +35,13 @@ exports.generatePdf = async (
       const selectedLang = settings['idurar_app_language'];
       const translate = useLanguage({ selectedLang });
 
+      // find currency information
+      const Currency = require('@/models/appModels/Currencies');
+      const currencyInfo = await Currency.findOne({
+        currency_code: result.currency,
+        removed: false,
+      });
+
       const {
         currency_symbol,
         currency_position,
@@ -42,7 +49,15 @@ exports.generatePdf = async (
         thousand_sep,
         cent_precision,
         zero_format,
-      } = settings;
+      } = currencyInfo ? {
+        currency_symbol: currencyInfo.currency_symbol,
+        currency_position: currencyInfo.currency_position,
+        decimal_sep: currencyInfo.decimal_separator,
+        thousand_sep: currencyInfo.thousand_separator,
+        cent_precision: currencyInfo.cent_precision,
+        zero_format: currencyInfo.zero_format,
+      } : settings;
+
 
       const { moneyFormatter } = useMoney({
         settings: {
@@ -52,8 +67,9 @@ exports.generatePdf = async (
           thousand_sep,
           cent_precision,
           zero_format,
-        },
+        }
       });
+
       const { dateFormat } = useDate({ settings });
 
       settings.public_server_file = process.env.PUBLIC_SERVER_FILE;
