@@ -38,6 +38,7 @@ const schema = new mongoose.Schema({
     },
     zero_format: {
         type: Boolean,
+        default: false,
         required: true
     },
     is_default: {

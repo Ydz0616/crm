@@ -32,8 +32,56 @@ export default function Currencies() {
       dataIndex: 'currency_symbol',
     },
     {
+      title: translate('Currency Position'),
+      dataIndex: 'currency_position',
+    },
+    {
+      title: translate('Decimal Separator'),
+      dataIndex: 'decimal_separator',
+    },
+    {
+      title: translate('Thousand Separator'),
+      dataIndex: 'thousand_separator',
+    },
+    {
+      title: translate('Cent Precision'),
+      dataIndex: 'cent_precision',
+    },
+    {
+      title: translate('Zero Format'),
+      dataIndex: 'zero_format',
+      render: (zero_format) => (
+        <Switch
+          checked={zero_format}
+          checkedChildren={<CheckOutlined />}
+          unCheckedChildren={<CloseOutlined />}
+          disabled
+        />
+      ),
+    },
+    {
+      title: translate('Default'),
+      dataIndex: 'is_default',
+      render: (is_default) => (
+        <Switch
+          checked={is_default}
+          checkedChildren={<CheckOutlined />}
+          unCheckedChildren={<CloseOutlined />}
+          disabled
+        />
+      ),
+    },
+    {
       title: translate('Enabled'),
       dataIndex: 'enabled',
+      render: (enabled) => (
+        <Switch
+          checked={enabled}
+          checkedChildren={<CheckOutlined />}
+          unCheckedChildren={<CloseOutlined />}
+          disabled
+        />
+      ),
     },
   ];
 
@@ -51,27 +99,61 @@ export default function Currencies() {
       dataIndex: 'currency_symbol',
     },
     {
+      title: translate('Currency Position'),
+      dataIndex: 'currency_position',
+    },
+    {
+      title: translate('Decimal Separator'),
+      dataIndex: 'decimal_separator',
+    },
+    {
+      title: translate('Thousand Separator'),
+      dataIndex: 'thousand_separator',
+    },
+    {
+      title: translate('Cent Precision'),
+      dataIndex: 'cent_precision',
+    },
+    {
+      title: translate('Zero Format'),
+      dataIndex: 'zero_format',
+      render: (_, record) => (
+        <Switch
+          checked={record.zero_format}
+          checkedChildren={<CheckOutlined />}
+          unCheckedChildren={<CloseOutlined />}
+        />
+      ),
+    },
+    {
+      title: translate('Default'),
+      dataIndex: 'is_default',
+      render: (_, record) => (
+        <Switch
+          checked={record.is_default}
+          checkedChildren={<CheckOutlined />}
+          unCheckedChildren={<CloseOutlined />}
+        />
+      ),
+    },
+    {
       title: translate('Enabled'),
       dataIndex: 'enabled',
       key: 'enabled',
-      onCell: (record, rowIndex) => {
-        return {
-          props: {
-            style: {
-              width: '60px',
-            },
+      onCell: (record, rowIndex) => ({
+        props: {
+          style: {
+            width: '60px',
           },
-        };
-      },
-      render: (_, record) => {
-        return (
-          <Switch
-            checked={record.enabled}
-            checkedChildren={<CheckOutlined />}
-            unCheckedChildren={<CloseOutlined />}
-          />
-        );
-      },
+        },
+      }),
+      render: (_, record) => (
+        <Switch
+          checked={record.enabled}
+          checkedChildren={<CheckOutlined />}
+          unCheckedChildren={<CloseOutlined />}
+        />
+      ),
     },
   ];
 

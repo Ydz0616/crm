@@ -22,6 +22,11 @@ const Payment = lazy(() => import('@/pages/Payment/index'));
 const PaymentRead = lazy(() => import('@/pages/Payment/PaymentRead'));
 const PaymentUpdate = lazy(() => import('@/pages/Payment/PaymentUpdate'));
 
+const PurchaseOrder = lazy(() => import('@/pages/PurchaseOrder/index'));
+const PurchaseOrderCreate = lazy(() => import('@/pages/PurchaseOrder/OrderCreate'));
+const PurchaseOrderRead = lazy(() => import('@/pages/PurchaseOrder/OrderRead'));
+const PurchaseOrderUpdate = lazy(() => import('@/pages/PurchaseOrder/OrderUpdate'));
+
 const Settings = lazy(() => import('@/pages/Settings/Settings'));
 const PaymentMode = lazy(() => import('@/pages/PaymentMode'));
 const Taxes = lazy(() => import('@/pages/Taxes'));
@@ -65,9 +70,24 @@ let routes = {
       path: '/factory',
       element: <Factory />,
     },  
+    {
+      path: '/purchase-order',
+      element: <PurchaseOrder />,
+    },
+    {
+      path: '/purchase-order/create',
+      element: <PurchaseOrderCreate />,
+    },
+    {
+      path: '/purchase-order/read/:id',
+      element: <PurchaseOrderRead />,
+    },
+    {
+      path: '/purchase-order/update/:id',
+      element: <PurchaseOrderUpdate />,
+    },
 
 
-    
     // {
     //   path: '/people',
     //   element: <People />,

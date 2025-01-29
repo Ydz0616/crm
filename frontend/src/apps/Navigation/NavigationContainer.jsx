@@ -30,7 +30,7 @@ import {
   WalletOutlined,
   ReconciliationOutlined,
   GiftOutlined,
-  DollarOutlined,
+  DollarOutlined
 } from '@ant-design/icons';
 
 const { Sider } = Layout;
@@ -79,6 +79,11 @@ function Sidebar({ collapsible, isMobile = false }) {
       key: 'quote',
       icon: <FileSyncOutlined />,
       label: <Link to={'/quote'}>{translate('quote')}</Link>,
+    },
+    {
+      key: 'purchase-order',
+      icon: <FileOutlined />,
+      label: <Link to={'/purchase-order'}>{translate('purchase_order')}</Link>,
     },
     {
       key: 'factory',

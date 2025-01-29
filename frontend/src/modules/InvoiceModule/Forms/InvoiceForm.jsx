@@ -18,9 +18,13 @@ import useLanguage from '@/locale/useLanguage';
 import calculate from '@/utils/calculate';
 import { useSelector } from 'react-redux';
 import SelectAsync from '@/components/SelectAsync';
+import SelectCurrency from '@/components/SelectCurrency';
+
+
 
 export default function InvoiceForm({ subTotal = 0, current = null }) {
   const { last_invoice_number } = useSelector(selectFinanceSettings);
+
 
   if (last_invoice_number === undefined) {
     return <></>;
@@ -38,6 +42,23 @@ function LoadInvoiceForm({ subTotal = 0, current = null }) {
   const [taxTotal, setTaxTotal] = useState(0);
   const [currentYear, setCurrentYear] = useState(() => new Date().getFullYear());
   const [lastNumber, setLastNumber] = useState(() => last_invoice_number + 1);
+  const [selectedCurrency, setSelectedCurrency] = useState(null);
+  const handleCurrencyChange = (value, currencyObject) => {
+    console.log('Currency Change - Value:', value);
+    console.log('Currency Change - Object:', currencyObject);
+    
+    if (currencyObject) {
+      const newCurrency = {
+        currency_symbol: currencyObject.currency_symbol,
+        currency_position: currencyObject.currency_position,
+        decimal_separator: currencyObject.decimal_separator,
+        thousand_separator: currencyObject.thousand_separator,
+        cent_precision: currencyObject.cent_precision
+      };
+      console.log('Setting new currency:', newCurrency);
+      setSelectedCurrency(newCurrency);
+    }
+  };
 
   const handelTaxChange = (value) => {
     setTaxRate(value / 100);
@@ -133,6 +154,31 @@ function LoadInvoiceForm({ subTotal = 0, current = null }) {
                 { value: 'sent', label: translate('Sent') },
               ]}
             ></Select>
+          </Form.Item>
+        </Col>
+        {/* currency, same as quote */}
+        <Col className="gutter-row" span={4}>
+          <Form.Item
+            name="currency"
+            label={translate('Currency')}
+            rules={[
+              {
+                required: true,
+                message: translate('Please select currency'),
+              },
+            ]}
+          >
+            <SelectCurrency
+            value={selectedCurrency}
+            onChange={handleCurrencyChange}
+            entity={'currencies'}
+            outputValue={'currency_code'}
+            displayLabels={['currency_symbol','currency_name']}
+            withRedirect={true}
+            urlToRedirect="/currencies"
+            redirectLabel={translate('Add New Currency')}
+            placeholder={translate('Select currency')}
+            />
           </Form.Item>
         </Col>
 
@@ -233,7 +279,7 @@ function LoadInvoiceForm({ subTotal = 0, current = null }) {
             </p>
           </Col>
           <Col className="gutter-row" span={5}>
-            <MoneyInputFormItem readOnly value={subTotal} />
+            <MoneyInputFormItem readOnly value={subTotal} currency={selectedCurrency} />
           </Col>
         </Row>
         <Row gutter={[12, -5]}>
@@ -260,7 +306,7 @@ function LoadInvoiceForm({ subTotal = 0, current = null }) {
             </Form.Item>
           </Col>
           <Col className="gutter-row" span={5}>
-            <MoneyInputFormItem readOnly value={taxTotal} />
+            <MoneyInputFormItem readOnly value={taxTotal} currency={selectedCurrency} />
           </Col>
         </Row>
         <Row gutter={[12, -5]}>
@@ -277,7 +323,7 @@ function LoadInvoiceForm({ subTotal = 0, current = null }) {
             </p>
           </Col>
           <Col className="gutter-row" span={5}>
-            <MoneyInputFormItem readOnly value={total} />
+            <MoneyInputFormItem readOnly value={total} currency={selectedCurrency} />
           </Col>
         </Row>
       </div>
