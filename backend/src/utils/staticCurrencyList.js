@@ -1,4 +1,5 @@
-exports.currencyList = [
+// staticCurrencyList.js
+const staticCurrencyList = [
   {
     currency_symbol: '$',
     currency_position: 'before',
@@ -11,17 +12,6 @@ exports.currencyList = [
     enabled: true,
   },
   {
-    currency_symbol: '€',
-    currency_position: 'after',
-    decimal_sep: '.',
-    thousand_sep: ' ',
-    cent_precision: 2,
-    zero_format: true,
-    currency_name: 'Euro',
-    currency_code: 'EUR',
-    enabled: true,
-  },
-  {
     currency_symbol: '¥',
     currency_position: 'before',
     decimal_sep: '.',
@@ -30,7 +20,8 @@ exports.currencyList = [
     zero_format: true,
     currency_name: 'Chinese Yuan',
     currency_code: 'CNY',
-    enabled: true
+    enabled: true,
   },
-  
 ];
+
+export default staticCurrencyList; // Default export 

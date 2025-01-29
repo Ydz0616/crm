@@ -12,13 +12,13 @@ import ItemRow from '@/modules/ErpPanelModule/ItemRow';
 
 import MoneyInputFormItem from '@/components/MoneyInputFormItem';
 import { selectFinanceSettings } from '@/redux/settings/selectors';
-import { useDate } from '@/settings';
+import { useDate, useMoney } from '@/settings';
 import useLanguage from '@/locale/useLanguage';
 
 import calculate from '@/utils/calculate';
 import { useSelector } from 'react-redux';
 import SelectAsync from '@/components/SelectAsync';
-// import SelectCurrency from '@/components/SelectCurrency';
+import SelectCurrency from '@/components/SelectCurrency';
 
 export default function QuoteForm({ subTotal = 0, current = null }) {
   const { last_quote_number } = useSelector(selectFinanceSettings);
@@ -42,6 +42,26 @@ function LoadQuoteForm({ subTotal = 0, current = null }) {
   const [currentYear, setCurrentYear] = useState(() => new Date().getFullYear());
   const handelTaxChange = (value) => {
     setTaxRate(value / 100);
+  };
+
+  const [selectedCurrency, setSelectedCurrency] = useState(null);
+  const { moneyFormatter } = useMoney();
+
+  const handleCurrencyChange = (value, currencyObject) => {
+    console.log('Currency Change - Value:', value);
+    console.log('Currency Change - Object:', currencyObject);
+    
+    if (currencyObject) {
+      const newCurrency = {
+        currency_symbol: currencyObject.currency_symbol,
+        currency_position: currencyObject.currency_position,
+        decimal_separator: currencyObject.decimal_separator,
+        thousand_separator: currencyObject.thousand_separator,
+        cent_precision: currencyObject.cent_precision
+      };
+      console.log('Setting new currency:', newCurrency);
+      setSelectedCurrency(newCurrency);
+    }
   };
 
   useEffect(() => {
@@ -140,6 +160,41 @@ function LoadQuoteForm({ subTotal = 0, current = null }) {
             ></Select>
           </Form.Item>
         </Col>
+        <Col className="gutter-row" span={4}>
+          <Form.Item
+            name="currency"
+            label={translate('Currency')}
+            rules={[
+              {
+                required: true,
+                message: translate('Please select currency'),
+              },
+            ]}
+          >
+                {/* <SelectAsync
+                value={taxRate}
+                onChange={handelTaxChange}
+                entity={'taxes'}
+                outputValue={'taxValue'}
+                displayLabels={['taxName']}
+                withRedirect={true}
+                urlToRedirect="/taxes"
+                redirectLabel={translate('Add New Tax')}
+                placeholder={translate('Select Tax Value')}
+              /> */}
+              <SelectCurrency
+              value={selectedCurrency}
+              onChange={handleCurrencyChange}
+              entity={'currencies'}
+              outputValue={'currency_code'}
+              displayLabels={['currency_symbol','currency_name']}
+              withRedirect={true}
+              urlToRedirect="/currencies"
+              redirectLabel={translate('Add New Currency')}
+              placeholder={translate('Select currency')}
+              />
+          </Form.Item>
+        </Col>
 
         <Col className="gutter-row" span={8}>
           <Form.Item
@@ -205,7 +260,7 @@ function LoadQuoteForm({ subTotal = 0, current = null }) {
         {(fields, { add, remove }) => (
           <>
             {fields.map((field) => (
-              <ItemRow key={field.key} remove={remove} field={field} current={current}></ItemRow>
+              <ItemRow key={field.key} remove={remove} field={field} current={current} currency={selectedCurrency}></ItemRow>
             ))}
             <Form.Item>
               <Button
@@ -246,7 +301,12 @@ function LoadQuoteForm({ subTotal = 0, current = null }) {
             </p>
           </Col>
           <Col className="gutter-row" span={5}>
-            <MoneyInputFormItem readOnly value={subTotal} />
+            <MoneyInputFormItem 
+              readOnly 
+              value={subTotal} 
+              currency={selectedCurrency} 
+            />
+            {console.log('Rendering with currency:', selectedCurrency)}
           </Col>
         </Row>
         <Row gutter={[12, -5]}>
@@ -273,7 +333,7 @@ function LoadQuoteForm({ subTotal = 0, current = null }) {
             </Form.Item>
           </Col>
           <Col className="gutter-row" span={5}>
-            <MoneyInputFormItem readOnly value={taxTotal} />
+            <MoneyInputFormItem readOnly value={taxTotal} currency={selectedCurrency} />
           </Col>
         </Row>
         <Row gutter={[12, -5]}>
@@ -290,7 +350,7 @@ function LoadQuoteForm({ subTotal = 0, current = null }) {
             </p>
           </Col>
           <Col className="gutter-row" span={5}>
-            <MoneyInputFormItem readOnly value={total} />
+            <MoneyInputFormItem readOnly value={total} currency={selectedCurrency} />
           </Col>
         </Row>
       </div>

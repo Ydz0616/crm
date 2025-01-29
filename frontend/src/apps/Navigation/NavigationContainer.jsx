@@ -30,6 +30,7 @@ import {
   WalletOutlined,
   ReconciliationOutlined,
   GiftOutlined,
+  DollarOutlined,
 } from '@ant-design/icons';
 
 const { Sider } = Layout;
@@ -99,6 +100,11 @@ function Sidebar({ collapsible, isMobile = false }) {
       key: 'taxes',
       label: <Link to={'/taxes'}>{translate('taxes')}</Link>,
       icon: <ShopOutlined />,
+    },
+    {
+      key: 'currencies',
+      label: <Link to={'/currencies'}>{translate('currencies')}</Link>,
+      icon: <DollarOutlined />,
     },
     {
       key: 'generalSettings',

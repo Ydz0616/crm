@@ -25,7 +25,7 @@ const PaymentUpdate = lazy(() => import('@/pages/Payment/PaymentUpdate'));
 const Settings = lazy(() => import('@/pages/Settings/Settings'));
 const PaymentMode = lazy(() => import('@/pages/PaymentMode'));
 const Taxes = lazy(() => import('@/pages/Taxes'));
-
+const Currencies = lazy(() => import('@/pages/Currencies'));
 const Profile = lazy(() => import('@/pages/Profile'));
 
 const Merchandise = lazy(() => import('@/pages/Merchandise'));  
@@ -140,6 +140,10 @@ let routes = {
     {
       path: '/taxes',
       element: <Taxes />,
+    },
+    {
+      path: '/currencies',
+      element: <Currencies />,
     },
 
     {
