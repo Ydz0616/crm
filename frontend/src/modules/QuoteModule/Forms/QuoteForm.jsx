@@ -260,7 +260,13 @@ function LoadQuoteForm({ subTotal = 0, current = null }) {
         {(fields, { add, remove }) => (
           <>
             {fields.map((field) => (
-              <ItemRow key={field.key} remove={remove} field={field} current={current} currency={selectedCurrency}></ItemRow>
+              <ItemRow 
+                key={field.key} 
+                remove={remove} 
+                field={field} 
+                current={current}
+                selectedCurrency={selectedCurrency}
+              ></ItemRow>
             ))}
             <Form.Item>
               <Button
