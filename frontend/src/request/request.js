@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { API_BASE_URL } from '@/config/serverApiConfig';
-
+import {notification} from 'antd';
 import errorHandler from './errorHandler';
 import successHandler from './successHandler';
 
@@ -21,6 +21,8 @@ const request = {
     }
   },
   createAndUpload: async ({ entity, jsonData }) => {
+    // notify json data with notification
+    
     try {
       const response = await axios.post(entity + '/create', jsonData, {
         headers: {

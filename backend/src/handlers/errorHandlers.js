@@ -10,15 +10,23 @@ exports.catchErrors = (fn) => {
   return function (req, res, next) {
     return fn(req, res, next).catch((error) => {
       if (error.name == 'ValidationError') {
+        
         return res.status(400).json({
           success: false,
           result: null,
-          message: 'Required fields are not supplied',
+          message: 'Required fields are not supplied hey',
           controller: fn.name,
           error: error,
+          requestInfo:{
+            body:req.body,
+            params:req.params,
+            admin:req.admin
+          }
         });
       } else {
         // Server Error
+        console.log('Server Error in controller:', fn.name);
+        console.log('Error details:', error);
         return res.status(500).json({
           success: false,
           result: null,

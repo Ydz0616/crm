@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const Model = mongoose.model('Quote');
+const Model = mongoose.model('PurchaseOrder');
 
 const custom = require('@/controllers/pdfController');
 const { increaseBySettingKey } = require('@/middlewares/settings');
@@ -38,7 +38,7 @@ const create = async (req, res) => {
 
   // Creating a new document in the collection
   const result = await new Model(body).save();
-  const fileId = 'quote-' + result._id + '.pdf';
+  const fileId = 'po-' + result._id + '.pdf';
   const updateResult = await Model.findOneAndUpdate(
     { _id: result._id },
     { pdf: fileId },
@@ -49,14 +49,14 @@ const create = async (req, res) => {
   // Returning successfull response
 
   increaseBySettingKey({
-    settingKey: 'last_quote_number',
+    settingKey: 'last_purchase_order_number',
   });
 
   // Returning successfull response
   return res.status(200).json({
     success: true,
     result: updateResult,
-    message: 'Quote created successfully',
+    message: 'Purchase Order created successfully',
   });
 };
 module.exports = create;

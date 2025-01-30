@@ -49,8 +49,8 @@ module.exports = downloadPdf = async (req, res, { directory, id }) => {
       return res.status(400).json({
         success: false,
         result: null,
-        error: error.message,
-        message: 'Required fields are not supplied',
+        error: error.messagse,
+        message: 'Required fields are not supplied hey',
       });
     } else if (error.name == 'BSONTypeError') {
       // If error is thrown by Mongoose due to invalid ID

@@ -4,12 +4,14 @@ const Model = mongoose.model('Quote');
 
 const read = async (req, res) => {
   // Find document by id
+  
   const result = await Model.findOne({
     _id: req.params.id,
     removed: false,
   })
     .populate('createdBy', 'name')
     .exec();
+  console.log('Result:', result); // Debug log
   // If no results found, return document not found
   if (!result) {
     return res.status(404).json({
