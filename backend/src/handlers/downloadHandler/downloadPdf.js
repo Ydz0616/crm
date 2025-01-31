@@ -3,7 +3,12 @@ const mongoose = require('mongoose');
 
 module.exports = downloadPdf = async (req, res, { directory, id }) => {
   try {
-    const modelName = directory.slice(0, 1).toUpperCase() + directory.slice(1);
+    // Modified to handle special cases like "purchaseOrder"
+    let modelName = directory.slice(0, 1).toUpperCase() + directory.slice(1);
+    if (directory.toLowerCase() === 'purchaseorder') {
+      modelName = 'PurchaseOrder';
+    }
+    
     if (mongoose.models[modelName]) {
       const Model = mongoose.model(modelName);
       const result = await Model.findOne({

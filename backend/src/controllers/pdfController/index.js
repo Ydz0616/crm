@@ -7,7 +7,7 @@ const { getData } = require('@/middlewares/serverData');
 const useLanguage = require('@/locale/useLanguage');
 const { useMoney, useDate } = require('@/settings');
 
-const pugFiles = ['invoice', 'offer', 'quote', 'payment'];
+const pugFiles = ['invoice', 'offer', 'quote', 'payment','purchaseorder'];
 
 require('dotenv').config({ path: '.env' });
 require('dotenv').config({ path: '.env.local' });
