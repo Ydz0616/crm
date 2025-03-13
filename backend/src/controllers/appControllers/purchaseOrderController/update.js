@@ -1,13 +1,14 @@
 const mongoose = require('mongoose');
 
 const Model = mongoose.model('PurchaseOrder');
+const Invoice = mongoose.model('Invoice');
 
 const custom = require('@/controllers/pdfController');
 
 const { calculate } = require('@/helpers');
 
 const update = async (req, res) => {
-  const { items = [], taxRate = 0, discount = 0 } = req.body;
+  const { items = [], taxRate = 0, discount = 0, relatedInvoice } = req.body;
 
   if (items.length === 0) {
     return res.status(400).json({
@@ -44,14 +45,44 @@ const update = async (req, res) => {
   if (body.hasOwnProperty('currency')) {
     delete body.currency;
   }
+  
+  // Get the current purchase order to check for changes in relatedInvoice
+  const currentPO = await Model.findOne({ _id: req.params.id, removed: false });
+  const oldRelatedInvoice = currentPO?.relatedInvoice;
+  
   // Find document by id and updates with the required fields
-
   const result = await Model.findOneAndUpdate({ _id: req.params.id, removed: false }, body, {
     new: true, // return the new result instead of the old one
   }).exec();
 
-  // Returning successfull response
+  // Handle invoice relationships
+  if (relatedInvoice) {
+    // If the related invoice has changed
+    if (!oldRelatedInvoice || oldRelatedInvoice.toString() !== relatedInvoice.toString()) {
+      // Remove this PO from the old invoice's relatedPurchaseOrders if it exists
+      if (oldRelatedInvoice) {
+        await Invoice.findByIdAndUpdate(
+          oldRelatedInvoice,
+          { $pull: { relatedPurchaseOrders: req.params.id } }
+        );
+      }
+      
+      // Add this PO to the new invoice's relatedPurchaseOrders
+      await Invoice.findByIdAndUpdate(
+        relatedInvoice,
+        { $addToSet: { relatedPurchaseOrders: req.params.id } },
+        { new: true }
+      );
+    }
+  } else if (oldRelatedInvoice) {
+    // If the related invoice was removed, update the old invoice
+    await Invoice.findByIdAndUpdate(
+      oldRelatedInvoice,
+      { $pull: { relatedPurchaseOrders: req.params.id } }
+    );
+  }
 
+  // Returning successfull response
   return res.status(200).json({
     success: true,
     result,

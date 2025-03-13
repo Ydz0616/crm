@@ -63,7 +63,9 @@ export default function AutoCompleteAsync({
 
   const asyncSearch = async (options) => {
     console.log('Async search called with options:', options);
-    return await request.search({ entity, options });
+    const response = await request.search({ entity, options });
+    console.log('Search API response:', response);
+    return response;
   };
 
   let { onFetch, result, isSuccess, isLoading } = useOnFetch();

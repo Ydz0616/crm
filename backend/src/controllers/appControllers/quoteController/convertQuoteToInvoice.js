@@ -41,6 +41,7 @@ const convertQuoteToInvoice = async (req, res) => {
       credit: quote.credit,
       currency: quote.currency,
       discount: quote.discount,
+      notes: quote.notes,
       // Invoice specific fields
       payment: [],
       paymentStatus: 'unpaid',
@@ -48,6 +49,11 @@ const convertQuoteToInvoice = async (req, res) => {
       status: 'draft',
       approved: false,
       createdBy: req.admin._id,
+      // Add reference to the original quote
+      converted: {
+        from: 'quote',
+        quote: quote._id
+      }
     });
 
     // Save new invoice

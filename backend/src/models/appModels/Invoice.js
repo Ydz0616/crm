@@ -8,7 +8,7 @@ const invoiceSchema = new mongoose.Schema({
 
   createdBy: { type: mongoose.Schema.ObjectId, ref: 'Admin', required: true },
   number: {
-    type: Number,
+    type: String,
     required: true,
   },
   year: {
@@ -34,6 +34,11 @@ const invoiceSchema = new mongoose.Schema({
     required: true,
     autopopulate: true,
   },
+  relatedPurchaseOrders: [{ 
+    type: mongoose.Schema.ObjectId, 
+    ref: 'PurchaseOrder',
+    autopopulate: true 
+  }],
   converted: {
     from: {
       type: String,

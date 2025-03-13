@@ -1,4 +1,3 @@
-
 const mongoose = require('mongoose');
 
 const orderSchema = new mongoose.Schema({
@@ -13,7 +12,7 @@ const orderSchema = new mongoose.Schema({
     default: false,
   },
   number: {
-    type: Number,
+    type: String,
     required: true,
   },
   year: {
@@ -41,6 +40,11 @@ const orderSchema = new mongoose.Schema({
     ref: 'Factory',
     required: true,
     autopopulate: true,
+  },
+  relatedInvoice: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'Invoice',
+    autopopulate: true
   },
   
   items: [

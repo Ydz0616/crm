@@ -112,6 +112,21 @@ function LoadPurchaseOrderForm({ subTotal = 0, current = null }) {
             />
           </Form.Item>
         </Col>
+        <Col className="gutter-row" span={8}>
+          <Form.Item
+            name="relatedInvoice"
+            label={translate('Related Invoice')}
+          >
+            <AutoCompleteAsync
+              entity={'invoice'}
+              displayLabels={['number', 'client.name']}
+              searchFields={'number,client.name'}
+              redirectLabel={'Create New Invoice'}
+              withRedirect
+              urlToRedirect={'/invoice/create'}
+            />
+          </Form.Item>
+        </Col>
         <Col className="gutter-row" span={3}>
           <Form.Item
             label={translate('number')}
@@ -123,7 +138,7 @@ function LoadPurchaseOrderForm({ subTotal = 0, current = null }) {
               },
             ]}
           >
-            <InputNumber min={1} style={{ width: '100%' }} />
+            <Input style={{ width: '100%' }} />
           </Form.Item>
         </Col>
         <Col className="gutter-row" span={3}>

@@ -1,13 +1,14 @@
 const mongoose = require('mongoose');
 
 const Model = mongoose.model('PurchaseOrder');
+const Invoice = mongoose.model('Invoice');
 
 const custom = require('@/controllers/pdfController');
 const { increaseBySettingKey } = require('@/middlewares/settings');
 const { calculate } = require('@/helpers');
 
 const create = async (req, res) => {
-  const { items = [], taxRate = 0, discount = 0 } = req.body;
+  const { items = [], taxRate = 0, discount = 0, relatedInvoice } = req.body;
 
   // default
   let subTotal = 0;
@@ -46,8 +47,16 @@ const create = async (req, res) => {
       new: true,
     }
   ).exec();
-  // Returning successfull response
 
+  // If there's a related invoice, update it with this purchase order
+  if (relatedInvoice) {
+    await Invoice.findByIdAndUpdate(
+      relatedInvoice,
+      { $push: { relatedPurchaseOrders: result._id } },
+      { new: true }
+    );
+  }
+  
   increaseBySettingKey({
     settingKey: 'last_purchase_order_number',
   });
