@@ -29,11 +29,13 @@ const schema = new mongoose.Schema({
     type: Number,
     required: true
   },
-  note: {
-    type: String
+  VAT: {
+    type: Number,
+    required: true
   },
-  note_2: {
-    type: String
+  ETR: {
+    type: Number,
+    required: true
   }
 });
 

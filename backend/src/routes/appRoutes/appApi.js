@@ -32,4 +32,17 @@ routesList.forEach(({ entity, controllerName }) => {
   routerApp(entity, controller);
 });
 
+// Add all controllers
+const comparisonController = require('@/controllers/appControllers/comparisonController');
+
+// Add all routes
+router.route('/comparison/getPurchasePrice').get(comparisonController.getPurchasePrice);
+router.route('/comparison/create').post(comparisonController.create);
+router.route('/comparison/read/:id').get(comparisonController.read);
+router.route('/comparison/update/:id').patch(comparisonController.update);
+router.route('/comparison/delete/:id').delete(comparisonController.delete);
+router.route('/comparison/search').get(comparisonController.search);
+router.route('/comparison/list').get(comparisonController.list);
+router.route('/comparison/summary').get(comparisonController.summary);
+
 module.exports = router;

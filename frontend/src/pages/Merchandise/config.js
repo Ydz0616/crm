@@ -17,10 +17,10 @@ export const fields = {
   weight: {
     type: 'number',
   },
-  note: {
-    type: 'string',
+  VAT: {
+    type: 'number',
   },
-  note_2: {
-    type: 'string',
+  ETR: {
+    type: 'number',
   }
 };

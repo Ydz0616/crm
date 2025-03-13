@@ -27,6 +27,12 @@ const PurchaseOrderCreate = lazy(() => import('@/pages/PurchaseOrder/OrderCreate
 const PurchaseOrderRead = lazy(() => import('@/pages/PurchaseOrder/OrderRead'));
 const PurchaseOrderUpdate = lazy(() => import('@/pages/PurchaseOrder/OrderUpdate'));
 
+// Comparison Module
+const Comparison = lazy(() => import('@/pages/Comparison'));
+const ComparisonCreate = lazy(() => import('@/pages/Comparison/ComparisonCreate'));
+const ComparisonRead = lazy(() => import('@/pages/Comparison/ComparisonRead'));
+const ComparisonUpdate = lazy(() => import('@/pages/Comparison/ComparisonUpdate'));
+
 const Settings = lazy(() => import('@/pages/Settings/Settings'));
 const PaymentMode = lazy(() => import('@/pages/PaymentMode'));
 const Taxes = lazy(() => import('@/pages/Taxes'));
@@ -86,7 +92,7 @@ let routes = {
       path: '/purchaseorder/update/:id',
       element: <PurchaseOrderUpdate />,
     },
-
+    
 
     // {
     //   path: '/people',
@@ -169,6 +175,22 @@ let routes = {
     {
       path: '/profile',
       element: <Profile />,
+    },
+    {
+      path: '/comparison',
+      element: <Comparison />,
+    },
+    {
+      path: '/comparison/create',
+      element: <ComparisonCreate />,
+    },
+    {
+      path: '/comparison/read/:id',
+      element: <ComparisonRead />,
+    },
+    {
+      path: '/comparison/update/:id',
+      element: <ComparisonUpdate />,
     },
     {
       path: '*',
