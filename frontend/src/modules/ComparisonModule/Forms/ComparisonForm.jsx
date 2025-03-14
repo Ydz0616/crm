@@ -18,36 +18,276 @@ import { request } from '@/request';
 const { Text } = Typography;
 
 // Custom row component for Comparison Form that handles purchase price lookup
-const ComparisonItemRow = ({ field, remove, form, clientId, exchangeRate = 6.5 }) => {
+const ComparisonItemRow = ({ field, remove, form, clientId, exchangeRate = 6.5, onValuesChange }) => {
   const translate = useLanguage();
   const [loading, setLoading] = useState(false);
-  const [purchasePrice, setPurchasePrice] = useState(null);
-  const [grossProfit, setGrossProfit] = useState(null);
   const [vatEtr, setVatEtr] = useState({ VAT: 1.13, ETR: 0.13 });
-  const [dataSource, setDataSource] = useState(null);
+  const [dexp, setDexp] = useState(null);
+  const [grossProfit, setGrossProfit] = useState(null);
+  const [subP, setSubP] = useState(null);
+  const [subS, setSubS] = useState(null);
 
-  // Get current values from form
-  const getFormItemValue = (key) => form.getFieldValue(['items', field.name, key]);
+  console.log('Rendering ComparisonItemRow with field:', field);
   
-  // Handle item selection - receive selected merch data directly
-  const handleMerchSelect = (selectedMerch) => {
-    if (!selectedMerch || !clientId) return;
+  // Calculate USD expense
+  const calculateUsdExpense = (exp, vat, etr, rate) => {
+    console.log('Calculating USD expense with:', { exp, vat, etr, rate });
+    if (!exp || !vat || !etr || !rate) return null;
     
-    console.log('Selected Merch:', selectedMerch);
+    // Ensure all values are numbers
+    exp = Number(exp);
+    vat = Number(vat);
+    etr = Number(etr);
+    rate = Number(rate);
+    
+    // Calculate USD expense: exp * (VAT - ETR) / VAT / E
+    const usdExpense = exp * (vat - etr) / vat / rate;
+    
+    // Round to 2 decimal places
+    const roundedUsdExpense = Math.round(usdExpense * 100) / 100;
+    
+    console.log('Calculated USD expense:', usdExpense, 'Rounded:', roundedUsdExpense);
+    return roundedUsdExpense;
+  };
+  
+  // Calculate gross profit percentage
+  const calculateGrossProfit = (price, dexpValue) => {
+    console.log('Calculating gross profit with:', { price, dexpValue });
+    if (!price || !dexpValue) return null;
+    
+    // Ensure all values are numbers
+    price = Number(price);
+    dexpValue = Number(dexpValue);
+    
+    if (price <= 0) return 0;
+    
+    // Calculate gross profit: (Price - DExp) / Price * 100%
+    const grossProfitValue = (price - dexpValue) / price * 100;
+    
+    // Round to 2 decimal places
+    const roundedGrossProfit = Math.round(grossProfitValue * 100) / 100;
+    
+    console.log('Calculated gross profit:', grossProfitValue, 'Rounded:', roundedGrossProfit);
+    return roundedGrossProfit;
+  };
+  
+  // Calculate subtotals
+  const calculateSubtotals = (qty, price, exp) => {
+    console.log('Calculating subtotals with:', { qty, price, exp });
+    if (!qty) return { subP: null, subS: null };
+    
+    // Ensure all values are numbers
+    qty = Number(qty);
+    
+    let calculatedSubP = null;
+    let calculatedSubS = null;
+    
+    if (exp) {
+      const expNum = Number(exp);
+      calculatedSubP = Math.round(qty * expNum * 100) / 100;
+    }
+    
+    if (price) {
+      const priceNum = Number(price);
+      calculatedSubS = Math.round(qty * priceNum * 100) / 100;
+    }
+    
+    console.log('Calculated subtotals:', { subP: calculatedSubP, subS: calculatedSubS });
+    return { subP: calculatedSubP, subS: calculatedSubS };
+  };
+  
+  // Update USD expense in the form and state
+  const updateDexp = (expValue) => {
+    // Get current values
+    const items = form.getFieldValue('items');
+    const currentItem = items[field.name];
+    
+    const vatValue = currentItem.VAT || vatEtr.VAT;
+    const etrValue = currentItem.ETR || vatEtr.ETR;
+    
+    // Calculate USD expense
+    const usdExpense = calculateUsdExpense(expValue, vatValue, etrValue, exchangeRate);
+    
+    // Update form with calculated value
+    items[field.name] = {
+      ...currentItem,
+      DExp: usdExpense
+    };
+    
+    // Set the entire items array back to the form
+    form.setFieldsValue({ items });
+    
+    // Update local state
+    setDexp(usdExpense);
+    
+    // If we have a price, update the gross profit too
+    if (currentItem.Price && usdExpense) {
+      updateGrossProfit(currentItem.Price, usdExpense);
+    }
+    
+    // Notify parent of changes
+    if (onValuesChange) {
+      onValuesChange(items);
+    }
+  };
+  
+  // Update gross profit in form and state
+  const updateGrossProfit = (price, dexpValue) => {
+    // Calculate gross profit
+    const gpValue = calculateGrossProfit(price, dexpValue);
+    
+    // Get current items
+    const items = form.getFieldValue('items');
+    const currentItem = items[field.name];
+    
+    // Update form with calculated value
+    items[field.name] = {
+      ...currentItem,
+      GP: gpValue
+    };
+    
+    // Set the entire items array back to the form
+    form.setFieldsValue({ items });
+    
+    // Update local state
+    setGrossProfit(gpValue);
+    
+    // Notify parent of changes
+    if (onValuesChange) {
+      onValuesChange(items);
+    }
+  };
+  
+  // Update subtotals in form and state
+  const updateSubtotals = (qty, price, exp) => {
+    // Calculate subtotals
+    const { subP: calculatedSubP, subS: calculatedSubS } = calculateSubtotals(qty, price, exp);
+    
+    // Get current items
+    const items = form.getFieldValue('items');
+    const currentItem = items[field.name];
+    
+    // Update form with calculated values
+    items[field.name] = {
+      ...currentItem,
+      SubP: calculatedSubP,
+      SubS: calculatedSubS
+    };
+    
+    // Set the entire items array back to the form
+    form.setFieldsValue({ items });
+    
+    // Update local state
+    setSubP(calculatedSubP);
+    setSubS(calculatedSubS);
+    
+    // Notify parent of changes
+    if (onValuesChange) {
+      onValuesChange(items);
+    }
+  };
+  
+  // Handle quantity change
+  const handleQtyChange = (qtyValue) => {
+    console.log('Quantity changed to:', qtyValue);
+    
+    // Get the items array
+    const items = form.getFieldValue('items');
+    const currentItem = items[field.name];
+    
+    // Update quantity in the items array
+    items[field.name] = {
+      ...currentItem,
+      Qty: qtyValue
+    };
+    
+    // Set entire items array back to form
+    form.setFieldsValue({ items });
+    
+    // Update subtotals
+    updateSubtotals(qtyValue, currentItem.Price, currentItem.Exp);
+  };
+  
+  // Handle price change
+  const handlePriceChange = (priceValue) => {
+    console.log('Price changed to:', priceValue);
+    
+    // Get the items array
+    const items = form.getFieldValue('items');
+    const currentItem = items[field.name];
+    
+    // Update price in the items array
+    items[field.name] = {
+      ...currentItem,
+      Price: priceValue
+    };
+    
+    // Set entire items array back to form
+    form.setFieldsValue({ items });
+    
+    // Update gross profit if we have DExp
+    if (priceValue && currentItem.DExp) {
+      updateGrossProfit(priceValue, currentItem.DExp);
+    }
+    
+    // Update subtotals if we have quantity
+    if (currentItem.Qty) {
+      updateSubtotals(currentItem.Qty, priceValue, currentItem.Exp);
+    }
+  };
+  
+  // Handle expense (buy-in price) change
+  const handleExpChange = (expValue) => {
+    console.log('Expense changed to:', expValue);
+    
+    // Get the items array
+    const items = form.getFieldValue('items');
+    const currentItem = items[field.name];
+    
+    // Update expense in the items array
+    items[field.name] = {
+      ...items[field.name],
+      Exp: expValue
+    };
+    
+    // Set entire items array back to form
+    form.setFieldsValue({ items });
+    
+    // Update dollar expense calculation
+    updateDexp(expValue);
+    
+    // Update subtotals if we have quantity
+    if (currentItem.Qty) {
+      updateSubtotals(currentItem.Qty, currentItem.Price, expValue);
+    }
+  };
+  
+  // Handle item selection
+  const handleMerchSelect = (selectedMerch) => {
+    console.log('Item selected:', selectedMerch);
+    
+    if (!selectedMerch) {
+      console.error('No item selected');
+      return;
+    }
     
     if (!form) {
       console.error('Form instance not found');
       return;
     }
-
-    // Get the items array from the form - exactly like in ItemRow.jsx
-    const items = form.getFieldValue('items');
     
-    // Extract VAT and ETR directly from the selected merch
+    console.log('Form instance:', form);
+    
+    // Get the items array from the form
+    const items = form.getFieldValue('items');
+    console.log('Current items:', items);
+    
+    // Extract VAT and ETR from selected merch
     const vatValue = selectedMerch.VAT || 1.13;
     const etrValue = selectedMerch.ETR || 0.13;
+    console.log('Setting VAT/ETR values:', { vatValue, etrValue });
     
-    // Update the specific item in the items array - exactly like in ItemRow.jsx but with VAT and ETR
+    // Update the item in the items array
     items[field.name] = {
       ...items[field.name],
       itemName: selectedMerch.serialNumber,
@@ -55,255 +295,149 @@ const ComparisonItemRow = ({ field, remove, form, clientId, exchangeRate = 6.5 }
       VAT: vatValue,
       ETR: etrValue
     };
-
-    // Set the entire items array back to the form - exactly like in ItemRow.jsx
-    form.setFieldsValue({ items });
-
-    console.log('Updated form values:', form.getFieldsValue());
     
-    // Update local state for the component
+    console.log('Updated items:', items);
+    
+    // Set entire items array back to form
+    form.setFieldsValue({ items });
+    
+    // Verify the form values were set
+    console.log('Form values after update:', form.getFieldsValue());
+    
+    // Update local state
     setVatEtr({ VAT: vatValue, ETR: etrValue });
     
-    setLoading(true);
-    try {
-      // Get the item name from the selected merch
-      const itemName = selectedMerch.serialNumber;
-      
-      // Call API to get purchase price based on item and client
-      request.get({
-        entity: `/comparison/getPurchasePrice?itemName=${itemName}&clientId=${clientId}&VAT=${vatValue}&ETR=${etrValue}`,
-      }).then(({ data }) => {
-        if (data.success && data.result) {
-          setPurchasePrice(data.result.purchasePrice);
-          setDataSource(data.result.source);
-          
-          // Get the current items again (could have changed)
-          const updatedItems = form.getFieldValue('items');
-          
-          // Update the specific item in the items array
-          updatedItems[field.name] = {
-            ...updatedItems[field.name],
-            purchasePrice: data.result.purchasePrice
-          };
-          
-          // Set the entire items array back to the form
-          form.setFieldsValue({ items: updatedItems });
-          
-          console.log('Updated with purchase price:', form.getFieldsValue());
-          
-          // Calculate gross profit if we have price too
-          const price = updatedItems[field.name].price;
-          if (price && data.result.purchasePrice) {
-            calculateGrossProfit(price, data.result.purchasePrice, vatValue, etrValue);
-          }
-        } else {
-          setPurchasePrice(null);
-          setGrossProfit(null);
-        }
-        setLoading(false);
-      }).catch(error => {
-        console.error('Error fetching purchase price:', error);
-        setLoading(false);
-      });
-    } catch (error) {
-      console.error('Error in handleMerchSelect:', error);
-      setLoading(false);
+    // Recalculate USD expense if we have an expense value
+    const expValue = items[field.name].Exp;
+    if (expValue) {
+      updateDexp(expValue);
     }
-  };
-  
-  // Handle price change
-  const handlePriceChange = (price) => {
-    console.log('Price changed to:', price);
-    if (price === null || price === undefined) return;
     
-    // Get the current items
-    const items = form.getFieldValue('items');
-    const currentItem = items[field.name];
-    
-    // Update price in the form
-    items[field.name] = {
-      ...currentItem,
-      price: price
-    };
-    
-    // Set back the entire items array
-    form.setFieldsValue({ items });
-    
-    // Get purchase price and other values for calculation
-    const pPrice = currentItem.purchasePrice;
-    const vatValue = currentItem.VAT || vatEtr.VAT;
-    const etrValue = currentItem.ETR || vatEtr.ETR;
-    
-    console.log('Price change - values for calculation:', { price, pPrice, vatValue, etrValue });
-    
-    if (price && pPrice) {
-      calculateGrossProfit(price, pPrice, vatValue, etrValue);
-    } else {
-      setGrossProfit(null);
-    }
-  };
-  
-  // Handle purchase price change
-  const handlePurchasePriceChange = (pPrice) => {
-    console.log('Purchase price changed to:', pPrice);
-    if (pPrice === null || pPrice === undefined) return;
-    
-    // Get the current items
-    const items = form.getFieldValue('items');
-    const currentItem = items[field.name];
-    
-    // Update purchase price in the form
-    items[field.name] = {
-      ...currentItem,
-      purchasePrice: pPrice
-    };
-    
-    // Set back the entire items array
-    form.setFieldsValue({ items });
-    
-    // Get other values for calculation
-    const price = currentItem.price;
-    const vatValue = currentItem.VAT || vatEtr.VAT;
-    const etrValue = currentItem.ETR || vatEtr.ETR;
-    
-    console.log('Purchase price change - values for calculation:', { price, pPrice, vatValue, etrValue });
-    
-    if (price && pPrice) {
-      calculateGrossProfit(price, pPrice, vatValue, etrValue);
-    } else {
-      setGrossProfit(null);
+    // Notify parent of changes
+    if (onValuesChange) {
+      onValuesChange(items);
     }
   };
   
   // Handle VAT change
   const handleVatChange = (vatValue) => {
     console.log('VAT changed to:', vatValue);
-    if (vatValue === null || vatValue === undefined) return;
     
-    // Get the current items
+    // Get the items array
     const items = form.getFieldValue('items');
-    const currentItem = items[field.name];
     
-    // Update VAT in the form
+    // Update VAT in the items array
     items[field.name] = {
-      ...currentItem,
+      ...items[field.name],
       VAT: vatValue
     };
     
-    // Set back the entire items array
+    // Set entire items array back to form
     form.setFieldsValue({ items });
     
-    // Update state
+    // Update local state
     setVatEtr(prev => ({ ...prev, VAT: vatValue }));
     
-    // Get values for calculation
-    const price = currentItem.price;
-    const pPrice = currentItem.purchasePrice;
-    const etrValue = currentItem.ETR || vatEtr.ETR;
+    // Recalculate USD expense if we have an expense value
+    const expValue = items[field.name].Exp;
+    if (expValue) {
+      updateDexp(expValue);
+    }
     
-    console.log('VAT change - values for calculation:', { price, pPrice, vatValue, etrValue });
-    
-    if (price && pPrice) {
-      calculateGrossProfit(price, pPrice, vatValue, etrValue);
+    // Notify parent of changes
+    if (onValuesChange) {
+      onValuesChange(items);
     }
   };
   
   // Handle ETR change
   const handleEtrChange = (etrValue) => {
     console.log('ETR changed to:', etrValue);
-    if (etrValue === null || etrValue === undefined) return;
     
-    // Get the current items
+    // Get the items array
     const items = form.getFieldValue('items');
-    const currentItem = items[field.name];
     
-    // Update ETR in the form
+    // Update ETR in the items array
     items[field.name] = {
-      ...currentItem,
+      ...items[field.name],
       ETR: etrValue
     };
     
-    // Set back the entire items array
+    // Set entire items array back to form
     form.setFieldsValue({ items });
-    
-    // Update state
-    setVatEtr(prev => ({ ...prev, ETR: etrValue }));
-    
-    // Get values for calculation
-    const price = currentItem.price;
-    const pPrice = currentItem.purchasePrice;
-    const vatValue = currentItem.VAT || vatEtr.VAT;
-    
-    console.log('ETR change - values for calculation:', { price, pPrice, vatValue, etrValue });
-    
-    if (price && pPrice) {
-      calculateGrossProfit(price, pPrice, vatValue, etrValue);
-    }
-  };
-
-  // Calculate gross profit - similar to how create.js calculates item totals
-  const calculateGrossProfit = (price, pPrice, VAT = 1.13, ETR = 0.13) => {
-    console.log('Calculate gross profit inputs:', { price, pPrice, VAT, ETR, exchangeRate });
-    
-    if (!price || !pPrice || !exchangeRate) {
-      console.log('Missing required values for calculation');
-      return;
-    }
-    
-    // Ensure all values are numbers
-    price = Number(price);
-    pPrice = Number(pPrice);
-    VAT = Number(VAT);
-    ETR = Number(ETR);
-    const exRate = Number(exchangeRate);
-    
-    // Calculate USD expense
-    const expenseRMB = pPrice * (VAT - ETR) / VAT;
-    const expenseUSD = expenseRMB / exRate;
-    
-    // Calculate gross profit percentage
-    let grossProfitValue = 0;
-    
-    if (price > expenseUSD) {
-      const profit = (price - expenseUSD) / price;
-      grossProfitValue = Math.round(profit * 1000) / 1000;
-    }
-    
-    console.log('Calculated gross profit:', grossProfitValue);
     
     // Update local state
-    setGrossProfit(grossProfitValue);
+    setVatEtr(prev => ({ ...prev, ETR: etrValue }));
     
-    // Get the current items
-    const items = form.getFieldValue('items');
-    if (!items) return;
+    // Recalculate USD expense if we have an expense value
+    const expValue = items[field.name].Exp;
+    if (expValue) {
+      updateDexp(expValue);
+    }
     
-    // Update the specific item with the calculated value
-    items[field.name] = {
-      ...items[field.name],
-      grossProfit: grossProfitValue
-    };
-    
-    // Set the updated items array back to the form
-    form.setFieldsValue({ items });
-    
-    return grossProfitValue;
+    // Notify parent of changes
+    if (onValuesChange) {
+      onValuesChange(items);
+    }
   };
+  
+  // Effect to update USD expense and subtotals when exchange rate changes
+  useEffect(() => {
+    // Get current values
+    const items = form.getFieldValue('items');
+    if (!items || !items[field.name]) return;
+    
+    const currentItem = items[field.name];
+    const expValue = currentItem.Exp;
+    
+    if (expValue) {
+      updateDexp(expValue);
+    }
+  }, [exchangeRate]);
   
   return (
     <Row gutter={[12, 12]} style={{ marginBottom: '10px' }}>
-      <Col className="gutter-row" span={6}>
+      <Col className="gutter-row" span={4}>
         <Form.Item
           name={[field.name, 'itemName']}
           fieldKey={[field.fieldKey, 'itemName']}
           rules={[{ required: true, message: translate('Please select an item') }]}
+          label={translate('Item')}
         >
           <MerchCompleteAsync
             entity="merch"
             displayLabels={['serialNumber']}
             searchFields="serialNumber"
             outputValue="serialNumber"
-            onItemSelect={handleMerchSelect}
+            onItemSelect={(selectedMerch) => {
+              console.log('MerchCompleteAsync onItemSelect called with:', selectedMerch);
+              if (selectedMerch) {
+                console.log('Selected item details:', {
+                  serialNumber: selectedMerch.serialNumber,
+                  description: selectedMerch.description_en,
+                  VAT: selectedMerch.VAT || 'Not provided',
+                  ETR: selectedMerch.ETR || 'Not provided'
+                });
+              }
+              handleMerchSelect(selectedMerch);
+            }}
+          />
+        </Form.Item>
+      </Col>
+      
+      <Col className="gutter-row" span={2}>
+        <Form.Item
+          name={[field.name, 'Qty']}
+          fieldKey={[field.fieldKey, 'Qty']}
+          label={translate('Qty')}
+          rules={[{ required: true, message: translate('Please enter quantity') }]}
+        >
+          <InputNumber
+            style={{ width: '100%' }}
+            min={1}
+            precision={0}
+            placeholder={translate('Quantity')}
+            onChange={handleQtyChange}
           />
         </Form.Item>
       </Col>
@@ -317,105 +451,131 @@ const ComparisonItemRow = ({ field, remove, form, clientId, exchangeRate = 6.5 }
         <Input />
       </Form.Item>
       
-      <Col className="gutter-row" span={3}>
-        <Form.Item
-          name={[field.name, 'quantity']}
-          fieldKey={[field.fieldKey, 'quantity']}
-          rules={[{ required: true, message: translate('Please enter quantity') }]}
-        >
-          <InputNumber 
-            style={{ width: '100%' }} 
-            min={1} 
-            placeholder={translate('Quantity')} 
-          />
-        </Form.Item>
-      </Col>
+      {/* VAT field hidden but still included in form data */}
+      <Form.Item
+        name={[field.name, 'VAT']}
+        fieldKey={[field.fieldKey, 'VAT']}
+        hidden
+      >
+        <InputNumber onChange={handleVatChange} />
+      </Form.Item>
+      
+      {/* ETR field hidden but still included in form data */}
+      <Form.Item
+        name={[field.name, 'ETR']}
+        fieldKey={[field.fieldKey, 'ETR']}
+        hidden
+      >
+        <InputNumber onChange={handleEtrChange} />
+      </Form.Item>
+      
+      {/* DExp field hidden but still included in form data */}
+      <Form.Item
+        name={[field.name, 'DExp']}
+        fieldKey={[field.fieldKey, 'DExp']}
+        hidden
+      >
+        <InputNumber />
+      </Form.Item>
       
       <Col className="gutter-row" span={3}>
         <Form.Item
-          name={[field.name, 'price']}
-          fieldKey={[field.fieldKey, 'price']}
+          name={[field.name, 'Price']}
+          fieldKey={[field.fieldKey, 'Price']}
+          label={translate('Price (USD)')}
           rules={[{ required: true, message: translate('Please enter price') }]}
         >
           <InputNumber
             style={{ width: '100%' }}
             min={0}
             step={0.01}
-            placeholder={translate('Price')}
-            onChange={handlePriceChange}
+            controls={false}
+            keyboard
+            stringMode
+            placeholder={translate('Sell price')}
+            onChange={(value) => {
+              console.log('Raw price input:', value);
+              handlePriceChange(value);
+            }}
+            addonBefore="$"
           />
         </Form.Item>
       </Col>
       
       <Col className="gutter-row" span={3}>
         <Form.Item
-          name={[field.name, 'purchasePrice']}
-          fieldKey={[field.fieldKey, 'purchasePrice']}
+          name={[field.name, 'Exp']}
+          fieldKey={[field.fieldKey, 'Exp']}
+          label={translate('Exp (CNY)')}
+          rules={[{ required: true, message: translate('Please enter expense') }]}
         >
           <InputNumber
             style={{ width: '100%' }}
             min={0}
             step={0.01}
-            placeholder={translate('Purchase Price')}
-            onChange={handlePurchasePriceChange}
-            suffix={loading ? <Spin size="small" /> : null}
-          />
-        </Form.Item>
-        {dataSource && (
-          <Text type="secondary" style={{ fontSize: '11px' }}>
-            {dataSource === 'client_history' ? translate('Client history') : translate('Region history')}
-          </Text>
-        )}
-      </Col>
-      
-      <Col className="gutter-row" span={3}>
-        <Form.Item
-          name={[field.name, 'VAT']}
-          fieldKey={[field.fieldKey, 'VAT']}
-        >
-          <InputNumber
-            style={{ width: '100%' }}
-            min={1}
-            step={0.01}
-            placeholder={translate('VAT')}
-            onChange={handleVatChange}
+            controls={false}
+            keyboard
+            stringMode
+            placeholder={translate('Buy-in price')}
+            onChange={(value) => {
+              console.log('Raw expense input:', value);
+              handleExpChange(value);
+            }}
+            addonBefore="¥"
           />
         </Form.Item>
       </Col>
       
       <Col className="gutter-row" span={3}>
         <Form.Item
-          name={[field.name, 'ETR']}
-          fieldKey={[field.fieldKey, 'ETR']}
+          name={[field.name, 'GP']}
+          fieldKey={[field.fieldKey, 'GP']}
+          label={translate('GP (%)')}
         >
           <InputNumber
             style={{ width: '100%' }}
-            min={0}
-            step={0.01}
-            placeholder={translate('ETR')}
-            onChange={handleEtrChange}
+            disabled
+            precision={2}
+            placeholder={translate('Gross Profit')}
+            formatter={value => value ? `${value}%` : ''}
           />
         </Form.Item>
       </Col>
       
       <Col className="gutter-row" span={3}>
         <Form.Item
-          name={[field.name, 'grossProfit']}
-          fieldKey={[field.fieldKey, 'grossProfit']}
+          name={[field.name, 'SubP']}
+          fieldKey={[field.fieldKey, 'SubP']}
+          label={translate('SubP (CNY)')}
         >
           <InputNumber
             style={{ width: '100%' }}
-            min={0}
-            step={0.001}
-            placeholder={translate('GP')}
-            readOnly
-            formatter={(value) => value ? `${(value * 100).toFixed(1)}%` : ''}
+            disabled
+            precision={2}
+            placeholder={translate('Subtotal Purchase')}
+            formatter={value => value ? `¥${value}` : ''}
+          />
+        </Form.Item>
+      </Col>
+      
+      <Col className="gutter-row" span={3}>
+        <Form.Item
+          name={[field.name, 'SubS']}
+          fieldKey={[field.fieldKey, 'SubS']}
+          label={translate('SubS (USD)')}
+        >
+          <InputNumber
+            style={{ width: '100%' }}
+            disabled
+            precision={2}
+            placeholder={translate('Subtotal Sales')}
+            formatter={value => value ? `$${value}` : ''}
           />
         </Form.Item>
       </Col>
       
       <Col className="gutter-row" span={1}>
-        <Button danger onClick={() => remove(field.name)} type="link">
+        <Button danger onClick={() => remove(field.name)} type="link" style={{ marginTop: '30px' }}>
           X
         </Button>
       </Col>
@@ -423,361 +583,338 @@ const ComparisonItemRow = ({ field, remove, form, clientId, exchangeRate = 6.5 }
   );
 };
 
-export default function ComparisonForm({ subTotal = 0, current = null }) {
+export default function ComparisonForm() {
   const [form] = Form.useForm();
   const translate = useLanguage();
-  const { dateFormat } = useDate();
-  const { last_comparison_number } = useSelector(selectFinanceSettings) || { last_comparison_number: 0 };
-  const [lastNumber, setLastNumber] = useState(() => last_comparison_number + 1);
-  const [client, setClient] = useState(null);
-  const [clientRequired, setClientRequired] = useState(true);
-  const [exchangeRate, setExchangeRate] = useState(6.5);
-  const [taxRate, setTaxRate] = useState(0);
-  const [taxTotal, setTaxTotal] = useState(0);
-  const [total, setTotal] = useState(0);
-  const [currentYear, setCurrentYear] = useState(() => new Date().getFullYear());
-  const [selectedCurrency, setSelectedCurrency] = useState(null);
-  const { moneyFormatter } = useMoney();
-
-  // Handle currency change
-  const handleCurrencyChange = (value, currencyObject) => {
-    if (currencyObject) {
-      const newCurrency = {
-        currency_symbol: currencyObject.currency_symbol,
-        currency_position: currencyObject.currency_position,
-        decimal_separator: currencyObject.decimal_separator,
-        thousand_separator: currencyObject.thousand_separator,
-        cent_precision: currencyObject.cent_precision
-      };
-      setSelectedCurrency(newCurrency);
-    }
-  };
-
-  // Handle tax rate change
-  const handleTaxChange = (value) => {
-    setTaxRate(value / 100);
-  };
-
+  const [client, setClient] = useState("some-test-client"); // Hardcode a client ID for testing
+  const [exchangeRate, setExchangeRate] = useState(6.5); // Default exchange rate
+  const [realExchangeRate, setRealExchangeRate] = useState(6.8); // Default real exchange rate
+  const [summaryValues, setSummaryValues] = useState({
+    tSell: 0,
+    tExp: 0,
+    tTaxBack: 0,
+    tRSell: 0,
+    eGP: 0,
+    eGPM: 0
+  });
+  
+  console.log('Rendering ComparisonForm');
+  
+  // Initialize form with default values
+  useEffect(() => {
+    console.log('Setting initial form values');
+    form.setFieldsValue({
+      client: client,
+      exchangeRate: exchangeRate,
+      realExchangeRate: realExchangeRate,
+      items: []
+    });
+  }, []);
+  
   // Handle client selection
   const handleClientChange = (clientId) => {
+    console.log('Client changed to:', clientId);
     setClient(clientId);
-    setClientRequired(false);
   };
-
+  
   // Handle exchange rate change
   const handleExchangeRateChange = (value) => {
+    console.log('Exchange rate changed to:', value);
     setExchangeRate(value);
-    
-    // Get current form values
+  };
+  
+  // Handle real exchange rate change
+  const handleRealExchangeRateChange = (value) => {
+    console.log('Real exchange rate changed to:', value);
+    setRealExchangeRate(value);
+    updateSummary();
+  };
+  
+  // Calculate summary values
+  const updateSummary = () => {
     const items = form.getFieldValue('items');
-    if (!items) return;
+    if (!items || Object.keys(items).length === 0) {
+      setSummaryValues({
+        tSell: 0,
+        tExp: 0,
+        tTaxBack: 0,
+        tRSell: 0,
+        eGP: 0,
+        eGPM: 0
+      });
+      return;
+    }
     
-    // Make a copy of the items to update
-    const updatedItems = { ...items };
+    // Calculate totals
+    let totalSell = 0;
+    let totalExp = 0;
+    let totalTaxBack = 0;
     
-    // Recalculate gross profit for all items
-    Object.keys(items).forEach(fieldName => {
-      const item = items[fieldName];
-      if (item && item.price && item.purchasePrice && item.VAT && item.ETR) {
-        // Calculate USD expense
-        const expenseRMB = item.purchasePrice * (item.VAT - item.ETR) / item.VAT;
-        const expenseUSD = expenseRMB / value;
-        
-        // Calculate gross profit percentage
-        let grossProfitValue = 0;
-        
-        if (item.price > expenseUSD) {
-          const profit = (item.price - expenseUSD) / item.price;
-          grossProfitValue = Math.round(profit * 1000) / 1000;
-        }
-        
-        // Update the form field
-        updatedItems[fieldName] = {
-          ...updatedItems[fieldName],
-          grossProfit: grossProfitValue
-        };
+    Object.values(items).forEach(item => {
+      // Add subtotal sales to total sell
+      if (item.SubS) {
+        totalSell += Number(item.SubS);
+      }
+      
+      // Add subtotal purchase to total expense
+      if (item.SubP) {
+        totalExp += Number(item.SubP);
+      }
+      
+      // Calculate tax return for this item: Exp * ETR / VAT
+      if (item.Exp && item.ETR && item.VAT) {
+        const taxReturn = Number(item.Exp) * Number(item.ETR) / Number(item.VAT);
+        totalTaxBack += taxReturn;
       }
     });
     
-    // Set the entire items array back to the form
-    form.setFieldsValue({ items: updatedItems });
-    console.log('Updated form values after exchange rate change:', form.getFieldsValue());
+    // Round to 2 decimal places
+    totalSell = Math.round(totalSell * 100) / 100;
+    totalExp = Math.round(totalExp * 100) / 100;
+    totalTaxBack = Math.round(totalTaxBack * 100) / 100;
+    
+    // Calculate Total RMB Sells: TSell * RealE
+    const totalRmbSell = totalSell * realExchangeRate;
+    
+    // Calculate Expected Gross Profit: TRSell + TTB - TExp
+    const expectedGrossProfit = totalRmbSell + totalTaxBack - totalExp;
+    
+    // Calculate Expected Gross Profit Margin: EGP / TRSell
+    const expectedGrossProfitMargin = totalRmbSell > 0 ? 
+      (expectedGrossProfit / totalRmbSell * 100) : 0;
+    
+    // Round final values
+    const finalTotalRmbSell = Math.round(totalRmbSell * 100) / 100;
+    const finalExpectedGrossProfit = Math.round(expectedGrossProfit * 100) / 100;
+    const finalExpectedGrossProfitMargin = Math.round(expectedGrossProfitMargin * 100) / 100;
+    
+    setSummaryValues({
+      tSell: totalSell,
+      tExp: totalExp,
+      tTaxBack: totalTaxBack,
+      tRSell: finalTotalRmbSell,
+      eGP: finalExpectedGrossProfit,
+      eGPM: finalExpectedGrossProfitMargin
+    });
+    
+    console.log('Updated summary values:', {
+      tSell: totalSell,
+      tExp: totalExp,
+      tTaxBack: totalTaxBack,
+      tRSell: finalTotalRmbSell,
+      eGP: finalExpectedGrossProfit,
+      eGPM: finalExpectedGrossProfitMargin
+    });
   };
-
-  // Load current data when editing
-  useEffect(() => {
-    if (current) {
-      const { taxRate = 0, year, number, exchangeRate = 6.5, client } = current;
-      setTaxRate(taxRate / 100);
-      setCurrentYear(year);
-      setLastNumber(number);
-      setClient(client._id);
-      setExchangeRate(exchangeRate);
-    }
-  }, [current]);
-
-  // Update totals when subtotal or tax rate changes
-  useEffect(() => {
-    const currentTaxTotal = calculate.multiply(subTotal, taxRate);
-    setTaxTotal(Number.parseFloat(currentTaxTotal));
-    setTotal(Number.parseFloat(calculate.add(subTotal, currentTaxTotal)));
-  }, [subTotal, taxRate]);
-
+  
+  // Handle form item changes
+  const handleItemsChange = () => {
+    console.log('Items changed, updating summary');
+    updateSummary();
+  };
+  
+  // Handle form submission
+  const onFinish = (values) => {
+    console.log('Form submitted with values:', values);
+  };
+  
   // Auto-add first row when form loads
-  const addField = useRef(false);
+  const addField = useRef(null);
   useEffect(() => {
-    addField.current.click();
+    if (addField.current) {
+      console.log('Auto-adding first field');
+      addField.current.click();
+    }
   }, []);
-
+  
+  // Update summary when form values change - this was causing an infinite loop
+  // useEffect(() => {
+  //   updateSummary();
+  // }, [form.getFieldsValue(), realExchangeRate]);
+  
+  // Better approach: only update when realExchangeRate changes
+  useEffect(() => {
+    updateSummary();
+  }, [realExchangeRate]);
+  
   return (
-    <>
-      <Row gutter={[12, 0]}>
-        <Col className="gutter-row" span={8}>
-          <Form.Item
-            name="client"
-            label={translate('Client')}
-            rules={[
-              {
-                required: clientRequired,
-                message: translate('Please select a client')
-              },
-            ]}
-          >
-            <AutoCompleteAsync
-              entity={'client'}
-              displayLabels={['name']}
-              searchFields={'name'}
-              redirectLabel={'Add New Client'}
-              withRedirect
-              urlToRedirect={'/customer'}
-              onChange={handleClientChange}
-            />
-          </Form.Item>
-        </Col>
-        <Col className="gutter-row" span={4}>
-          <Form.Item
-            name="currency"
-            label={translate('Currency')}
-            rules={[
-              {
-                required: true,
-                message: translate('Please select currency'),
-              },
-            ]}
-          >
-            <SelectCurrency
-              value={selectedCurrency}
-              onChange={handleCurrencyChange}
-              entity={'currencies'}
-              outputValue={'currency_code'}
-              displayLabels={['currency_symbol','currency_name']}
-              withRedirect={true}
-              urlToRedirect="/currencies"
-              redirectLabel={translate('Add New Currency')}
-              placeholder={translate('Select currency')}
-            />
-          </Form.Item>
-        </Col>
-        <Col className="gutter-row" span={5}>
-          <Form.Item
-            name="exchangeRate"
-            label={
-              <span>
-                {translate('Exchange Rate')}
-                <Tooltip title={translate('Expected exchange rate for profit calculation')}>
-                  <InfoCircleOutlined style={{ marginLeft: 5 }} />
-                </Tooltip>
-              </span>
-            }
-            initialValue={exchangeRate}
-            rules={[
-              {
-                required: true,
-                message: translate('Please enter exchange rate')
-              },
-            ]}
-          >
-            <InputNumber 
-              style={{ width: '100%' }}
-              min={0.01}
-              step={0.01}
-              onChange={handleExchangeRateChange}
-            />
-          </Form.Item>
-        </Col>
-        <Col className="gutter-row" span={3}>
-          <Form.Item
-            label={translate('number')}
-            name="number"
-            initialValue={lastNumber}
-            rules={[
-              {
-                required: true,
-              },
-            ]}
-          >
-            <Input style={{ width: '100%' }} />
-          </Form.Item>
-        </Col>
-        <Col className="gutter-row" span={3}>
-          <Form.Item
-            label={translate('year')}
-            name="year"
-            initialValue={currentYear}
-            rules={[
-              {
-                required: true,
-              },
-            ]}
-          >
-            <InputNumber style={{ width: '100%' }} />
-          </Form.Item>
-        </Col>
-        <Col className="gutter-row" span={8}>
-          <Form.Item
-            name="date"
-            label={translate('Date')}
-            rules={[
-              {
-                required: true,
-                type: 'object',
-              },
-            ]}
-            initialValue={dayjs()}
-          >
-            <DatePicker style={{ width: '100%' }} format={dateFormat} />
-          </Form.Item>
-        </Col>
-        <Col className="gutter-row" span={6}>
-          <Form.Item
-            name="expiredDate"
-            label={translate('Expire Date')}
-            rules={[
-              {
-                required: true,
-                type: 'object',
-              },
-            ]}
-            initialValue={dayjs().add(30, 'days')}
-          >
-            <DatePicker style={{ width: '100%' }} format={dateFormat} />
-          </Form.Item>
-        </Col>
-        <Col className="gutter-row" span={5}>
-          <Form.Item
-            label={translate('status')}
-            name="status"
-            rules={[
-              {
-                required: false,
-              },
-            ]}
-            initialValue={'draft'}
-          >
-            <Select
-              options={[
-                { value: 'draft', label: translate('Draft') },
-                { value: 'pending', label: translate('Pending') },
-                { value: 'sent', label: translate('Sent') },
-                { value: 'approved', label: translate('Approved') },
-                { value: 'rejected', label: translate('Rejected') },
-              ]}
-            ></Select>
-          </Form.Item>
-        </Col>
-      </Row>
-      <Divider dashed />
+    <div>
+      <h2>Comparison Form Test</h2>
       
-      <Row gutter={[12, 12]} style={{ position: 'relative' }}>
-        <Col className="gutter-row" span={6}>
-          <p>{translate('Item')}</p>
-        </Col>
-        <Col className="gutter-row" span={3}>
-          <p>{translate('Quantity')}</p>
-        </Col>
-        <Col className="gutter-row" span={3}>
-          <p>{translate('Price')}</p>
-        </Col>
-        <Col className="gutter-row" span={3}>
-          <p>
-            {translate('Purchase Price')}
-            <Tooltip title={translate('RMB price from purchase order')}>
-              <InfoCircleOutlined style={{ marginLeft: 5 }} />
-            </Tooltip>
-          </p>
-        </Col>
-        <Col className="gutter-row" span={3}>
-          <p>
-            {translate('VAT')}
-            <Tooltip title={translate('Value-Added Tax')}>
-              <InfoCircleOutlined style={{ marginLeft: 5 }} />
-            </Tooltip>
-          </p>
-        </Col>
-        <Col className="gutter-row" span={3}>
-          <p>
-            {translate('ETR')}
-            <Tooltip title={translate('Export Tax Rebate')}>
-              <InfoCircleOutlined style={{ marginLeft: 5 }} />
-            </Tooltip>
-          </p>
-        </Col>
-        <Col className="gutter-row" span={3}>
-          <p>
-            {translate('GP')}
-            <Tooltip title={translate('Gross profit percentage')}>
-              <InfoCircleOutlined style={{ marginLeft: 5 }} />
-            </Tooltip>
-          </p>
-        </Col>
-      </Row>
-      
-      <Form.List name="items">
-        {(fields, { add, remove }) => (
-          <>
-            {fields.map((field) => (
-              <ComparisonItemRow 
-                key={field.key} 
-                field={field} 
-                remove={remove} 
-                form={form}
-                clientId={client}
-                exchangeRate={exchangeRate}
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={onFinish}
+        onValuesChange={(changedValues, allValues) => {
+          console.log('Form values changed:', { changedValues, allValues });
+          updateSummary();
+        }}
+      >
+        <Row gutter={[12, 12]}>
+          <Col span={12}>
+            <Form.Item
+              name="client"
+              label={translate('Client')}
+              rules={[{ required: true, message: translate('Please select a client') }]}
+            >
+              <SelectAsync
+                entity={'client'}
+                displayLabels={['name']}
+                outputValue="_id"
+                onChange={handleClientChange}
               />
-            ))}
-            <Form.Item>
-              <Button
-                type="dashed"
-                onClick={() => add()}
-                block
-                icon={<PlusOutlined />}
-                ref={addField}
-                disabled={!client}
-              >
-                {translate('Add item')}
-              </Button>
-              {!client && (
-                <Text type="warning" style={{ display: 'block', marginTop: '8px' }}>
-                  {translate('Please select a client first to add items')}
-                </Text>
-              )}
             </Form.Item>
-          </>
-        )}
-      </Form.List>
-      
-      <Divider dashed />
-      <div style={{ position: 'relative', width: '100%', float: 'right' }}>
-        <Row gutter={[12, -5]}>
-          <Col className="gutter-row" span={5}>
-            <Form.Item>
-              <Button type="primary" htmlType="submit" icon={<PlusOutlined />} block>
-                {translate('Save')}
-              </Button>
+          </Col>
+          <Col span={6}>
+            <Form.Item
+              name="exchangeRate"
+              label={translate('Exchange Rate (E)')}
+              rules={[{ required: true, message: translate('Please enter exchange rate') }]}
+              initialValue={exchangeRate}
+              tooltip={translate('USD to CNY exchange rate for GP calculation')}
+            >
+              <InputNumber
+                style={{ width: '100%' }}
+                min={0.01}
+                step={0.01}
+                precision={2}
+                placeholder={translate('Exchange Rate')}
+                onChange={handleExchangeRateChange}
+              />
+            </Form.Item>
+          </Col>
+          <Col span={6}>
+            <Form.Item
+              name="realExchangeRate"
+              label={translate('Real Exchange Rate (RealE)')}
+              rules={[{ required: true, message: translate('Please enter real exchange rate') }]}
+              initialValue={realExchangeRate}
+              tooltip={translate('Actual USD to CNY exchange rate for final comparison')}
+            >
+              <InputNumber
+                style={{ width: '100%' }}
+                min={0.01}
+                step={0.01}
+                precision={2}
+                placeholder={translate('Real Exchange Rate')}
+                onChange={handleRealExchangeRateChange}
+              />
             </Form.Item>
           </Col>
         </Row>
-      </div>
-    </>
+        
+        <Divider orientation="left">{translate('Items')}</Divider>
+        
+        <Form.List name="items">
+          {(fields, { add, remove }) => (
+            <>
+              {console.log('Form.List fields:', fields)}
+              
+              {fields.map((field) => (
+                <ComparisonItemRow
+                  key={field.key}
+                  field={field}
+                  remove={remove}
+                  form={form}
+                  clientId={client}
+                  exchangeRate={exchangeRate}
+                  onValuesChange={handleItemsChange}
+                />
+              ))}
+              
+              <Form.Item>
+                <Button
+                  type="dashed"
+                  onClick={() => {
+                    console.log('Adding new item');
+                    add({ VAT: 1.13, ETR: 0.13, Qty: 1 }); // Add with default values
+                    setTimeout(updateSummary, 100); // Update summary after a short delay
+                  }}
+                  icon={<PlusOutlined />}
+                  ref={addField}
+                >
+                  {translate('Add Item')}
+                </Button>
+              </Form.Item>
+            </>
+          )}
+        </Form.List>
+        
+        <Divider orientation="left">{translate('Summary')}</Divider>
+        
+        <Row gutter={[16, 16]} style={{ marginBottom: '20px' }}>
+          <Col span={8}>
+            <div className="summary-item">
+              <div className="summary-label">{translate('Total Sells (TSell)')}</div>
+              <div className="summary-value">${summaryValues.tSell.toFixed(2)}</div>
+              <div className="summary-description">{translate('Sum of all subtotal sales in USD')}</div>
+            </div>
+          </Col>
+          <Col span={8}>
+            <div className="summary-item">
+              <div className="summary-label">{translate('Total Expense (TExp)')}</div>
+              <div className="summary-value">¥{summaryValues.tExp.toFixed(2)}</div>
+              <div className="summary-description">{translate('Sum of all subtotal purchases in CNY')}</div>
+            </div>
+          </Col>
+          <Col span={8}>
+            <div className="summary-item">
+              <div className="summary-label">{translate('Total Tax Back (TTB)')}</div>
+              <div className="summary-value">¥{summaryValues.tTaxBack.toFixed(2)}</div>
+              <div className="summary-description">{translate('Sum of all tax returns')}</div>
+            </div>
+          </Col>
+          <Col span={8}>
+            <div className="summary-item">
+              <div className="summary-label">{translate('Total RMB Sells (TRSell)')}</div>
+              <div className="summary-value">¥{summaryValues.tRSell.toFixed(2)}</div>
+              <div className="summary-description">{translate('Total sells converted to CNY')}</div>
+            </div>
+          </Col>
+          <Col span={8}>
+            <div className="summary-item">
+              <div className="summary-label">{translate('Expected Gross Profit (EGP)')}</div>
+              <div className="summary-value">¥{summaryValues.eGP.toFixed(2)}</div>
+              <div className="summary-description">{translate('TRSell + TTB - TExp')}</div>
+            </div>
+          </Col>
+          <Col span={8}>
+            <div className="summary-item">
+              <div className="summary-label">{translate('Expected Gross Profit Margin (EGPM)')}</div>
+              <div className="summary-value">{summaryValues.eGPM.toFixed(2)}%</div>
+              <div className="summary-description">{translate('EGP / TRSell')}</div>
+            </div>
+          </Col>
+        </Row>
+        
+        <Form.Item>
+          <Button type="primary" htmlType="submit">
+            {translate('Submit')}
+          </Button>
+        </Form.Item>
+      </Form>
+      
+      <style jsx="true">{`
+        .summary-item {
+          border: 1px solid #f0f0f0;
+          padding: 16px;
+          border-radius: 4px;
+          background-color: #fafafa;
+        }
+        .summary-label {
+          font-weight: bold;
+          margin-bottom: 8px;
+        }
+        .summary-value {
+          font-size: 20px;
+          color: #1890ff;
+          margin-bottom: 8px;
+        }
+        .summary-description {
+          color: #888;
+          font-size: 12px;
+        }
+      `}</style>
+    </div>
   );
 } 
