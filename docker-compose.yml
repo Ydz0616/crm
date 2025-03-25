@@ -2,6 +2,7 @@ version: "3.8"
 services:
   backend:
     build: ./backend
+    container_name: backend
     volumes:
       - ./backend:/usr/src/app
       - /usr/src/app/node_modules
@@ -9,21 +10,20 @@ services:
       - "8888:8888"
     environment:
       - NODE_ENV=development
-      - DATABASE=://mongo:27017/local-idurar-erp-crp
+      # Using MongoDB connection from .env file
       - PORT=8888
-      - NODE_OPTIONS=--openssl-legacy-provider
       - JWT_SECRET=secret_key_1234
-
-    command: sh -c "npm run setup && npm run dev"
-
+      - NODE_OPTIONS=--openssl-legacy-provider
+      - PUBLIC_SERVER_FILE=http://localhost:8888/
+      # Set to "true" to run setup on container start, "false" to skip setup
+      - RUN_SETUP=true
+      - BYPASS_AUTH=true
     networks:
-      - server-mongo
-
-    depends_on:
-      - mongo
+      - app-network
 
   frontend:
     build: ./frontend
+    container_name: frontend
     volumes:
       - ./frontend:/usr/src/app
       - /usr/src/app/node_modules
@@ -31,21 +31,15 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=development
-      - REACT_APP_API_URL=http://mongodbbackend:8888/api
+      - VITE_APP_API_URL=http://localhost:8888/api
+      - VITE_BACKEND_SERVER=http://localhost:8888/
+      - VITE_FILE_BASE_URL=http://localhost:8888/
       - NODE_OPTIONS=--openssl-legacy-provider
-
     depends_on:
       - backend
-
-  mongo:
-    image: mongo
-    volumes:
-      - mongodb_data:/data/db
     networks:
-      - server-mongo
-
-volumes:
-  mongodb_data:
+      - app-network
 
 networks:
-  server-mongo:
+  app-network:
+    driver: bridge

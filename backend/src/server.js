@@ -14,9 +14,17 @@ if (major < 20) {
 require('dotenv').config({ path: '.env' });
 require('dotenv').config({ path: '.env.local' });
 
-mongoose.connect(process.env.DATABASE,{
-  tls:true,
-  tlsAllowInvalidCertificates:true
+console.log('Connecting to MongoDB database:', process.env.DATABASE);
+
+// Increase timeouts for Docker environment
+mongoose.connect(process.env.DATABASE, {
+  tls: true,
+  tlsAllowInvalidCertificates: true,
+  serverSelectionTimeoutMS: 30000, // 30 seconds
+  socketTimeoutMS: 45000, // 45 seconds
+  family: 4 // Force IPv4
+}).catch(err => {
+  console.error('MongoDB connection error. Please make sure MongoDB is running:', err.message);
 });
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
@@ -26,6 +34,10 @@ mongoose.connection.on('error', (error) => {
     `1. 🔥 Common Error caused issue → : check your .env file first and add your mongodb url`
   );
   console.error(`2. 🚫 Error → : ${error.message}`);
+});
+
+mongoose.connection.once('open', () => {
+  console.log('✅ MongoDB database connection established successfully');
 });
 
 const modelsFiles = globSync('./src/models/**/*.js');

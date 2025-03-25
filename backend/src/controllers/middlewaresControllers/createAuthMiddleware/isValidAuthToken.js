@@ -3,6 +3,19 @@ const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 
 const isValidAuthToken = async (req, res, next, { userModel, jwtSecret = 'JWT_SECRET' }) => {
+  // In development mode with setup flag, skip authentication
+  if (process.env.NODE_ENV === 'development' && process.env.BYPASS_AUTH === 'true') {
+    console.log('🔓 Authentication bypassed in development mode');
+    const User = mongoose.model(userModel);
+    // Find any admin user to use
+    const user = await User.findOne({ removed: false }).sort({ created: -1 });
+    if (user) {
+      const reqUserName = userModel.toLowerCase();
+      req[reqUserName] = user;
+      return next();
+    }
+  }
+
   try {
     const UserPassword = mongoose.model(userModel + 'Password');
     const User = mongoose.model(userModel);
@@ -34,7 +47,7 @@ const isValidAuthToken = async (req, res, next, { userModel, jwtSecret = 'JWT_SE
       return res.status(401).json({
         success: false,
         result: null,
-        message: "User doens't Exist, authorization denied.",
+        message: "User doesn't Exist, authorization denied.",
         jwtExpired: true,
       });
 
@@ -52,6 +65,7 @@ const isValidAuthToken = async (req, res, next, { userModel, jwtSecret = 'JWT_SE
       next();
     }
   } catch (error) {
+    console.error('Auth error:', error);
     return res.status(503).json({
       success: false,
       result: null,
