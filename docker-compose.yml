@@ -16,7 +16,7 @@ services:
       - NODE_OPTIONS=--openssl-legacy-provider
       - PUBLIC_SERVER_FILE=http://localhost:8888/
       # Set to "true" to run setup on container start, "false" to skip setup
-      - RUN_SETUP=true
+      - RUN_SETUP=false
       - BYPASS_AUTH=true
     networks:
       - app-network
