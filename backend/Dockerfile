@@ -12,7 +12,10 @@ RUN npm install
 
 COPY . .
 
+# 删除任何可能包含敏感信息的.env文件
+RUN rm -f .env .env.local
+
 EXPOSE 8888
 
-# Use environment variable to decide whether to run setup
-CMD ["sh", "-c", "if [ \"$RUN_SETUP\" = \"true\" ]; then npm run setup && npm run dev; else npm run dev; fi"]
+# 使用环境变量运行应用（这些环境变量将由Kubernetes注入）
+CMD ["npm", "run", "dev"]

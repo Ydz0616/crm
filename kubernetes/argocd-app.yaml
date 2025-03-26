@@ -11,6 +11,7 @@ spec:
     path: kubernetes
     directory:
       recurse: true
+      exclude: 'secrets*.yaml'  # 排除所有 secrets 相关文件
   destination:
     server: https://kubernetes.default.svc
     namespace: crm-system
@@ -19,4 +20,10 @@ spec:
       prune: true
       selfHeal: true
     syncOptions:
-      - CreateNamespace=true 
+      - CreateNamespace=true
+      - RespectIgnoreDifferences=true
+  ignoreDifferences:
+    - group: ""
+      kind: Secret
+      name: crm-secrets
+      namespace: crm-system 

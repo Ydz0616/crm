@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: crm-backend
-        image: yz743/easycrm:backend-${TAG}
+        image: yz743/easycrm:backend-v1.0.1
         ports:
         - containerPort: 3000
         resources:
@@ -32,10 +32,19 @@ spec:
             secretKeyRef:
               name: crm-secrets
               key: mongodb-uri
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: crm-secrets
+              key: jwt-secret
         - name: PORT
           value: "3000"
         - name: NODE_ENV
           value: "production"
+        - name: OPENSSL_CONF
+          value: "/dev/null"
+        - name: PUBLIC_SERVER_FILE
+          value: "/api/uploads/"
         livenessProbe:
           httpGet:
             path: /api/health

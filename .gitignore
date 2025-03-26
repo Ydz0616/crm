@@ -1,0 +1,53 @@
+# Dependency directories
+node_modules/
+npm-debug.log
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+*.env
+
+# Build files
+build/
+dist/
+out/
+.next/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory
+coverage
+
+# Miscellaneous
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Secrets and credentials
+*secret*
+*password*
+*credential*
+*key*
+!package*.json
+!dockerfile
+kubernetes/secrets.yaml
+
+# Local Kubernetes config
+kubernetes/local-*.yaml
+k8s-secrets.yaml 
