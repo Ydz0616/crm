@@ -6,12 +6,12 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: 'https://github.com/ydz0616/crm.git'  # 替换为你的 Git 仓库地址
+    repoURL: 'https://github.com/ydz0616/crm.git'  
     targetRevision: HEAD
     path: kubernetes
     directory:
       recurse: true
-      exclude: 'secrets*.yaml'  # 排除所有 secrets 相关文件
+      exclude: 'secrets*.yaml'  
   destination:
     server: https://kubernetes.default.svc
     namespace: crm-system
