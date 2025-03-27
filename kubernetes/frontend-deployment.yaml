@@ -18,19 +18,16 @@ spec:
       - name: crm-frontend
         image: yz743/easycrm:frontend-v1.0.4
         ports:
-        - containerPort: 80
-        resources:
-          limits:
-            cpu: "300m"
-            memory: "256Mi"
-          requests:
-            cpu: "100m"
-            memory: "128Mi"
+        - containerPort: 3000
         env:
-        - name: REACT_APP_API_URL
-          value: "/api"
         - name: NODE_ENV
           value: "production"
+        - name: VITE_APP_API_URL
+          value: "http://129.226.142.103:30888/api"
+        - name: VITE_BACKEND_SERVER
+          value: "http://129.226.142.103:30888/"
+        - name: VITE_FILE_BASE_URL
+          value: "http://129.226.142.103:30888/"
         livenessProbe:
           httpGet:
             path: /
@@ -52,6 +49,7 @@ spec:
   selector:
     app: crm-frontend
   ports:
-  - port: 80
-    targetPort: 80
-  type: ClusterIP 
+  - port: 3000
+    targetPort: 3000
+    nodePort: 30080
+  type: NodePort 

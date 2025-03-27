@@ -44,7 +44,7 @@ spec:
         - name: OPENSSL_CONF
           value: "/dev/null"
         - name: PUBLIC_SERVER_FILE
-          value: "/api/uploads/"
+          value: "http://129.226.142.103:30888/"
         - name: NODE_TLS_REJECT_UNAUTHORIZED
           value: "0"
         livenessProbe:
@@ -72,4 +72,5 @@ spec:
   ports:
   - port: 3000
     targetPort: 3000
-  type: ClusterIP 
+    nodePort: 30888
+  type: NodePort 
