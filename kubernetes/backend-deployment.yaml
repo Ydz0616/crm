@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/part-of: crm
     app.kubernetes.io/component: backend
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: crm-backend
@@ -20,20 +20,32 @@ spec:
         app.kubernetes.io/part-of: crm
         app.kubernetes.io/component: backend
     spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - crm-backend
+              topologyKey: kubernetes.io/hostname
       containers:
       - name: crm-backend
-        image: yz743/easycrm:backend-v1.0.5
+        image: yz743/easycrm:backend-v1.0.6
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 3000
           name: http
         resources:
           limits:
+            cpu: "1000m"
+            memory: "1Gi"
+          requests:
             cpu: "500m"
             memory: "512Mi"
-          requests:
-            cpu: "200m"
-            memory: "256Mi"
         env:
         - name: DATABASE
           valueFrom:
@@ -52,31 +64,49 @@ spec:
         - name: OPENSSL_CONF
           value: "/dev/null"
         - name: PUBLIC_SERVER_FILE
-          value: "http://129.226.142.103:30888/"
+          value: "http://129.226.142.103:30888"
         - name: NODE_TLS_REJECT_UNAUTHORIZED
           value: "0"
         - name: BYPASS_AUTH
           value: "true"
-        - name: CORS_ORIGIN
-          value: "http://129.226.142.103:30080"
-        - name: CORS_CREDENTIALS
+        - name: MONGODB_CONNECT_TIMEOUT
+          value: "30000"
+        - name: MONGODB_SOCKET_TIMEOUT
+          value: "30000"
+        - name: MONGODB_SERVER_SELECTION_TIMEOUT
+          value: "30000"
+        - name: MONGODB_RETRY_WRITES
           value: "true"
+        - name: MONGODB_RETRY_READS
+          value: "true"
+        - name: MONGODB_MAX_POOL_SIZE
+          value: "10"
+        - name: MONGODB_MIN_POOL_SIZE
+          value: "5"
         livenessProbe:
-          tcpSocket:
+          httpGet:
+            path: /api/health
             port: http
-          initialDelaySeconds: 30
+          initialDelaySeconds: 60
           periodSeconds: 10
           timeoutSeconds: 5
           successThreshold: 1
           failureThreshold: 3
         readinessProbe:
-          tcpSocket:
+          httpGet:
+            path: /api/health
             port: http
-          initialDelaySeconds: 5
+          initialDelaySeconds: 30
           periodSeconds: 5
           timeoutSeconds: 3
           successThreshold: 1
           failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /api/health
+            port: http
+          failureThreshold: 30
+          periodSeconds: 10
 ---
 apiVersion: v1
 kind: Service
