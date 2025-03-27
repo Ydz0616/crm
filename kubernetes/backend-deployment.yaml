@@ -50,15 +50,13 @@ spec:
         - name: BYPASS_AUTH
           value: "true"
         livenessProbe:
-          httpGet:
-            path: /api/health
+          tcpSocket:
             port: 3000
           initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 5
         readinessProbe:
-          httpGet:
-            path: /api/health
+          tcpSocket:
             port: 3000
           initialDelaySeconds: 5
           periodSeconds: 5
