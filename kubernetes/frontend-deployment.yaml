@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/part-of: crm
     app.kubernetes.io/component: frontend
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: crm-frontend
@@ -70,9 +70,6 @@ metadata:
     app.kubernetes.io/instance: easycrm
     app.kubernetes.io/part-of: crm
     app.kubernetes.io/component: frontend
-  annotations:
-    service.kubernetes.io/qcloud-loadbalancer-internal-subnetid: "subnet-0c1e3f8h"
-    service.kubernetes.io/qcloud-loadbalancer-internal-vpcid: "vpc-r1oqksu2"
 spec:
   selector:
     app: crm-frontend
@@ -81,4 +78,5 @@ spec:
     targetPort: http
     protocol: TCP
     name: http
-  type: LoadBalancer 
+    nodePort: 30080
+  type: NodePort 
