@@ -4,8 +4,11 @@ metadata:
   name: crm-backend
   labels:
     app: crm-backend
+    app.kubernetes.io/instance: easycrm
+    app.kubernetes.io/part-of: crm
+    app.kubernetes.io/component: backend
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: crm-backend
@@ -13,12 +16,17 @@ spec:
     metadata:
       labels:
         app: crm-backend
+        app.kubernetes.io/instance: easycrm
+        app.kubernetes.io/part-of: crm
+        app.kubernetes.io/component: backend
     spec:
       containers:
       - name: crm-backend
         image: yz743/easycrm:backend-v1.0.4
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 3000
+          name: http
         resources:
           limits:
             cpu: "500m"
@@ -44,35 +52,47 @@ spec:
         - name: OPENSSL_CONF
           value: "/dev/null"
         - name: PUBLIC_SERVER_FILE
-          value: "/api/uploads/"
+          value: "http://129.226.142.103:30888/"
         - name: NODE_TLS_REJECT_UNAUTHORIZED
           value: "0"
         - name: BYPASS_AUTH
           value: "true"
+        - name: CORS_ORIGIN
+          value: "http://129.226.142.103:30080"
+        - name: CORS_CREDENTIALS
+          value: "true"
         livenessProbe:
           tcpSocket:
-            port: 3000
+            port: http
           initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
         readinessProbe:
           tcpSocket:
-            port: 3000
+            port: http
           initialDelaySeconds: 5
           periodSeconds: 5
-          timeoutSeconds: 5
+          timeoutSeconds: 3
+          successThreshold: 1
+          failureThreshold: 3
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: crm-backend
-  annotations:
-    service.kubernetes.io/qcloud-loadbalancer-internal-subnetid: "subnet-xxxxxxxx"  # 替换为您的子网ID
+  labels:
+    app.kubernetes.io/instance: easycrm
+    app.kubernetes.io/part-of: crm
+    app.kubernetes.io/component: backend
 spec:
   selector:
     app: crm-backend
   ports:
   - port: 3000
-    targetPort: 3000
-  type: NodePort
-  externalTrafficPolicy: Local 
+    targetPort: http
+    protocol: TCP
+    name: http
+    nodePort: 30888
+  type: NodePort 
