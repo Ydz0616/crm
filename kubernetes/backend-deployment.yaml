@@ -47,16 +47,18 @@ spec:
           value: "http://129.226.142.103:30888/"
         - name: NODE_TLS_REJECT_UNAUTHORIZED
           value: "0"
+        - name: BYPASS_AUTH
+          value: "true"
         livenessProbe:
           httpGet:
-            path: /api/health
+            path: /
             port: 3000
           initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 5
         readinessProbe:
           httpGet:
-            path: /api/health
+            path: /
             port: 3000
           initialDelaySeconds: 5
           periodSeconds: 5
