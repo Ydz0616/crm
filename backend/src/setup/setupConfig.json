@@ -1,13 +1,13 @@
 [
   {
     "setupCategory": "setup_config",
-    "setupKey": "idurar_app_version",
+    "setupKey": "easycrm_app_version",
     "setupValue": "3.0.0",
     "valueType": "string"
   },
   {
     "setupCategory": "setup_config",
-    "setupKey": "idurar_app_unique_id",
+    "setupKey": "easycrm_app_unique_id",
     "setupValue": "",
     "valueType": "string"
   },
@@ -31,61 +31,61 @@
   },
   {
     "setupCategory": "setup_config",
-    "setupKey": "idurar_app_domain",
+    "setupKey": "easycrm_app_domain",
     "setupValue": "",
     "valueType": "string"
   },
   {
     "setupCategory": "setup_config",
-    "setupKey": "idurar_app_email",
+    "setupKey": "easycrm_app_email",
     "setupValue": "",
     "valueType": "string"
   },
   {
     "setupCategory": "setup_config",
-    "setupKey": "idurar_app_country",
+    "setupKey": "easycrm_app_country",
     "setupValue": "",
     "valueType": "string"
   },
   {
     "setupCategory": "setup_config",
-    "setupKey": "idurar_app_timezone",
+    "setupKey": "easycrm_app_timezone",
     "setupValue": "",
     "valueType": "string"
   },
   {
     "setupCategory": "setup_config",
-    "setupKey": "idurar_app_licence_email",
+    "setupKey": "easycrm_app_licence_email",
     "setupValue": "",
     "valueType": "string"
   },
   {
     "setupCategory": "setup_config",
-    "setupKey": "idurar_app_licence_key",
+    "setupKey": "easycrm_app_licence_key",
     "setupValue": "",
     "valueType": "string"
   },
   {
     "setupCategory": "setup_config",
-    "setupKey": "idurar_app_licence_type",
+    "setupKey": "easycrm_app_licence_type",
     "setupValue": "free_trial",
     "valueType": "string"
   },
   {
     "setupCategory": "setup_config",
-    "setupKey": "idurar_app_licence_expired_date",
+    "setupKey": "easycrm_app_licence_expired_date",
     "setupValue": "",
     "valueType": "date"
   },
   {
     "setupCategory": "setup_config",
-    "setupKey": "idurar_app_licence_validate",
+    "setupKey": "easycrm_app_licence_validate",
     "setupValue": false,
     "valueType": "boolean"
   },
   {
     "setupCategory": "setup_config",
-    "setupKey": "idurar_setup_done",
+    "setupKey": "easycrm_setup_done",
     "setupValue": false,
     "valueType": "boolean"
   },
@@ -97,19 +97,19 @@
   },
   {
     "setupCategory": "setup_config",
-    "setupKey": "idurar_maintenance_mode",
+    "setupKey": "easycrm_maintenance_mode",
     "setupValue": false,
     "valueType": "boolean"
   },
   {
     "setupCategory": "setup_config",
-    "setupKey": "idurar_load_default_settings",
+    "setupKey": "easycrm_load_default_settings",
     "setupValue": true,
     "valueType": "boolean"
   },
   {
     "setupCategory": "setup_config",
-    "setupKey": "idurar_load_demo_data",
+    "setupKey": "easycrm_load_demo_data",
     "setupValue": false,
     "valueType": "boolean"
   }

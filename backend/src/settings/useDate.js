@@ -7,5 +7,5 @@ const useDate = ({ settings }) => {
     dateFormat,
   };
 };
-
 module.exports = useDate;
+

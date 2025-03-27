@@ -8,12 +8,14 @@ RUN npm config set registry https://registry.npmmirror.com && \
 
 COPY package*.json ./
 
+# 安装依赖
 RUN npm install
 
 COPY . .
 
-# 删除任何可能包含敏感信息的.env文件
-RUN rm -f .env .env.local
+# 仅在生产环境删除环境文件
+ARG NODE_ENV=production
+RUN if [ "$NODE_ENV" = "production" ]; then rm -f .env .env.local; fi
 
 EXPOSE 8888
 

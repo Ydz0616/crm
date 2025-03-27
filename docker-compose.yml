@@ -1,7 +1,10 @@
 version: "3.8"
 services:
   backend:
-    build: ./backend
+    build: 
+      context: ./backend
+      args:
+        NODE_ENV: development
     container_name: backend
     volumes:
       - ./backend:/usr/src/app
@@ -22,7 +25,10 @@ services:
       - app-network
 
   frontend:
-    build: ./frontend
+    build: 
+      context: ./frontend
+      args:
+        NODE_ENV: development
     container_name: frontend
     volumes:
       - ./frontend:/usr/src/app

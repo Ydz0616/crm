@@ -4,5 +4,5 @@ const useAppSettings = () => {
   settings['idurar_base_url'] = 'https://cloud.idurarapp.com';
   return settings;
 };
-
 module.exports = useAppSettings;
+

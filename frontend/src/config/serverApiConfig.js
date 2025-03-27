@@ -3,10 +3,15 @@ const getApiBaseUrl = () => {
   if (import.meta.env.VITE_APP_API_URL) {
     return import.meta.env.VITE_APP_API_URL;
   }
+  // 确保API路径正确
   return 'http://localhost:8888/api/';
 };
 
+// 明确导出API基础URL
 export const API_BASE_URL = getApiBaseUrl();
+
+// 添加调试日志
+console.warn('API_BASE_URL is set to:', API_BASE_URL);
 
 export const BASE_URL =
   import.meta.env.PROD || import.meta.env.VITE_DEV_REMOTE
