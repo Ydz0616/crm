@@ -7,8 +7,10 @@ const getApiBaseUrl = () => {
   return 'http://localhost:8888/api/';
 };
 
-// 明确导出API基础URL
-export const API_BASE_URL = getApiBaseUrl();
+// API URL 配置
+export const API_BASE_URL = process.env.NODE_ENV === 'production' 
+  ? 'http://129.226.142.103:30888/api/'  // 确保以斜杠结尾
+  : 'http://localhost:8888/api/';
 
 // 添加调试日志
 console.warn('API_BASE_URL is set to:', API_BASE_URL);

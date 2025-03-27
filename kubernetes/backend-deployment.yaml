@@ -44,21 +44,21 @@ spec:
         - name: OPENSSL_CONF
           value: "/dev/null"
         - name: PUBLIC_SERVER_FILE
-          value: "http://129.226.142.103:30888/"
+          value: "/api/uploads/"
         - name: NODE_TLS_REJECT_UNAUTHORIZED
           value: "0"
         - name: BYPASS_AUTH
           value: "true"
         livenessProbe:
           httpGet:
-            path: /
+            path: /api/health
             port: 3000
           initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 5
         readinessProbe:
           httpGet:
-            path: /
+            path: /api/health
             port: 3000
           initialDelaySeconds: 5
           periodSeconds: 5
@@ -68,11 +68,13 @@ apiVersion: v1
 kind: Service
 metadata:
   name: crm-backend
+  annotations:
+    service.kubernetes.io/qcloud-loadbalancer-internal-subnetid: "subnet-xxxxxxxx"  # 替换为您的子网ID
 spec:
   selector:
     app: crm-backend
   ports:
   - port: 3000
     targetPort: 3000
-    nodePort: 30888
-  type: NodePort 
+  type: NodePort
+  externalTrafficPolicy: Local 
