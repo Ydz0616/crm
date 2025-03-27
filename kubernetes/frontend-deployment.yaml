@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/part-of: crm
     app.kubernetes.io/component: frontend
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: crm-frontend
