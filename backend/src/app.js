@@ -27,7 +27,12 @@ app.use((req, res, next) => {
 // Set up CORS with more specific options
 app.use(
   cors({
-    origin: ['http://localhost:3000', 'http://frontend:3000', '*'],
+    origin: [
+      'http://localhost:3000',
+      'http://frontend:3000',
+      'http://129.226.142.103:30080',
+      'http://129.226.142.103'
+    ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token']
