@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/part-of: crm
     app.kubernetes.io/component: backend
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: crm-backend
@@ -41,11 +41,11 @@ spec:
           name: http
         resources:
           limits:
-            cpu: "1000m"
-            memory: "1Gi"
-          requests:
             cpu: "500m"
             memory: "512Mi"
+          requests:
+            cpu: "200m"
+            memory: "256Mi"
         env:
         - name: DATABASE
           valueFrom:
@@ -84,19 +84,17 @@ spec:
         - name: MONGODB_MIN_POOL_SIZE
           value: "5"
         livenessProbe:
-          httpGet:
-            path: /api/health
+          tcpSocket:
             port: http
-          initialDelaySeconds: 60
+          initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 5
           successThreshold: 1
           failureThreshold: 3
         readinessProbe:
-          httpGet:
-            path: /api/health
+          tcpSocket:
             port: http
-          initialDelaySeconds: 30
+          initialDelaySeconds: 5
           periodSeconds: 5
           timeoutSeconds: 3
           successThreshold: 1
