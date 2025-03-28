@@ -64,7 +64,10 @@ spec:
         - name: OPENSSL_CONF
           value: "/dev/null"
         - name: PUBLIC_SERVER_FILE
-          value: "http://129.226.142.103:30888"
+          valueFrom:
+            configMapKeyRef:
+              name: crm-config
+              key: backend-url
         - name: NODE_TLS_REJECT_UNAUTHORIZED
           value: "0"
         - name: BYPASS_AUTH

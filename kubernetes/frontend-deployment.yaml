@@ -38,11 +38,20 @@ spec:
         - name: NODE_ENV
           value: "production"
         - name: VITE_APP_API_URL
-          value: "http://129.226.142.103:30888/api/"
+          valueFrom:
+            configMapKeyRef:
+              name: crm-config
+              key: api-base-url
         - name: VITE_BACKEND_SERVER
-          value: "http://129.226.142.103:30888/"
+          valueFrom:
+            configMapKeyRef:
+              name: crm-config
+              key: backend-url
         - name: VITE_FILE_BASE_URL
-          value: "http://129.226.142.103:30888/"
+          valueFrom:
+            configMapKeyRef:
+              name: crm-config
+              key: file-base-url
         livenessProbe:
           httpGet:
             path: /

@@ -42,7 +42,7 @@ kubectl create secret generic crm-secrets \
 ```bash
 # 构建后端镜像 (AMD64)
 docker build --platform linux/amd64 -t yz743/easycrm:backend-v1.0.6 ./backend
-docker push yz743/easycrm:backend-v1.0.6
+docker push yz743/easycrm:backend-v1.0.5
 
 # 构建前端镜像 (AMD64)
 docker build --platform linux/amd64 -t yz743/easycrm:frontend-v1.0.5 ./frontend

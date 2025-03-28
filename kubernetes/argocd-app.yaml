@@ -6,14 +6,14 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: 'https://github.com/ydz0616/crm.git'  
+    repoURL: 'https://github.com/ydz0616/crm.git'  # 保持原始URL不变
     targetRevision: HEAD
     path: kubernetes
     directory:
       recurse: true
       exclude: 'secrets*.yaml'  
   destination:
-    server: https://kubernetes.default.svc
+    server: 'https://kubernetes.default.svc'
     namespace: crm-system
   syncPolicy:
     automated:
@@ -26,4 +26,13 @@ spec:
     - group: ""
       kind: Secret
       name: crm-secrets
-      namespace: crm-system 
+      namespace: crm-system
+  # 设置钩子，在同步前运行脚本更新ConfigMap
+  hooks:
+    preSync:
+      - name: update-config
+        hook: PreSync
+        command:
+          - /bin/bash
+          - "-c"
+          - kubernetes/scripts/update-config.sh 

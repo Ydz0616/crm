@@ -174,4 +174,53 @@ kubectl create secret generic crm-secrets -n crm-system \
 kubectl create secret generic crm-secrets -n crm-system \
   --from-literal=mongodb-uri="$(grep DATABASE .env | cut -d '=' -f2- | tr -d '\"')" \
   --from-literal=jwt-secret="$(grep JWT_SECRET .env | cut -d '=' -f2- | tr -d '\"')"
+```
+
+## 自动IP配置
+
+系统使用ConfigMap存储服务URL，通过脚本自动获取外部IP地址并更新配置，避免了硬编码IP地址带来的问题。
+
+### 手动运行配置更新
+
+如需手动更新配置，运行:
+
+```bash
+# 确保脚本有执行权限
+chmod +x kubernetes/scripts/update-config.sh
+
+# 运行脚本更新配置
+./kubernetes/scripts/update-config.sh
+```
+
+### 与ArgoCD集成
+
+如果使用ArgoCD进行部署，配置已经包含了PreSync钩子，会自动在同步前运行配置更新脚本。
+
+## 故障排除
+
+如果应用无法正常访问，请检查：
+
+1. ConfigMap是否包含正确的IP地址:
+```bash
+kubectl get configmap crm-config -n crm-system -o yaml
+```
+
+2. Pods是否正常运行:
+```bash
+kubectl get pods -n crm-system
+```
+
+3. 手动重启应用以应用最新配置:
+```bash
+kubectl rollout restart deployment/crm-frontend -n crm-system
+kubectl rollout restart deployment/crm-backend -n crm-system
+```
+
+## 多IP环境
+
+如果您的环境有多个外部IP，脚本将使用第一个节点的外部IP。如需指定特定IP，可以修改脚本或手动设置ConfigMap:
+
+```bash
+# 手动设置特定IP
+kubectl patch configmap crm-config -n crm-system --type=merge -p '{"data":{"api-base-url":"http://您的特定IP:30888/api/","backend-url":"http://您的特定IP:30888/","file-base-url":"http://您的特定IP:30888/"}}'
 ``` 
