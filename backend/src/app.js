@@ -24,15 +24,23 @@ app.use((req, res, next) => {
   next();
 });
 
+// Get allowed origins list (from environment variable or use default)
+const allowedOrigins = process.env.ALLOWED_ORIGINS 
+  ? process.env.ALLOWED_ORIGINS.split(',') 
+  : [
+      'http://localhost:3000',
+      'http://frontend:3000',
+      // Use regular expressions to match any domain or IP
+      /^https?:\/\/[a-zA-Z0-9-_\.]+:\d+$/,  // Match any domain or IP with a port
+      /^https?:\/\/[a-zA-Z0-9-_\.]+$/       // Match any domain or IP without a port
+    ];
+
+console.log('Allowed CORS origins:', allowedOrigins);
+
 // Set up CORS with more specific options
 app.use(
   cors({
-    origin: [
-      'http://localhost:3000',
-      'http://frontend:3000',
-      'http://129.226.142.103:30080',
-      'http://129.226.142.103'
-    ],
+    origin: allowedOrigins,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token']

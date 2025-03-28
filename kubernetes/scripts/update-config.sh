@@ -22,6 +22,7 @@ if [ -f "/tmp/current-configmap.yaml" ] && grep -q "kind: ConfigMap" "/tmp/curre
   sed -i.bak "s|api-base-url: \"http://.*\"|api-base-url: \"http://${EXTERNAL_IP}:30888/api/\"|g" /tmp/current-configmap.yaml
   sed -i.bak "s|backend-url: \"http://.*\"|backend-url: \"http://${EXTERNAL_IP}:30888/\"|g" /tmp/current-configmap.yaml
   sed -i.bak "s|file-base-url: \"http://.*\"|file-base-url: \"http://${EXTERNAL_IP}:30888/\"|g" /tmp/current-configmap.yaml
+  sed -i.bak "s|website-url: \"http://.*\"|website-url: \"http://${EXTERNAL_IP}:30080/\"|g" /tmp/current-configmap.yaml
   
   # 应用更新后的ConfigMap
   kubectl apply -f /tmp/current-configmap.yaml
@@ -41,6 +42,8 @@ data:
   api-base-url: "http://${EXTERNAL_IP}:30888/api/"
   backend-url: "http://${EXTERNAL_IP}:30888/"
   file-base-url: "http://${EXTERNAL_IP}:30888/"
+  website-url: "http://${EXTERNAL_IP}:30080/"
+  allowed-origins: "http://localhost:3000,http://frontend:3000,http://${EXTERNAL_IP}:30080,http://${EXTERNAL_IP}"
 EOF
   kubectl apply -f /tmp/new-configmap.yaml
 fi

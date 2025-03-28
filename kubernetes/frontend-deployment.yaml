@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
       - name: crm-frontend
-        image: yz743/easycrm:frontend-v1.0.5
+        image: yz743/easycrm:frontend-v1.0.6
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 3000
@@ -52,6 +52,11 @@ spec:
             configMapKeyRef:
               name: crm-config
               key: file-base-url
+        - name: VITE_WEBSITE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: crm-config
+              key: website-url
         livenessProbe:
           httpGet:
             path: /
