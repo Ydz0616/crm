@@ -238,4 +238,54 @@ kubectl patch configmap crm-config -n crm-system --type=merge -p '{"data":{"api-
 2. Job 会自动更新 ConfigMap 配置中的 IP 地址和allowed-origins字段
 3. 然后 ArgoCD 会继续部署应用的其余部分
 
-这种方法消除了手动更新 ConfigMap 的需要，确保应用程序始终使用正确的外部 IP 地址配置。 
+这种方法消除了手动更新 ConfigMap 的需要，确保应用程序始终使用正确的外部 IP 地址配置。
+
+## ArgoCD 部署指南（重要）
+
+### 自动IP配置和ConfigMap更新
+
+对于使用ArgoCD的部署，系统采用了以下策略确保ConfigMap正确更新:
+
+1. **重要**: ArgoCD部署时会**自动跳过**原始的`configmap.yaml`文件，改为使用`config-update-job.yaml`创建一个PreSync钩子Job
+2. 该Job会在应用其他资源之前自动运行，并执行以下操作:
+   - 检测集群节点的外部IP地址
+   - 创建完整的ConfigMap，包含正确的IP地址
+   - 确保`allowed-origins`字段正确设置，解决CORS问题
+   - 验证ConfigMap是否已成功创建
+
+### 故障排查
+
+如果在ArgoCD部署后遇到`couldn't find key allowed-origins in ConfigMap`错误:
+
+```bash
+# 检查PreSync钩子Job是否成功运行
+kubectl get jobs -n crm-system
+
+# 查看Job的详细日志
+kubectl logs job/config-update-job -n crm-system
+
+# 检查ConfigMap内容
+kubectl get configmap crm-config -n crm-system -o yaml
+```
+
+如果ConfigMap未包含所需的`allowed-origins`，您可以手动运行:
+
+```bash
+# 删除现有ConfigMap
+kubectl delete configmap crm-config -n crm-system
+
+# 手动运行更新作业
+kubectl delete job config-update-job -n crm-system --ignore-not-found
+kubectl apply -f kubernetes/config-update-job.yaml
+```
+
+### 重要变更说明
+
+本次实现了以下关键改进:
+
+1. 使用ClusterRole代替Role，确保权限足够
+2. 增加验证步骤，确保ConfigMap正确创建
+3. 在ArgoCD配置中明确排除configmap.yaml
+4. 添加更严格的错误检查和重试机制
+
+这些改进确保了部署流程的可靠性，特别是解决了ConfigMap更新和`allowed-origins`缺失的问题。 

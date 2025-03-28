@@ -6,12 +6,12 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: 'https://github.com/ydz0616/crm.git'  # 保持原始URL不变
+    repoURL: 'https://github.com/ydz0616/crm.git'
     targetRevision: HEAD
     path: kubernetes
     directory:
       recurse: true
-      exclude: 'secrets*.yaml'  
+      exclude: 'secrets*.yaml,configmap.yaml'  # 显式排除configmap.yaml
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: crm-system
@@ -21,13 +21,6 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
-      - RespectIgnoreDifferences=true
-  ignoreDifferences:
-    - group: ""
-      kind: Secret
-      name: crm-secrets
-      namespace: crm-system
-    - group: ""
-      kind: ConfigMap
-      name: crm-config
-      namespace: crm-system 
+      - PruneLast=true  # 最后删除资源，避免依赖问题
+      - ApplyOutOfSyncOnly=true  # 只更新变更的资源
+  # 完全删除ignoreDifferences，因为我们已经排除了ConfigMap文件 
