@@ -27,12 +27,7 @@ spec:
       kind: Secret
       name: crm-secrets
       namespace: crm-system
-  # 设置钩子，在同步前运行脚本更新ConfigMap
-  hooks:
-    preSync:
-      - name: update-config
-        hook: PreSync
-        command:
-          - /bin/bash
-          - "-c"
-          - kubernetes/scripts/update-config.sh 
+    - group: ""
+      kind: ConfigMap
+      name: crm-config
+      namespace: crm-system 

@@ -178,23 +178,20 @@ kubectl create secret generic crm-secrets -n crm-system \
 
 ## 自动IP配置
 
-系统使用ConfigMap存储服务URL，通过脚本自动获取外部IP地址并更新配置，避免了硬编码IP地址带来的问题。
+系统使用ConfigMap存储服务URL，通过ArgoCD PreSync钩子自动获取外部IP地址并更新配置，避免了硬编码IP地址带来的问题。
 
 ### 手动运行配置更新
 
-如需手动更新配置，运行:
+如需手动更新配置，可以直接运行config-update-job.yaml中定义的作业：
 
 ```bash
-# 确保脚本有执行权限
-chmod +x kubernetes/scripts/update-config.sh
-
-# 运行脚本更新配置
-./kubernetes/scripts/update-config.sh
+# 应用配置更新作业
+kubectl apply -f kubernetes/config-update-job.yaml
 ```
 
 ### 与ArgoCD集成
 
-如果使用ArgoCD进行部署，配置已经包含了PreSync钩子，会自动在同步前运行配置更新脚本。
+使用ArgoCD进行部署时，config-update-job.yaml已包含了PreSync钩子，会自动在同步前运行配置更新作业。
 
 ## 故障排除
 
@@ -218,9 +215,27 @@ kubectl rollout restart deployment/crm-backend -n crm-system
 
 ## 多IP环境
 
-如果您的环境有多个外部IP，脚本将使用第一个节点的外部IP。如需指定特定IP，可以修改脚本或手动设置ConfigMap:
+如果您的环境有多个外部IP，配置更新作业将使用第一个节点的外部IP。如需指定特定IP，可以手动设置ConfigMap:
 
 ```bash
 # 手动设置特定IP
-kubectl patch configmap crm-config -n crm-system --type=merge -p '{"data":{"api-base-url":"http://您的特定IP:30888/api/","backend-url":"http://您的特定IP:30888/","file-base-url":"http://您的特定IP:30888/"}}'
-``` 
+kubectl patch configmap crm-config -n crm-system --type=merge -p '{"data":{"api-base-url":"http://您的特定IP:30888/api/","backend-url":"http://您的特定IP:30888/","file-base-url":"http://您的特定IP:30888/","allowed-origins":"http://localhost:3000,http://frontend:3000,http://您的特定IP:30080,http://您的特定IP"}}'
+```
+
+## ArgoCD 集成
+
+### 自动更新 ConfigMap
+
+项目包含了一个与 ArgoCD 集成的自动化解决方案，用于解决外部 IP 地址的配置问题：
+
+1. `config-update-job.yaml` 文件定义了一个 Kubernetes Job，该 Job 被标记为 ArgoCD 的 PreSync 钩子
+2. 该 Job 会在应用同步之前自动运行，检测集群的外部 IP，并更新 ConfigMap 中的 URL 配置
+3. 此解决方案解决了 `allowed-origins` 配置缺失的问题，确保 CORS 策略正确配置
+
+使用 ArgoCD 进行部署时的工作流程：
+
+1. ArgoCD 将首先运行 PreSync 钩子 Job
+2. Job 会自动更新 ConfigMap 配置中的 IP 地址和allowed-origins字段
+3. 然后 ArgoCD 会继续部署应用的其余部分
+
+这种方法消除了手动更新 ConfigMap 的需要，确保应用程序始终使用正确的外部 IP 地址配置。 

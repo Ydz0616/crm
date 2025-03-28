@@ -1,0 +1,105 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: config-update-job
+  namespace: crm-system
+  annotations:
+    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+spec:
+  ttlSecondsAfterFinished: 600
+  template:
+    spec:
+      serviceAccountName: crm-config-updater
+      containers:
+      - name: config-updater
+        image: bitnami/kubectl:latest
+        command:
+        - /bin/bash
+        - -c
+        - |
+          
+          EXTERNAL_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}')
+
+          
+          if [ -z "$EXTERNAL_IP" ]; then
+            echo "No ExternalIP found, falling back to InternalIP"
+            EXTERNAL_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="InternalIP")].address}')
+          fi
+
+          echo "Detected External IP: $EXTERNAL_IP"
+
+          
+          if kubectl get configmap crm-config -n crm-system &>/dev/null; then
+            echo "Updating existing ConfigMap..."
+            
+            kubectl get configmap crm-config -n crm-system -o yaml > /tmp/current-configmap.yaml
+            
+            
+            sed -i "s|api-base-url: \"http://.*\"|api-base-url: \"http://${EXTERNAL_IP}:30888/api/\"|g" /tmp/current-configmap.yaml
+            sed -i "s|backend-url: \"http://.*\"|backend-url: \"http://${EXTERNAL_IP}:30888/\"|g" /tmp/current-configmap.yaml
+            sed -i "s|file-base-url: \"http://.*\"|file-base-url: \"http://${EXTERNAL_IP}:30888/\"|g" /tmp/current-configmap.yaml
+            
+            
+            if ! grep -q "allowed-origins:" /tmp/current-configmap.yaml; then
+              # 在data部分末尾添加allowed-origins
+              sed -i "/data:/a \ \ allowed-origins: \"http://localhost:3000,http://frontend:3000,http://${EXTERNAL_IP}:30080,http://${EXTERNAL_IP}\"" /tmp/current-configmap.yaml
+            else
+              
+              sed -i "s|allowed-origins: \".*\"|allowed-origins: \"http://localhost:3000,http://frontend:3000,http://${EXTERNAL_IP}:30080,http://${EXTERNAL_IP}\"|g" /tmp/current-configmap.yaml
+            fi
+            
+            
+            kubectl apply -f /tmp/current-configmap.yaml
+          else
+            echo "Creating new ConfigMap..."
+            
+            cat <<EOF | kubectl apply -f -
+          apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: crm-config
+            namespace: crm-system
+          data:
+            API_TIMEOUT: "30000"
+            LOG_LEVEL: "info"
+            MAX_UPLOAD_SIZE: "10485760"
+            api-base-url: "http://${EXTERNAL_IP}:30888/api/"
+            backend-url: "http://${EXTERNAL_IP}:30888/"
+            file-base-url: "http://${EXTERNAL_IP}:30888/"
+            allowed-origins: "http://localhost:3000,http://frontend:3000,http://${EXTERNAL_IP}:30080,http://${EXTERNAL_IP}"
+          EOF
+          fi
+
+          echo "ConfigMap updated with External IP: $EXTERNAL_IP"
+      restartPolicy: Never
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: crm-config-updater
+  namespace: crm-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: config-updater-role
+  namespace: crm-system
+rules:
+- apiGroups: [""]
+  resources: ["configmaps", "nodes"]
+  verbs: ["get", "list", "create", "update", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: config-updater-binding
+  namespace: crm-system
+subjects:
+- kind: ServiceAccount
+  name: crm-config-updater
+  namespace: crm-system
+roleRef:
+  kind: Role
+  name: config-updater-role
+  apiGroup: rbac.authorization.k8s.io 
