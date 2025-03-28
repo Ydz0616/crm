@@ -20,61 +20,80 @@ spec:
         app.kubernetes.io/part-of: crm
         app.kubernetes.io/component: frontend
     spec:
+      initContainers:
+      - name: ip-finder
+        image: busybox:1.35
+        command:
+        - /bin/sh
+        - -c
+        - |
+          # 获取节点IP (优先使用ExternalIP，然后是InternalIP)
+          NODE_IP=$(wget -qO- --header 'Accept: application/json' http://ifconfig.me/ip || echo "")
+          
+          # 如果获取公网IP失败，则尝试获取内网IP
+          if [ -z "$NODE_IP" ]; then
+            NODE_IP=$(grep -m1 -oP '(?<=nameserver\ ).*' /etc/resolv.conf | tr -d '\n')
+          fi
+          
+          # 如果上述方法失败，尝试使用主机名解析
+          if [ -z "$NODE_IP" ]; then
+            NODE_IP=$(getent hosts $(cat /etc/hostname) | awk '{ print $1 }')
+          fi
+          
+          # 确保获取到了IP
+          if [ -z "$NODE_IP" ]; then
+            echo "ERROR: Failed to determine node IP address"
+            exit 1
+          fi
+          
+          echo "Node IP detected: $NODE_IP"
+          
+          # 将IP写入共享卷
+          echo "$NODE_IP" > /nodeinfo/node-ip
+          
+          # 创建包含环境变量的文件
+          echo "REACT_APP_API_BASE_URL=http://$NODE_IP:30888/api/" > /nodeinfo/env-config
+          echo "REACT_APP_FILE_BASE_URL=http://$NODE_IP:30888/" >> /nodeinfo/env-config
+        volumeMounts:
+        - name: node-info
+          mountPath: /nodeinfo
       containers:
       - name: crm-frontend
         image: yz743/easycrm:frontend-v1.0.6
         imagePullPolicy: IfNotPresent
+        command:
+        - /bin/sh
+        - -ec
+        - |
+          # 读取节点IP和环境配置
+          NODE_IP=$(cat /nodeinfo/node-ip)
+          echo "Using Node IP: $NODE_IP"
+          
+          # 设置环境变量
+          export REACT_APP_API_BASE_URL="http://$NODE_IP:30888/api/"
+          export REACT_APP_FILE_BASE_URL="http://$NODE_IP:30888/"
+          
+          echo "REACT_APP_API_BASE_URL=$REACT_APP_API_BASE_URL"
+          echo "REACT_APP_FILE_BASE_URL=$REACT_APP_FILE_BASE_URL"
+          
+          # 启动应用
+          exec npm start
         ports:
-        - containerPort: 3000
+        - containerPort: 80
           name: http
         resources:
           limits:
-            cpu: "500m"
-            memory: "512Mi"
-          requests:
-            cpu: "200m"
+            cpu: "300m"
             memory: "256Mi"
-        env:
-        - name: NODE_ENV
-          value: "production"
-        - name: VITE_APP_API_URL
-          valueFrom:
-            configMapKeyRef:
-              name: crm-config
-              key: api-base-url
-        - name: VITE_BACKEND_SERVER
-          valueFrom:
-            configMapKeyRef:
-              name: crm-config
-              key: backend-url
-        - name: VITE_FILE_BASE_URL
-          valueFrom:
-            configMapKeyRef:
-              name: crm-config
-              key: file-base-url
-        - name: VITE_WEBSITE_URL
-          valueFrom:
-            configMapKeyRef:
-              name: crm-config
-              key: website-url
-        livenessProbe:
-          httpGet:
-            path: /
-            port: http
-          initialDelaySeconds: 30
-          periodSeconds: 10
-          timeoutSeconds: 5
-          successThreshold: 1
-          failureThreshold: 3
-        readinessProbe:
-          httpGet:
-            path: /
-            port: http
-          initialDelaySeconds: 5
-          periodSeconds: 5
-          timeoutSeconds: 3
-          successThreshold: 1
-          failureThreshold: 3
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+        volumeMounts:
+        - name: node-info
+          mountPath: /nodeinfo
+      volumes:
+      - name: node-info
+        emptyDir: {}
 ---
 apiVersion: v1
 kind: Service

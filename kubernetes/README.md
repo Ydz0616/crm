@@ -176,116 +176,50 @@ kubectl create secret generic crm-secrets -n crm-system \
   --from-literal=jwt-secret="$(grep JWT_SECRET .env | cut -d '=' -f2- | tr -d '\"')"
 ```
 
-## 自动IP配置
+## 新部署方式说明（无需ConfigMap）
 
-系统使用ConfigMap存储服务URL，通过ArgoCD PreSync钩子自动获取外部IP地址并更新配置，避免了硬编码IP地址带来的问题。
+为了简化部署流程并避免ArgoCD同步问题，我们移除了ConfigMap和配置更新作业，改为在部署文件中直接处理配置:
 
-### 手动运行配置更新
+### 关键改进
 
-如需手动更新配置，可以直接运行config-update-job.yaml中定义的作业：
+1. **自动IP配置**: 使用initContainer自动检测节点IP，并通过共享卷传递给主容器
+2. **无依赖部署**: 前端和后端部署文件均为自包含，无需依赖额外配置资源
+3. **多种IP检测**: 实现多种IP检测方法，优先使用公网IP，确保稳定工作
 
-```bash
-# 应用配置更新作业
-kubectl apply -f kubernetes/config-update-job.yaml
-```
+### 部署步骤
 
-### 与ArgoCD集成
-
-使用ArgoCD进行部署时，config-update-job.yaml已包含了PreSync钩子，会自动在同步前运行配置更新作业。
-
-## 故障排除
-
-如果应用无法正常访问，请检查：
-
-1. ConfigMap是否包含正确的IP地址:
-```bash
-kubectl get configmap crm-config -n crm-system -o yaml
-```
-
-2. Pods是否正常运行:
-```bash
-kubectl get pods -n crm-system
-```
-
-3. 手动重启应用以应用最新配置:
-```bash
-kubectl rollout restart deployment/crm-frontend -n crm-system
-kubectl rollout restart deployment/crm-backend -n crm-system
-```
-
-## 多IP环境
-
-如果您的环境有多个外部IP，配置更新作业将使用第一个节点的外部IP。如需指定特定IP，可以手动设置ConfigMap:
-
-```bash
-# 手动设置特定IP
-kubectl patch configmap crm-config -n crm-system --type=merge -p '{"data":{"api-base-url":"http://您的特定IP:30888/api/","backend-url":"http://您的特定IP:30888/","file-base-url":"http://您的特定IP:30888/","allowed-origins":"http://localhost:3000,http://frontend:3000,http://您的特定IP:30080,http://您的特定IP"}}'
-```
-
-## ArgoCD 集成
-
-### 自动更新 ConfigMap
-
-项目包含了一个与 ArgoCD 集成的自动化解决方案，用于解决外部 IP 地址的配置问题：
-
-1. `config-update-job.yaml` 文件定义了一个 Kubernetes Job，该 Job 被标记为 ArgoCD 的 PreSync 钩子
-2. 该 Job 会在应用同步之前自动运行，检测集群的外部 IP，并更新 ConfigMap 中的 URL 配置
-3. 此解决方案解决了 `allowed-origins` 配置缺失的问题，确保 CORS 策略正确配置
-
-使用 ArgoCD 进行部署时的工作流程：
-
-1. ArgoCD 将首先运行 PreSync 钩子 Job
-2. Job 会自动更新 ConfigMap 配置中的 IP 地址和allowed-origins字段
-3. 然后 ArgoCD 会继续部署应用的其余部分
-
-这种方法消除了手动更新 ConfigMap 的需要，确保应用程序始终使用正确的外部 IP 地址配置。
-
-## ArgoCD 部署指南（重要）
-
-### 自动IP配置和ConfigMap更新
-
-对于使用ArgoCD的部署，系统采用了以下策略确保ConfigMap正确更新:
-
-1. **重要**: ArgoCD部署时会**自动跳过**原始的`configmap.yaml`文件，改为使用`config-update-job.yaml`创建一个PreSync钩子Job
-2. 该Job会在应用其他资源之前自动运行，并执行以下操作:
-   - 检测集群节点的外部IP地址
-   - 创建完整的ConfigMap，包含正确的IP地址
-   - 确保`allowed-origins`字段正确设置，解决CORS问题
-   - 验证ConfigMap是否已成功创建
+1. 只需使用ArgoCD部署整个应用，无需任何额外步骤
+2. 系统会自动检测正确的IP地址并配置所有服务
+3. 不再需要手动更新ConfigMap或等待更新作业完成
 
 ### 故障排查
 
-如果在ArgoCD部署后遇到`couldn't find key allowed-origins in ConfigMap`错误:
+如果遇到问题，请检查:
 
 ```bash
-# 检查PreSync钩子Job是否成功运行
-kubectl get jobs -n crm-system
+# 查看Pod状态
+kubectl get pods -n crm-system
 
-# 查看Job的详细日志
-kubectl logs job/config-update-job -n crm-system
+# 查看初始化容器日志
+kubectl logs <pod-name> -c ip-finder -n crm-system
 
-# 检查ConfigMap内容
-kubectl get configmap crm-config -n crm-system -o yaml
+# 查看主容器日志
+kubectl logs <pod-name> -n crm-system
 ```
 
-如果ConfigMap未包含所需的`allowed-origins`，您可以手动运行:
+### 手动重新部署
+
+如需强制应用使用新检测到的IP:
 
 ```bash
-# 删除现有ConfigMap
-kubectl delete configmap crm-config -n crm-system
-
-# 手动运行更新作业
-kubectl delete job config-update-job -n crm-system --ignore-not-found
-kubectl apply -f kubernetes/config-update-job.yaml
+# 重启部署
+kubectl rollout restart deployment/crm-frontend deployment/crm-backend -n crm-system
 ```
 
-### 重要变更说明
+### 高级: 手动指定IP
 
-本次实现了以下关键改进:
+如需手动指定特定IP，可以修改部署配置:
 
-1. 使用ClusterRole代替Role，确保权限足够
-2. 增加验证步骤，确保ConfigMap正确创建
-3. 在ArgoCD配置中明确排除configmap.yaml
-4. 添加更严格的错误检查和重试机制
-
-这些改进确保了部署流程的可靠性，特别是解决了ConfigMap更新和`allowed-origins`缺失的问题。 
+```bash
+kubectl patch deployment crm-backend -n crm-system --patch '{"spec":{"template":{"spec":{"initContainers":[{"name":"ip-finder","command":["/bin/sh","-c","echo YOUR_CUSTOM_IP > /nodeinfo/node-ip"]}]}}}}'
+```

@@ -20,6 +20,39 @@ spec:
         app.kubernetes.io/part-of: crm
         app.kubernetes.io/component: backend
     spec:
+      initContainers:
+      - name: ip-finder
+        image: busybox:1.35
+        command:
+        - /bin/sh
+        - -c
+        - |
+          # 获取节点IP (优先使用ExternalIP，然后是InternalIP)
+          NODE_IP=$(wget -qO- --header 'Accept: application/json' http://ifconfig.me/ip || echo "")
+          
+          # 如果获取公网IP失败，则尝试获取内网IP
+          if [ -z "$NODE_IP" ]; then
+            NODE_IP=$(grep -m1 -oP '(?<=nameserver\ ).*' /etc/resolv.conf | tr -d '\n')
+          fi
+          
+          # 如果上述方法失败，尝试使用主机名解析
+          if [ -z "$NODE_IP" ]; then
+            NODE_IP=$(getent hosts $(cat /etc/hostname) | awk '{ print $1 }')
+          fi
+          
+          # 确保获取到了IP
+          if [ -z "$NODE_IP" ]; then
+            echo "ERROR: Failed to determine node IP address"
+            exit 1
+          fi
+          
+          echo "Node IP detected: $NODE_IP"
+          
+          # 将IP写入共享卷
+          echo "$NODE_IP" > /nodeinfo/node-ip
+        volumeMounts:
+        - name: node-info
+          mountPath: /nodeinfo
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
@@ -36,6 +69,23 @@ spec:
       - name: crm-backend
         image: yz743/easycrm:backend-v1.0.6
         imagePullPolicy: IfNotPresent
+        command:
+        - /bin/sh
+        - -ec
+        - |
+          # 读取节点IP
+          NODE_IP=$(cat /nodeinfo/node-ip)
+          echo "Using Node IP: $NODE_IP"
+          
+          # 设置环境变量
+          export PUBLIC_SERVER_FILE="http://$NODE_IP:30888/"
+          export ALLOWED_ORIGINS="http://localhost:3000,http://frontend:3000,http://$NODE_IP:30080,http://$NODE_IP"
+          
+          echo "PUBLIC_SERVER_FILE=$PUBLIC_SERVER_FILE"
+          echo "ALLOWED_ORIGINS=$ALLOWED_ORIGINS"
+          
+          # 启动应用
+          exec node server.js
         ports:
         - containerPort: 3000
           name: http
@@ -63,11 +113,6 @@ spec:
           value: "production"
         - name: OPENSSL_CONF
           value: "/dev/null"
-        - name: PUBLIC_SERVER_FILE
-          valueFrom:
-            configMapKeyRef:
-              name: crm-config
-              key: backend-url
         - name: NODE_TLS_REJECT_UNAUTHORIZED
           value: "0"
         - name: BYPASS_AUTH
@@ -86,11 +131,9 @@ spec:
           value: "10"
         - name: MONGODB_MIN_POOL_SIZE
           value: "5"
-        - name: ALLOWED_ORIGINS
-          valueFrom:
-            configMapKeyRef:
-              name: crm-config
-              key: allowed-origins
+        volumeMounts:
+        - name: node-info
+          mountPath: /nodeinfo
         livenessProbe:
           tcpSocket:
             port: http
@@ -107,6 +150,9 @@ spec:
           timeoutSeconds: 3
           successThreshold: 1
           failureThreshold: 3
+      volumes:
+      - name: node-info
+        emptyDir: {}
 ---
 apiVersion: v1
 kind: Service
