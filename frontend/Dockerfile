@@ -1,4 +1,5 @@
-FROM dockerpull.cn/node:20.9.0-alpine
+# 第一阶段：构建应用
+FROM dockerpull.cn/node:20.9.0-alpine AS build
 
 WORKDIR /usr/src/app
 
@@ -11,9 +12,17 @@ RUN npm install
 
 COPY . .
 
-EXPOSE 3000
+# 构建生产版本
+RUN npm run build
 
-# 用环境变量指定端口
-ENV PORT=3000
+# 第二阶段：创建生产容器
+FROM nginx:stable-alpine
 
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "3000"]
+# 从构建阶段复制构建成果到nginx
+COPY --from=build /usr/src/app/dist /usr/share/nginx/html
+
+# 暴露80端口
+EXPOSE 80
+
+# 启动nginx
+CMD ["nginx", "-g", "daemon off;"]
