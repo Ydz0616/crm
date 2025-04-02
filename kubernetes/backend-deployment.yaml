@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: crm-backend
+  name: backend
   labels:
     app: crm-backend
     app.kubernetes.io/instance: easycrm
@@ -34,7 +34,7 @@ spec:
               topologyKey: kubernetes.io/hostname
       containers:
       - name: crm-backend
-        image: yz743/easycrm:backend-v1.0.6
+        image: yz743/easycrm:backend-v1.0.7
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 3000
@@ -46,6 +46,9 @@ spec:
           requests:
             cpu: "200m"
             memory: "256Mi"
+        envFrom:
+        - configMapRef:
+            name: backend-config
         env:
         - name: DATABASE
           valueFrom:
@@ -57,36 +60,9 @@ spec:
             secretKeyRef:
               name: crm-secrets
               key: jwt-secret
-        - name: PORT
-          value: "3000"
-        - name: NODE_ENV
-          value: "production"
-        - name: OPENSSL_CONF
-          value: "/dev/null"
-        - name: NODE_TLS_REJECT_UNAUTHORIZED
-          value: "0"
-        - name: BYPASS_AUTH
-          value: "true"
-        - name: MONGODB_CONNECT_TIMEOUT
-          value: "30000"
-        - name: MONGODB_SOCKET_TIMEOUT
-          value: "30000"
-        - name: MONGODB_SERVER_SELECTION_TIMEOUT
-          value: "30000"
-        - name: MONGODB_RETRY_WRITES
-          value: "true"
-        - name: MONGODB_RETRY_READS
-          value: "true"
-        - name: MONGODB_MAX_POOL_SIZE
-          value: "10"
-        - name: MONGODB_MIN_POOL_SIZE
-          value: "5"
-        - name: PUBLIC_SERVER_FILE
-          value: "http://150.109.113.32:30888/"
-        - name: ALLOWED_ORIGINS
-          value: "http://localhost:3000,http://frontend:3000,http://150.109.113.32:30080,http://150.109.113.32"
         livenessProbe:
-          tcpSocket:
+          httpGet:
+            path: /health
             port: http
           initialDelaySeconds: 30
           periodSeconds: 10
@@ -94,7 +70,8 @@ spec:
           successThreshold: 1
           failureThreshold: 3
         readinessProbe:
-          tcpSocket:
+          httpGet:
+            path: /health
             port: http
           initialDelaySeconds: 5
           periodSeconds: 5
@@ -105,7 +82,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: crm-backend
+  name: backend
   labels:
     app.kubernetes.io/instance: easycrm
     app.kubernetes.io/part-of: crm
@@ -119,4 +96,28 @@ spec:
     protocol: TCP
     name: http
     nodePort: 30888
-  type: NodePort 
+  type: NodePort
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  labels:
+    app.kubernetes.io/instance: easycrm
+    app.kubernetes.io/part-of: crm
+    app.kubernetes.io/component: backend
+data:
+  PORT: "3000"
+  NODE_ENV: "production"
+  OPENSSL_CONF: "/dev/null"
+  NODE_TLS_REJECT_UNAUTHORIZED: "0"
+  BYPASS_AUTH: "true"
+  MONGODB_CONNECT_TIMEOUT: "30000"
+  MONGODB_SOCKET_TIMEOUT: "30000"
+  MONGODB_SERVER_SELECTION_TIMEOUT: "30000"
+  MONGODB_RETRY_WRITES: "true"
+  MONGODB_RETRY_READS: "true"
+  MONGODB_MAX_POOL_SIZE: "10"
+  MONGODB_MIN_POOL_SIZE: "5"
+  PUBLIC_SERVER_FILE: "/"
+  ALLOWED_ORIGINS: "*" 

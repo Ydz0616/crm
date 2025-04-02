@@ -2,7 +2,8 @@ const pug = require('pug');
 const fs = require('fs');
 const moment = require('moment');
 const path = require('path');
-let pdf = require('html-pdf');
+// Use puppeteer directly
+const puppeteer = require('puppeteer');
 const { listAllSettings, loadSettings } = require('@/middlewares/settings');
 const { getData } = require('@/middlewares/serverData');
 const useLanguage = require('@/locale/useLanguage');
@@ -13,34 +14,17 @@ const pugFiles = ['invoice', 'offer', 'quote', 'payment','purchaseorder'];
 require('dotenv').config({ path: '.env' });
 require('dotenv').config({ path: '.env.local' });
 
-// 智能检测PhantomJS路径
-function getPhantomJsPath() {
-  // 先检查是否在Docker容器中
-  if (fs.existsSync('/.dockerenv') || 
-      (fs.existsSync('/proc/1/cgroup') && 
-       fs.readFileSync('/proc/1/cgroup', 'utf8').includes('docker'))) {
-    // Docker容器内的PhantomJS位置
-    if (fs.existsSync('/usr/bin/phantomjs')) {
-      return '/usr/bin/phantomjs';
-    }
-    if (fs.existsSync('/usr/local/bin/phantomjs')) {
-      return '/usr/local/bin/phantomjs';
-    }
+// 确保目录存在
+const ensureDirectoryExists = (filePath) => {
+  const dirname = path.dirname(filePath);
+  if (fs.existsSync(dirname)) {
+    return true;
   }
   
-  // 尝试使用npm安装的PhantomJS
-  try {
-    const phantomjs = require('phantomjs-prebuilt');
-    if (phantomjs && phantomjs.path) {
-      return phantomjs.path;
-    }
-  } catch (err) {
-    console.log('Failed to find phantomjs-prebuilt module:', err.message);
-  }
-  
-  // 如果都找不到，返回null让html-pdf库自己处理
-  return null;
-}
+  // 递归创建目录
+  ensureDirectoryExists(dirname);
+  fs.mkdirSync(dirname, { recursive: true });
+};
 
 exports.generatePdf = async (
   modelName,
@@ -50,6 +34,9 @@ exports.generatePdf = async (
 ) => {
   try {
     const { targetLocation } = info;
+    
+    // 确保目标目录存在
+    ensureDirectoryExists(targetLocation);
 
     // if PDF already exists, then delete it and create a new PDF
     if (fs.existsSync(targetLocation)) {
@@ -57,10 +44,8 @@ exports.generatePdf = async (
     }
 
     // render pdf html
-
     if (pugFiles.includes(modelName.toLowerCase())) {
       // Compile Pug template
-
       const settings = await loadSettings();
       const selectedLang = settings['easycrm_app_language'];
       const translate = useLanguage({ selectedLang });
@@ -88,7 +73,6 @@ exports.generatePdf = async (
         zero_format: currencyInfo.zero_format,
       } : settings;
 
-
       const { moneyFormatter } = useMoney({
         settings: {
           currency_symbol,
@@ -113,29 +97,41 @@ exports.generatePdf = async (
         moment: moment,
       });
 
-      // 配置PDF选项
-      const pdfOptions = {
-        format: info.format,
-        orientation: 'portrait',
-        border: '10mm',
-      };
-      
-      // 智能检测PhantomJS路径并添加到选项中
-      const phantomPath = getPhantomJsPath();
-      if (phantomPath) {
-        console.log(`Using PhantomJS from: ${phantomPath}`);
-        pdfOptions.phantomPath = phantomPath;
-      }
-
-      pdf
-        .create(htmlContent, pdfOptions)
-        .toFile(targetLocation, function (error) {
-          if (error) {
-            console.error("PDF生成错误:", error);
-            throw new Error(error);
-          }
-          if (callback) callback();
+      try {
+        // 使用Puppeteer直接生成PDF
+        const browser = await puppeteer.launch({
+          headless: 'new',
+          args: ['--no-sandbox', '--disable-setuid-sandbox']
         });
+        const page = await browser.newPage();
+        
+        // 设置页面内容
+        await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+        
+        // 设置PDF选项
+        const pdfOptions = {
+          path: targetLocation,
+          format: info.format,
+          margin: {
+            top: '10mm',
+            right: '10mm',
+            bottom: '10mm',
+            left: '10mm'
+          },
+          printBackground: true
+        };
+        
+        // 生成PDF
+        await page.pdf(pdfOptions);
+        
+        // 关闭浏览器
+        await browser.close();
+        
+        if (callback) callback();
+      } catch (error) {
+        console.error("PDF生成错误:", error);
+        throw new Error(error);
+      }
     }
   } catch (error) {
     console.error("PDF生成过程中出错:", error);

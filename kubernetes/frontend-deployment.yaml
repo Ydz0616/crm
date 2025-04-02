@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: crm-frontend
+  name: frontend
   labels:
     app: crm-frontend
     app.kubernetes.io/instance: easycrm
@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
       - name: crm-frontend
-        image: yz743/easycrm:frontend-v1.0.6
+        image: yz743/easycrm:frontend-v1.0.7
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 80
@@ -34,17 +34,9 @@ spec:
           requests:
             cpu: "100m"
             memory: "128Mi"
-        env:
-        - name: NODE_ENV
-          value: "production"
-        - name: VITE_APP_API_URL
-          value: "http://150.109.113.32:30888/api/"
-        - name: VITE_BACKEND_SERVER
-          value: "http://150.109.113.32:30888/"
-        - name: VITE_FILE_BASE_URL
-          value: "http://150.109.113.32:30888/"
-        - name: VITE_WEBSITE_URL
-          value: "http://150.109.113.32:30080/"
+        envFrom:
+        - configMapRef:
+            name: frontend-config
         livenessProbe:
           httpGet:
             path: /
@@ -67,7 +59,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: crm-frontend
+  name: frontend
   labels:
     app.kubernetes.io/instance: easycrm
     app.kubernetes.io/part-of: crm
@@ -81,4 +73,19 @@ spec:
     protocol: TCP
     name: http
     nodePort: 30080
-  type: NodePort 
+  type: NodePort
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-config
+  labels:
+    app.kubernetes.io/instance: easycrm
+    app.kubernetes.io/part-of: crm
+    app.kubernetes.io/component: frontend
+data:
+  NODE_ENV: "production"
+  VITE_APP_API_URL: "http://8.210.8.147:30888/api/"
+  VITE_BACKEND_SERVER: "http://8.210.8.147:30888/"
+  VITE_FILE_BASE_URL: "http://8.210.8.147:30888/"
+  VITE_WEBSITE_URL: "http://8.210.8.147:30080/" 

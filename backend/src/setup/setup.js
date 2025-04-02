@@ -18,9 +18,9 @@ async function setupApp() {
     const passwordHash = newAdminPassword.generateHash(salt, 'admin123');
 
     const defaultAdmin = {
-      email: 'andy@plasmacut.com',
+      email: 'admin@admin.com',
       name: 'andy',
-      surname: 'Admin',
+      surname: 'admin',
       enabled: true,
       role: 'owner',
     };

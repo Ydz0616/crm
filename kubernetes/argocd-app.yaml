@@ -3,15 +3,14 @@ kind: Application
 metadata:
   name: easycrm
   namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
   source:
     repoURL: 'https://github.com/ydz0616/crm.git'
     targetRevision: HEAD
     path: kubernetes
-    directory:
-      recurse: true
-      exclude: 'secrets*.yaml,configmap*.yaml'  # 排除所有ConfigMap相关文件
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: crm-system
@@ -19,8 +18,16 @@ spec:
     automated:
       prune: true
       selfHeal: true
+      allowEmpty: false
     syncOptions:
       - CreateNamespace=true
-      - PruneLast=true  # 最后删除资源
-      - ApplyOutOfSyncOnly=true  # 只应用变更的资源
-  # 完全删除ignoreDifferences，因为我们已经排除了ConfigMap文件 
+      - PruneLast=true
+      - ApplyOutOfSyncOnly=true
+      - Validate=true
+      - RespectIgnoreDifferences=true
+    retry:
+      limit: 3
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
