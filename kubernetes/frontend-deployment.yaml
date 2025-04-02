@@ -24,6 +24,7 @@ spec:
       - name: crm-frontend
         image: yz743/easycrm:frontend-v1.0.9
         imagePullPolicy: IfNotPresent
+        command: ["npm", "run", "dev"]
         ports:
         - containerPort: 3000
           name: http
