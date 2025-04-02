@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
       - name: crm-frontend
-        image: yz743/easycrm:frontend-v1.0.7
+        image: yz743/easycrm:frontend-v1.0.8
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 80
