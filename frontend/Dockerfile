@@ -11,6 +11,9 @@ RUN npm install
 
 COPY . .
 
-EXPOSE 3000
+EXPOSE 80
 
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+# 用环境变量指定端口
+ENV PORT=80
+
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "80"]

@@ -11,6 +11,9 @@ export default ({ mode }) => {
       ? process.env.VITE_BACKEND_SERVER
       : 'http://localhost:8888/';
 
+  // 使用环境变量PORT或默认值80
+  const port = parseInt(process.env.PORT || '80');
+
   const config = {
     plugins: [react()],
     resolve: {
@@ -20,7 +23,8 @@ export default ({ mode }) => {
       },
     },
     server: {
-      port: 3000,
+      port: port,
+      host: '0.0.0.0',
       proxy: {
         '/api': {
           target: proxy_url,
