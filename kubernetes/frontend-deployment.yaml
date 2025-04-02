@@ -24,7 +24,8 @@ spec:
       - name: crm-frontend
         image: yz743/easycrm:frontend-v1.0.9
         imagePullPolicy: IfNotPresent
-        command: ["npm", "run", "dev"]
+        command: ["npm"]
+        args: ["run", "dev", "--", "--host", "0.0.0.0", "--port", "3000"]
         ports:
         - containerPort: 3000
           name: http
@@ -38,23 +39,26 @@ spec:
         envFrom:
         - configMapRef:
             name: frontend-config
+        env:
+        - name: VITE_PORT
+          value: "3000"
+        - name: VITE_HOST
+          value: "0.0.0.0"
         livenessProbe:
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: 60
+          periodSeconds: 20
+          timeoutSeconds: 5
+          failureThreshold: 5
+        readinessProbe:
           httpGet:
             path: /
             port: http
           initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 5
-          successThreshold: 1
-          failureThreshold: 3
-        readinessProbe:
-          httpGet:
-            path: /
-            port: http
-          initialDelaySeconds: 5
-          periodSeconds: 5
-          timeoutSeconds: 3
-          successThreshold: 1
           failureThreshold: 3
 ---
 apiVersion: v1
