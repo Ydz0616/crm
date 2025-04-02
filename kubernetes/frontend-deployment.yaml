@@ -31,17 +31,19 @@ spec:
           name: http
         resources:
           limits:
-            cpu: "300m"
-            memory: "256Mi"
+            cpu: "500m"
+            memory: "512Mi"
           requests:
-            cpu: "100m"
-            memory: "128Mi"
+            cpu: "200m"
+            memory: "256Mi"
         envFrom:
         - configMapRef:
             name: frontend-config
         env:
         - name: PORT
           value: "3000"
+        - name: NODE_OPTIONS
+          value: "--max-old-space-size=384"
         livenessProbe:
           httpGet:
             path: /
