@@ -12,11 +12,6 @@ spec:
   selector:
     matchLabels:
       app: crm-frontend
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
   template:
     metadata:
       labels:
@@ -25,29 +20,17 @@ spec:
         app.kubernetes.io/part-of: crm
         app.kubernetes.io/component: frontend
     spec:
-      affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 100
-            podAffinityTerm:
-              labelSelector:
-                matchExpressions:
-                - key: app
-                  operator: In
-                  values:
-                  - crm-frontend
-              topologyKey: kubernetes.io/hostname
       containers:
       - name: crm-frontend
         image: yz743/easycrm:frontend-v1.0.9
         imagePullPolicy: IfNotPresent
-        command: ["nginx", "-g", "daemon off;"]
+        command: ["npm", "run", "dev"]
         ports:
-        - containerPort: 80
+        - containerPort: 3000
           name: http
         resources:
           limits:
-            cpu: "200m"
+            cpu: "300m"
             memory: "256Mi"
           requests:
             cpu: "100m"
@@ -55,27 +38,23 @@ spec:
         envFrom:
         - configMapRef:
             name: frontend-config
-        startupProbe:
-          httpGet:
-            path: /
-            port: http
-          failureThreshold: 30
-          periodSeconds: 10
         livenessProbe:
           httpGet:
             path: /
             port: http
-          initialDelaySeconds: 60
-          periodSeconds: 30
+          initialDelaySeconds: 30
+          periodSeconds: 10
           timeoutSeconds: 5
+          successThreshold: 1
           failureThreshold: 3
         readinessProbe:
           httpGet:
             path: /
             port: http
-          initialDelaySeconds: 20
-          periodSeconds: 15
+          initialDelaySeconds: 5
+          periodSeconds: 5
           timeoutSeconds: 3
+          successThreshold: 1
           failureThreshold: 3
 ---
 apiVersion: v1
