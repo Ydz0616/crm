@@ -16,7 +16,8 @@ spec:
     metadata:
       labels:
         app: crm-frontend
-        app.kubernetes.io/instance: easycrm
+        app.kubernetes.io/instance:
+           easycrm
         app.kubernetes.io/part-of: crm
         app.kubernetes.io/component: frontend
     spec:
