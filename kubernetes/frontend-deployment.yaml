@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
       - name: crm-frontend
-        image: yz743/easycrm:frontend-v1.0.9a
+        image: yz743/easycrm:frontend-v1.0.9
         imagePullPolicy: IfNotPresent
         command: ["npm"]
         args: ["run", "dev", "--", "--host", "0.0.0.0", "--port", "3000"]
