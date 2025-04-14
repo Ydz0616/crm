@@ -260,7 +260,9 @@ html
     
       header.clearfix
         .top-area
-          img.logo.left(src=settings.public_server_file+settings.company_logo)
+          - const logoSrc = settings.company_logo.startsWith('http') ? settings.company_logo : (settings.public_server_file + settings.company_logo)
+          - console.log('Logo URL in template:', logoSrc)
+          img.logo.left(src=logoSrc)
           .right.company-info
               p.strong #{settings.company_name}
               p #{settings.company_address}

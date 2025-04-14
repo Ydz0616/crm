@@ -86,7 +86,52 @@ exports.generatePdf = async (
 
       const { dateFormat } = useDate({ settings });
 
-      settings.public_server_file = process.env.PUBLIC_SERVER_FILE;
+      // 确保公司logo路径是有效的
+      const serverUrl = process.env.PUBLIC_SERVER_FILE || '/';
+      
+      // 获取服务器域名和端口
+      const serverHost = process.env.SERVER_HOST || '';
+      
+      // 确保使用最新的logo文件
+      if (settings.company_logo) {
+        // 如果路径包含company-logo-时间戳的格式，替换为固定名称
+        if (settings.company_logo.includes('company-logo-')) {
+          settings.company_logo = 'public/uploads/setting/company-logo.png';
+        }
+      }
+      
+      console.log('[PDF生成]', {
+        serverUrl,
+        serverHost,
+        company_logo: settings.company_logo,
+        NODE_ENV: process.env.NODE_ENV 
+      });
+      
+      // 处理公司logo路径
+      if (settings.company_logo && !settings.company_logo.startsWith('http')) {
+        // 本地开发使用相对路径
+        if (process.env.NODE_ENV === 'development') {
+          settings.public_server_file = serverUrl;
+        } 
+        // 生产环境使用完整URL
+        else {
+          if (serverHost) {
+            if (settings.company_logo.startsWith('/')) {
+              settings.company_logo = settings.company_logo.substring(1);
+            }
+            settings.public_server_file = serverHost.endsWith('/') ? serverHost : serverHost + '/';
+          } else {
+            settings.public_server_file = serverUrl;
+          }
+        }
+      }
+      
+      // 添加版本号防止缓存
+      if (settings.company_logo && !settings.company_logo.includes('?v=')) {
+        settings.company_logo = `${settings.company_logo}?v=${Date.now()}`;
+      }
+      
+      console.log('[PDF生成] 图片最终URL:', settings.public_server_file + settings.company_logo);
 
       const htmlContent = pug.renderFile('src/pdf/' + modelName + '.pug', {
         model: result,

@@ -200,17 +200,37 @@ const request = {
 
   upload: async ({ entity, id, jsonData }) => {
     try {
+      console.log('准备上传文件到:', entity + '/upload/' + id);
+      console.log('完整URL:', axios.defaults.baseURL + entity + '/upload/' + id);
+      console.log('文件数据类型:', jsonData instanceof FormData ? 'FormData' : typeof jsonData);
+      if(jsonData instanceof FormData) {
+        console.log('FormData 包含字段:', Array.from(jsonData.keys()));
+      }
+      
+      // 确保已设置withCredentials，用于传递认证cookie
+      axios.defaults.withCredentials = true;
+      
       const response = await axios.patch(entity + '/upload/' + id, jsonData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
+        // 添加额外认证头，确保即使在跨域请求中也能正确认证
+        withCredentials: true
       });
+      
+      console.log('上传请求成功，响应状态:', response.status);
+      console.log('响应数据:', response.data);
+      
       successHandler(response, {
         notifyOnSuccess: true,
         notifyOnFailed: true,
       });
       return response.data;
     } catch (error) {
+      console.error('上传请求失败:', error.message);
+      if (error.response) {
+        console.error('服务器响应:', error.response.status, error.response.data);
+      }
       return errorHandler(error);
     }
   },
