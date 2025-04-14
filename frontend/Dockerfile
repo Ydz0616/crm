@@ -1,10 +1,9 @@
 # 第一阶段：构建应用
-FROM dockerpull.cn/node:20.9.0-alpine AS build
+FROM docker.m.daocloud.io/node:20.9.0-alpine AS build
 
 WORKDIR /usr/src/app
 
-RUN npm config set registry https://registry.npmmirror.com && \
-    npm install -g npm@10.2.4
+RUN npm install -g npm@10.2.4
 
 COPY package*.json ./
 
@@ -16,7 +15,7 @@ COPY . .
 RUN npm run build
 
 # 第二阶段：创建生产容器
-FROM nginx:stable-alpine
+FROM docker.m.daocloud.io/nginx:stable-alpine
 
 # 从构建阶段复制构建成果到nginx
 COPY --from=build /usr/src/app/dist /usr/share/nginx/html
