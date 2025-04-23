@@ -56,6 +56,9 @@ const orderSchema = new mongoose.Schema({
       description: {
         type: String,
       },
+      laser: {
+        type: String,
+      },
       quantity: {
         type: Number,
         required: true,
@@ -64,35 +67,15 @@ const orderSchema = new mongoose.Schema({
         type: Number,
         required: true,
       },
-      // taxRate: {
-      //   type: Number,
-      //   default: 0,
-      // },
-      // subTotal: {
-      //   type: Number,
-      //   default: 0,
-      // },
-      // taxTotal: {
-      //   type: Number,
-      //   default: 0,
-      // },
       total: {
         type: Number,
         required: true,
       },
     },
   ],
-  taxRate: {
-    type: Number,
-  },
-  subTotal: {
-    type: Number,
-  },
-  taxTotal: {
-    type: Number,
-  },
   total: {
     type: Number,
+    required: true,
   },
   credit: {
     type: Number,

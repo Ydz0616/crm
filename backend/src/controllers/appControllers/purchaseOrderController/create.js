@@ -8,34 +8,30 @@ const { increaseBySettingKey } = require('@/middlewares/settings');
 const { calculate } = require('@/helpers');
 
 const create = async (req, res) => {
-  const { items = [], taxRate = 0, discount = 0, relatedInvoice } = req.body;
+  const { items = [], discount = 0, relatedInvoice } = req.body;
 
   // default
-  let subTotal = 0;
-  let taxTotal = 0;
   let total = 0;
-  // let credit = 0;
 
-  //Calculate the items array with subTotal, total, taxTotal
+  //Calculate the items array with total
   items.map((item) => {
-    let total = calculate.multiply(item['quantity'], item['price']);
-    //sub total
-    subTotal = calculate.add(subTotal, total);
+    let itemTotal = calculate.multiply(item['quantity'], item['price']);
+    //add to total
+    total = calculate.add(total, itemTotal);
     //item total
-    item['total'] = total;
+    item['total'] = itemTotal;
   });
-  taxTotal = calculate.multiply(subTotal, taxRate / 100);
-  total = calculate.add(subTotal, taxTotal);
+
+  // Apply discount if provided
+  if (discount > 0) {
+    total = calculate.subtract(total, discount);
+  }
 
   let body = req.body;
 
-  body['subTotal'] = subTotal;
-  body['taxTotal'] = taxTotal;
   body['total'] = total;
   body['items'] = items;
   body['createdBy'] = req.admin._id;
-
-  
 
   // Creating a new document in the collection
   const result = await new Model(body).save();

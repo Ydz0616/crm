@@ -93,6 +93,9 @@ export default function CreateItem({ config, CreateForm }) {
         let newList = [...fieldsValue.items];
         newList.map((item) => {
           item.total = calculate.multiply(item.quantity, item.price);
+          if (item.laser === undefined) {
+            item.laser = '';
+          }
         });
         fieldsValue = {
           ...fieldsValue,

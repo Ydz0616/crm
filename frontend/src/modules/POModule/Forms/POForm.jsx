@@ -1,24 +1,19 @@
 import { useState, useEffect, useRef } from 'react';
 import dayjs from 'dayjs';
-import { Form, Input, InputNumber, Button, Select, Divider, Row, Col } from 'antd';
-
-import { PlusOutlined } from '@ant-design/icons';
-
+import { Form, Input, InputNumber, Button, Select, Divider, Row, Col, Card, Typography } from 'antd';
+import { PlusOutlined, ShoppingOutlined, CalendarOutlined, DollarOutlined } from '@ant-design/icons';
 import { DatePicker } from 'antd';
-
 import AutoCompleteAsync from '@/components/AutoCompleteAsync';
-
 import ItemRow from '@/modules/ErpPanelModule/ItemRow';
-
 import MoneyInputFormItem from '@/components/MoneyInputFormItem';
 import { selectFinanceSettings } from '@/redux/settings/selectors';
 import { useDate, useMoney } from '@/settings';
 import useLanguage from '@/locale/useLanguage';
-
 import calculate from '@/utils/calculate';
 import { useSelector } from 'react-redux';
-import SelectAsync from '@/components/SelectAsync';
 import SelectCurrency from '@/components/SelectCurrency';
+
+const { Title, Text } = Typography;
 
 export default function PurchaseOrderForm({ subTotal = 0, current = null }) {
   const financeSettings = useSelector(selectFinanceSettings);
@@ -42,12 +37,7 @@ function LoadPurchaseOrderForm({ subTotal = 0, current = null }) {
   const [lastNumber, setLastNumber] = useState(() => last_purchase_order_number + 1);
 
   const [total, setTotal] = useState(0);
-  const [taxRate, setTaxRate] = useState(0);
-  const [taxTotal, setTaxTotal] = useState(0);
   const [currentYear, setCurrentYear] = useState(() => new Date().getFullYear());
-  const handelTaxChange = (value) => {
-    setTaxRate(value / 100);
-  };
 
   const [selectedCurrency, setSelectedCurrency] = useState(null);
   const { moneyFormatter } = useMoney();
@@ -71,17 +61,15 @@ function LoadPurchaseOrderForm({ subTotal = 0, current = null }) {
 
   useEffect(() => {
     if (current) {
-      const { taxRate = 0, year, number } = current;
-      setTaxRate(taxRate / 100);
+      const { year, number } = current;
       setCurrentYear(year);
       setLastNumber(number);
     }
   }, [current]);
+  
   useEffect(() => {
-    const currentTotal = calculate.add(calculate.multiply(subTotal, taxRate), subTotal);
-    setTaxTotal(Number.parseFloat(calculate.multiply(subTotal, taxRate)));
-    setTotal(Number.parseFloat(currentTotal));
-  }, [subTotal, taxRate]);
+    setTotal(Number.parseFloat(subTotal));
+  }, [subTotal]);
 
   const addField = useRef(false);
 
@@ -91,295 +79,273 @@ function LoadPurchaseOrderForm({ subTotal = 0, current = null }) {
 
   return (
     <>
-      <Row gutter={[12, 0]}>
-        <Col className="gutter-row" span={8}>
-          <Form.Item
-            name="factory"
-            label={translate('Factory')}
-            rules={[
-              {
-                required: true,
-              },
-            ]}
-          >
-            <AutoCompleteAsync
-              entity={'factory'}
-              displayLabels={['factory_name']}
-              searchFields={'factory_name'}
-              redirectLabel={'Add New Factory'}
-              withRedirect
-              urlToRedirect={'/factory'}
-            />
-          </Form.Item>
-        </Col>
-        <Col className="gutter-row" span={8}>
-          <Form.Item
-            name="relatedInvoice"
-            label={translate('Related Invoice')}
-          >
-            <AutoCompleteAsync
-              entity={'invoice'}
-              displayLabels={['number', 'client.name']}
-              searchFields={'number,client.name'}
-              redirectLabel={'Create New Invoice'}
-              withRedirect
-              urlToRedirect={'/invoice/create'}
-            />
-          </Form.Item>
-        </Col>
-        <Col className="gutter-row" span={3}>
-          <Form.Item
-            label={translate('number')}
-            name="number"
-            initialValue={lastNumber}
-            rules={[
-              {
-                required: true,
-              },
-            ]}
-          >
-            <Input style={{ width: '100%' }} />
-          </Form.Item>
-        </Col>
-        <Col className="gutter-row" span={3}>
-          <Form.Item
-            label={translate('year')}
-            name="year"
-            initialValue={currentYear}
-            rules={[
-              {
-                required: true,
-              },
-            ]}
-          >
-            <InputNumber style={{ width: '100%' }} />
-          </Form.Item>
-        </Col>
-        {/* <Col className="gutter-row" span={6}>
-          <SelectCurrency />
-        </Col> */}
-        <Col className="gutter-row" span={4}>
-          <Form.Item
-            label={translate('status')}
-            name="status"
-            rules={[
-              {
-                required: false,
-              },
-            ]}
-            initialValue={'draft'}
-          >
-            <Select
-              options={[
-                { value: 'draft', label: translate('Draft') },
-                { value: 'pending', label: translate('Pending') },
-                { value: 'sent', label: translate('Sent') },
-                { value: 'accepted', label: translate('Accepted') },
-                { value: 'declined', label: translate('Declined') },
-              ]}
-            ></Select>
-          </Form.Item>
-        </Col>
-        <Col className="gutter-row" span={4}>
-          <Form.Item
-            name="currency"
-            label={translate('Currency')}
-            rules={[
-              {
-                required: true,
-                message: translate('Please select currency'),
-              },
-            ]}
-          >
-                {/* <SelectAsync
-                value={taxRate}
-                onChange={handelTaxChange}
-                entity={'taxes'}
-                outputValue={'taxValue'}
-                displayLabels={['taxName']}
-                withRedirect={true}
-                urlToRedirect="/taxes"
-                redirectLabel={translate('Add New Tax')}
-                placeholder={translate('Select Tax Value')}
-              /> */}
-              <SelectCurrency
-              value={selectedCurrency}
-              onChange={handleCurrencyChange}
-              entity={'currencies'}
-              outputValue={'currency_code'}
-              displayLabels={['currency_symbol','currency_name']}
-              withRedirect={true}
-              urlToRedirect="/currencies"
-              redirectLabel={translate('Add New Currency')}
-              placeholder={translate('Select currency')}
-              />
-          </Form.Item>
-        </Col>
-
-        <Col className="gutter-row" span={8}>
-          <Form.Item
-            name="date"
-            label={translate('Date')}
-            rules={[
-              {
-                required: true,
-                type: 'object',
-              },
-            ]}
-            initialValue={dayjs()}
-          >
-            <DatePicker style={{ width: '100%' }} format={dateFormat} />
-          </Form.Item>
-        </Col>
-        <Col className="gutter-row" span={6}>
-          <Form.Item
-            name="expiredDate"
-            label={translate('Expire Date')}
-            rules={[
-              {
-                required: true,
-                type: 'object',
-              },
-            ]}
-            initialValue={dayjs().add(30, 'days')}
-          >
-            <DatePicker style={{ width: '100%' }} format={dateFormat} />
-          </Form.Item>
-        </Col>
-        <Col className="gutter-row" span={10}>
-          <Form.Item label={translate('Note')} name="notes">
-            <Input />
-          </Form.Item>
-        </Col>
-      </Row>
-      <Divider dashed />
-      
-
-
-      <Row gutter={[12, 12]} style={{ position: 'relative' }}>
-        <Col className="gutter-row" span={5}>
-          <p>{translate('Item')}</p>
-        </Col>
-        <Col className="gutter-row" span={7}>
-          <p>{translate('Description')}</p>
-        </Col>
-        <Col className="gutter-row" span={3}>
-          <p>{translate('Quantity')}</p>{' '}
-        </Col>
-        <Col className="gutter-row" span={4}>
-          <p>{translate('Price')}</p>
-        </Col>
-        <Col className="gutter-row" span={5}>
-          <p>{translate('Total')}</p>
-        </Col>
-      </Row>
-
-
-
-      <Form.List name="items">
-        {(fields, { add, remove }) => (
-          <>
-            {fields.map((field) => (
-              <ItemRow 
-                key={field.key} 
-                remove={remove} 
-                field={field} 
-                current={current}
-                selectedCurrency={selectedCurrency}
-              ></ItemRow>
-            ))}
-            <Form.Item>
-              <Button
-                type="dashed"
-                onClick={() => add()}
-                block
-                icon={<PlusOutlined />}
-                ref={addField}
-              >
-                {translate('Add field')}
-              </Button>
-            </Form.Item>
-          </>
-        )}
-      </Form.List>
-
-      
-      <Divider dashed />
-      <div style={{ position: 'relative', width: ' 100%', float: 'right' }}>
-        <Row gutter={[12, -5]}>
-          <Col className="gutter-row" span={5}>
-            <Form.Item>
-              <Button type="primary" htmlType="submit" icon={<PlusOutlined />} block>
-                {translate('Save')}
-              </Button>
-            </Form.Item>
-          </Col>
-          <Col className="gutter-row" span={4} offset={10}>
-            <p
-              style={{
-                paddingLeft: '12px',
-                paddingTop: '5px',
-                margin: 0,
-                textAlign: 'right',
-              }}
-            >
-              {translate('Sub Total')} :
-            </p>
-          </Col>
-          <Col className="gutter-row" span={5}>
-            <MoneyInputFormItem 
-              readOnly 
-              value={subTotal} 
-              currency={selectedCurrency} 
-            />
-            {console.log('Rendering with currency:', selectedCurrency)}
-          </Col>
-        </Row>
-        <Row gutter={[12, -5]}>
-          <Col className="gutter-row" span={4} offset={15}>
+      <Card className="card-form" style={{ marginBottom: '16px' }}>
+        <Title level={4}>
+          <ShoppingOutlined /> {translate('Purchase Order Information')}
+        </Title>
+        <Row gutter={[16, 16]}>
+          <Col className="gutter-row" span={12}>
             <Form.Item
-              name="taxRate"
+              name="factory"
+              label={translate('Factory')}
               rules={[
                 {
                   required: true,
+                  message: translate('Please select a factory'),
                 },
               ]}
             >
-              <SelectAsync
-                value={taxRate}
-                onChange={handelTaxChange}
-                entity={'taxes'}
-                outputValue={'taxValue'}
-                displayLabels={['taxName']}
-                withRedirect={true}
-                urlToRedirect="/taxes"
-                redirectLabel={translate('Add New Tax')}
-                placeholder={translate('Select Tax Value')}
+              <AutoCompleteAsync
+                entity={'factory'}
+                displayLabels={['factory_name']}
+                searchFields={'factory_name'}
+                redirectLabel={translate('Add New Factory')}
+                withRedirect
+                urlToRedirect={'/factory'}
               />
             </Form.Item>
           </Col>
-          <Col className="gutter-row" span={5}>
-            <MoneyInputFormItem readOnly value={taxTotal} currency={selectedCurrency} />
-          </Col>
-        </Row>
-        <Row gutter={[12, -5]}>
-          <Col className="gutter-row" span={4} offset={15}>
-            <p
-              style={{
-                paddingLeft: '12px',
-                paddingTop: '5px',
-                margin: 0,
-                textAlign: 'right',
-              }}
+          <Col className="gutter-row" span={12}>
+            <Form.Item
+              name="relatedInvoice"
+              label={translate('Related Invoice')}
             >
-              {translate('Total')} :
-            </p>
-          </Col>
-          <Col className="gutter-row" span={5}>
-            <MoneyInputFormItem readOnly value={total} currency={selectedCurrency} />
+              <AutoCompleteAsync
+                entity={'invoice'}
+                displayLabels={['number', 'client.name']}
+                searchFields={'number,client.name'}
+                redirectLabel={translate('Create New Invoice')}
+                withRedirect
+                urlToRedirect={'/invoice/create'}
+              />
+            </Form.Item>
           </Col>
         </Row>
-      </div>
+
+        <Row gutter={[16, 16]}>
+          <Col className="gutter-row" span={6}>
+            <Form.Item
+              label={translate('Purchase Order Number')}
+              name="number"
+              initialValue={lastNumber}
+              rules={[
+                {
+                  required: true,
+                  message: translate('Please enter a PO number'),
+                },
+              ]}
+            >
+              <Input prefix="#" style={{ width: '100%' }} />
+            </Form.Item>
+          </Col>
+          <Col className="gutter-row" span={6}>
+            <Form.Item
+              label={translate('Year')}
+              name="year"
+              initialValue={currentYear}
+              rules={[
+                {
+                  required: true,
+                  message: translate('Please enter a year'),
+                },
+              ]}
+            >
+              <InputNumber style={{ width: '100%' }} />
+            </Form.Item>
+          </Col>
+          <Col className="gutter-row" span={6}>
+            <Form.Item
+              label={translate('Status')}
+              name="status"
+              initialValue={'draft'}
+            >
+              <Select
+                options={[
+                  { value: 'draft', label: translate('Draft') },
+                  { value: 'pending', label: translate('Pending') },
+                  { value: 'sent', label: translate('Sent') },
+                  { value: 'accepted', label: translate('Accepted') },
+                  { value: 'declined', label: translate('Declined') },
+                ]}
+              />
+            </Form.Item>
+          </Col>
+          <Col className="gutter-row" span={6}>
+            <Form.Item
+              name="currency"
+              label={translate('Currency')}
+              rules={[
+                {
+                  required: true,
+                  message: translate('Please select currency'),
+                },
+              ]}
+            >
+              <SelectCurrency
+                value={selectedCurrency}
+                onChange={handleCurrencyChange}
+                entity={'currencies'}
+                outputValue={'currency_code'}
+                displayLabels={['currency_symbol','currency_name']}
+                withRedirect={true}
+                urlToRedirect="/currencies"
+                redirectLabel={translate('Add New Currency')}
+                placeholder={translate('Select currency')}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+      </Card>
+
+      <Card className="card-form" style={{ marginBottom: '16px' }}>
+        <Title level={4}>
+          <CalendarOutlined /> {translate('Dates & Notes')}
+        </Title>
+        <Row gutter={[16, 16]}>
+          <Col className="gutter-row" span={8}>
+            <Form.Item
+              name="date"
+              label={translate('Issue Date')}
+              rules={[
+                {
+                  required: true,
+                  type: 'object',
+                  message: translate('Please select a date'),
+                },
+              ]}
+              initialValue={dayjs()}
+            >
+              <DatePicker style={{ width: '100%' }} format={dateFormat} />
+            </Form.Item>
+          </Col>
+          <Col className="gutter-row" span={8}>
+            <Form.Item
+              name="expiredDate"
+              label={translate('Expiry Date')}
+              rules={[
+                {
+                  required: true,
+                  type: 'object',
+                  message: translate('Please select an expiry date'),
+                },
+              ]}
+              initialValue={dayjs().add(30, 'days')}
+            >
+              <DatePicker style={{ width: '100%' }} format={dateFormat} />
+            </Form.Item>
+          </Col>
+          <Col className="gutter-row" span={8}>
+            <Form.Item
+              label={translate('Discount')}
+              name="discount"
+              initialValue={0}
+              rules={[
+                {
+                  type: 'number',
+                  message: translate('Please enter a valid discount amount'),
+                },
+              ]}
+            >
+              <InputNumber
+                style={{ width: '100%' }}
+                step={0.01}
+                precision={2}
+                prefix={<DollarOutlined />}
+                min={0}
+              />
+            </Form.Item>
+          </Col>
+          <Col className="gutter-row" span={24}>
+            <Form.Item 
+              label={translate('Notes')} 
+              name="notes"
+              tooltip={translate('Add any special instructions or notes about this order')}
+            >
+              <Input.TextArea 
+                style={{ width: '100%' }} 
+                rows={4} 
+                placeholder={translate('Enter any additional notes or special instructions here...')}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+      </Card>
+
+      <Card className="card-form" style={{ marginBottom: '16px' }}>
+        <Title level={4}>
+          <ShoppingOutlined /> {translate('Order Items')}
+        </Title>
+        <div style={{ marginBottom: '10px' }}>
+          <Row gutter={[12, 0]} style={{ fontWeight: 'bold', padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
+            <Col span={7}>{translate('Item Name')}</Col>
+            <Col span={7}>{translate('Description')}</Col>
+            <Col span={3}>{translate('Laser')}</Col>
+            <Col span={2} style={{ textAlign: 'center' }}>{translate('Quantity')}</Col>
+            <Col span={2} style={{ textAlign: 'right' }}>{translate('Price')}</Col>
+            <Col span={3} style={{ textAlign: 'right' }}>{translate('Total')}</Col>
+          </Row>
+        </div>
+        <Form.List name="items">
+          {(fields, { add, remove }) => {
+            return (
+              <div>
+                {fields.map((field) => (
+                  <ItemRow 
+                    key={field.key} 
+                    remove={remove} 
+                    field={field} 
+                    current={current}
+                    formType="purchaseOrder"
+                  />
+                ))}
+                <Form.Item>
+                  <Button
+                    type="dashed"
+                    onClick={() => {
+                      add();
+                    }}
+                    style={{ width: '100%', marginTop: '20px' }}
+                    ref={addField}
+                    icon={<PlusOutlined />}
+                  >
+                    {translate('Add Item')}
+                  </Button>
+                </Form.Item>
+              </div>
+            );
+          }}
+        </Form.List>
+      </Card>
+
+      <Card className="card-form">
+        <Row gutter={[16, 16]}>
+          <Col span={12} offset={12}>
+            <div style={{ 
+              background: '#f5f5f5', 
+              padding: '20px', 
+              borderRadius: '5px',
+              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
+            }}>
+              <Row gutter={[12, 12]}>
+                <Col span={12} style={{ textAlign: 'right' }}>
+                  <Text strong>{translate('Total')}:</Text>
+                </Col>
+                <Col span={12}>
+                  <MoneyInputFormItem 
+                    readOnly 
+                    value={total} 
+                    style={{ 
+                      fontWeight: 'bold', 
+                      fontSize: '18px',
+                      color: '#1890ff'
+                    }} 
+                  />
+                </Col>
+              </Row>
+            </div>
+          </Col>
+        </Row>
+      </Card>
     </>
   );
 }

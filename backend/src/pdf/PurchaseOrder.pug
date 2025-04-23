@@ -248,14 +248,7 @@ html
       .footer-invoice {
         margin-top:30px
         color: #5d6975;
-        width: 100%;
-        position: absolute;
-        bottom: 0;
-        
-        padding: 20px 0;
-        text-align: center;
       }
- 
   body
     
       header.clearfix
@@ -291,12 +284,13 @@ html
                 p #{model.factory.contact}
         .col.col-24
           .space  
-      main
+      
         table.table-invoice
           thead
             tr.tableHeader
               th.service #{translate('Serial Number')}
               th #{translate('Description')}
+              th #{translate('Laser')}
               th #{translate('Quantity')}
               th #{translate('PRICE')}
               th #{translate('TOTAL')}
@@ -305,17 +299,12 @@ html
               tr
                 td.service= item.itemName
                 td= item.description
+                td= item.laser
                 td.qty= item.quantity
                 td.unit #{moneyFormatter({amount:item.price})}
                 td.total #{moneyFormatter({amount:item.total})}
             tr
-              td(colspan='4') #{translate('SUB TOTAL')}
-              td.total #{moneyFormatter({amount:model.subTotal})}
-            tr
-              td(colspan='4') #{translate('TAX')} #{model.taxRate} %
-              td.total #{moneyFormatter({amount:model.taxTotal})}
-            tr
-              td.grand.total(colspan='4') #{translate('TOTAL')}
+              td.grand.total(colspan='5') #{translate('TOTAL')}
               td.grand.total #{moneyFormatter({amount:model.total})}
         
       .col.col-24

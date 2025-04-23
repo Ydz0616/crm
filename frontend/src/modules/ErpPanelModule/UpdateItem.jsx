@@ -93,9 +93,15 @@ export default function UpdateItem({ config, UpdateForm }) {
       if (fieldsValue.items) {
         let newList = [];
         fieldsValue.items.map((item) => {
-          const { quantity, price, itemName, description } = item;
+          const { quantity, price, itemName, description, laser } = item;
           const total = item.quantity * item.price;
-          newList.push({ total, quantity, price, itemName, description });
+          const newItem = { total, quantity, price, itemName, description };
+          
+          if (laser !== undefined) {
+            newItem.laser = laser;
+          }
+          
+          newList.push(newItem);
         });
         dataToUpdate.items = newList;
       }
