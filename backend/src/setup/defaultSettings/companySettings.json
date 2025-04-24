@@ -2,7 +2,7 @@
   {
     "settingCategory": "company_settings",
     "settingKey": "company_name",
-    "settingValue": "COMPANY Name",
+    "settingValue": "WEIFANG ROYALROAD TRADING CO., LTD.",
     "valueType": "string"
   },
   {
@@ -20,37 +20,37 @@
   {
     "settingCategory": "company_settings",
     "settingKey": "company_address",
-    "settingValue": "25 , Your Company Address",
+    "settingValue": "NO.360 DongFeng East Str, WeiFang City, 261041, P.R China",
     "valueType": "string"
   },
   {
     "settingCategory": "company_settings",
     "settingKey": "company_state",
-    "settingValue": "New York",
+    "settingValue": "Shandong",
     "valueType": "string"
   },
   {
     "settingCategory": "company_settings",
     "settingKey": "company_country",
-    "settingValue": "United State",
+    "settingValue": "China",
     "valueType": "string"
   },
   {
     "settingCategory": "company_settings",
     "settingKey": "company_email",
-    "settingValue": "youremail@example.com",
+    "settingValue": "andy@plasmcut.com",
     "valueType": "string"
   },
   {
     "settingCategory": "company_settings",
     "settingKey": "company_phone",
-    "settingValue": "+1 345234654",
+    "settingValue": "+86 536 8296032",
     "valueType": "string"
   },
   {
     "settingCategory": "company_settings",
     "settingKey": "company_website",
-    "settingValue": "www.example.com",
+    "settingValue": "www.plasmcut.com",
     "valueType": "string"
   },
   {

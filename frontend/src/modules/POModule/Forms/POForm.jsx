@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import dayjs from 'dayjs';
 import { Form, Input, InputNumber, Button, Select, Divider, Row, Col, Card, Typography } from 'antd';
-import { PlusOutlined, ShoppingOutlined, CalendarOutlined, DollarOutlined } from '@ant-design/icons';
+import { PlusOutlined, ShoppingOutlined, CalendarOutlined, DollarOutlined, DeleteOutlined } from '@ant-design/icons';
 import { DatePicker } from 'antd';
 import AutoCompleteAsync from '@/components/AutoCompleteAsync';
 import ItemRow from '@/modules/ErpPanelModule/ItemRow';
@@ -76,6 +76,9 @@ function LoadPurchaseOrderForm({ subTotal = 0, current = null }) {
   useEffect(() => {
     addField.current.click();
   }, []);
+
+  // 确保notes是一个数组，即使它在current中不存在或为null
+  const initialNotes = Array.isArray(current?.notes) ? current.notes : [];
 
   return (
     <>
@@ -258,14 +261,48 @@ function LoadPurchaseOrderForm({ subTotal = 0, current = null }) {
           <Col className="gutter-row" span={24}>
             <Form.Item 
               label={translate('Notes')} 
-              name="notes"
               tooltip={translate('Add any special instructions or notes about this order')}
+              style={{ marginBottom: '8px' }}
             >
-              <Input.TextArea 
-                style={{ width: '100%' }} 
-                rows={4} 
-                placeholder={translate('Enter any additional notes or special instructions here...')}
-              />
+              <Form.List name="notes" initialValue={initialNotes}>
+                {(fields, { add, remove }) => (
+                  <>
+                    {fields.map((field, index) => (
+                      <Row key={field.key} style={{ marginBottom: '8px' }}>
+                        <Col span={22}>
+                          <Form.Item
+                            {...field}
+                            noStyle
+                          >
+                            <Input 
+                              placeholder={`${translate('Note')} #${index + 1}`}
+                              style={{ width: '100%' }}
+                            />
+                          </Form.Item>
+                        </Col>
+                        <Col span={2} style={{ paddingLeft: '8px' }}>
+                          <Button 
+                            type="text" 
+                            danger 
+                            onClick={() => remove(field.name)} 
+                            icon={<DeleteOutlined />}
+                          />
+                        </Col>
+                      </Row>
+                    ))}
+                    <Form.Item>
+                      <Button
+                        type="dashed"
+                        onClick={() => add()}
+                        icon={<PlusOutlined />}
+                        style={{ width: '100%' }}
+                      >
+                        {translate('Add Note')}
+                      </Button>
+                    </Form.Item>
+                  </>
+                )}
+              </Form.List>
             </Form.Item>
           </Col>
         </Row>
@@ -277,12 +314,13 @@ function LoadPurchaseOrderForm({ subTotal = 0, current = null }) {
         </Title>
         <div style={{ marginBottom: '10px' }}>
           <Row gutter={[12, 0]} style={{ fontWeight: 'bold', padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
-            <Col span={7}>{translate('Item Name')}</Col>
-            <Col span={7}>{translate('Description')}</Col>
+            <Col span={5}>{translate('Item Name')}</Col>
+            <Col span={5}>{translate('Description')}</Col>
             <Col span={3}>{translate('Laser')}</Col>
             <Col span={2} style={{ textAlign: 'center' }}>{translate('Quantity')}</Col>
-            <Col span={2} style={{ textAlign: 'right' }}>{translate('Price')}</Col>
+            <Col span={3} style={{ textAlign: 'right' }}>{translate('Price')}</Col>
             <Col span={3} style={{ textAlign: 'right' }}>{translate('Total')}</Col>
+            <Col span={1}></Col>
           </Row>
         </div>
         <Form.List name="items">

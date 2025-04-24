@@ -10,6 +10,7 @@ export default function ItemRow({ field, remove, current, formType = 'default' }
   const [totalState, setTotal] = useState(0);
   const [price, setPrice] = useState(0);
   const [quantity, setQuantity] = useState(0);
+  const [unitLabels, setUnitLabels] = useState({ en: '', cn: '' });
 
   // Check if this form is for Purchase Order - used for conditional rendering
   const isPurchaseOrder = formType === 'purchaseOrder';
@@ -83,6 +84,14 @@ export default function ItemRow({ field, remove, current, formType = 'default' }
               console.log('Setting laser value:', item.laser);
               form.setFieldValue(['items', field.name, 'laser'], item.laser);
             }
+            
+            // Set unit values if they exist
+            if (item.unit_en) {
+              form.setFieldValue(['items', field.name, 'unit_en'], item.unit_en);
+            }
+            if (item.unit_cn) {
+              form.setFieldValue(['items', field.name, 'unit_cn'], item.unit_cn);
+            }
           }
         }
       } else {
@@ -107,6 +116,14 @@ export default function ItemRow({ field, remove, current, formType = 'default' }
             if (isPurchaseOrder && item.laser !== undefined) {
               console.log('Setting laser value:', item.laser);
               form.setFieldValue(['items', field.name, 'laser'], item.laser);
+            }
+            
+            // Set unit values if they exist
+            if (item.unit_en) {
+              form.setFieldValue(['items', field.name, 'unit_en'], item.unit_en);
+            }
+            if (item.unit_cn) {
+              form.setFieldValue(['items', field.name, 'unit_cn'], item.unit_cn);
             }
           }
         }
@@ -146,8 +163,17 @@ export default function ItemRow({ field, remove, current, formType = 'default' }
       // Use Chinese description for PO and English for others
       description: isPurchaseOrder 
         ? (selectedMerch.description_cn || '') 
-        : (selectedMerch.description_en || '')
+        : (selectedMerch.description_en || ''),
+      // 存储单位信息 - Always store both unit values regardless of form type
+      unit_en: selectedMerch.unit_en || '',
+      unit_cn: selectedMerch.unit_cn || ''
     };
+    
+    // 更新单位显示状态 (for internal tracking, even if not displayed)
+    setUnitLabels({
+      en: selectedMerch.unit_en || '',
+      cn: selectedMerch.unit_cn || ''
+    });
     
     // 如果是PO，保留之前的laser值
     if (isPurchaseOrder) {
@@ -164,20 +190,22 @@ export default function ItemRow({ field, remove, current, formType = 'default' }
   const getColumnWidths = () => {
     if (isPurchaseOrder) {
       return {
-        itemName: 7,
-        description: 7,
+        itemName: 5, 
+        description: 5, 
         laser: 3,
-        quantity: 2,
-        price: 2,
-        total: 3
+        quantity: 2,    // 减小数量列的宽度
+        price: 3,       // 价格列宽度为3
+        total: 3,
+        deleteBtn: 1    // 为删除按钮预留空间
       };
     } else {
       return {
-        itemName: 8,
-        description: 8,
-        quantity: 2,
-        price: 3,
-        total: 3
+        itemName: 6, 
+        description: 7, 
+        quantity: 2,    // 减小数量列的宽度
+        price: 3,       // 价格列宽度为3
+        total: 3,
+        deleteBtn: 1    // 为删除按钮预留空间
       };
     }
   };
@@ -189,9 +217,11 @@ export default function ItemRow({ field, remove, current, formType = 'default' }
       gutter={[12, 12]} 
       style={{ 
         position: 'relative',
-        padding: '12px 0',
+        padding: '6px 0', 
         borderBottom: '1px dashed #f0f0f0',
-        alignItems: 'center'
+        alignItems: 'center',
+        whiteSpace: 'nowrap', 
+        overflow: 'hidden' 
       }}
     >
       <Col className="gutter-row" span={columnWidths.itemName}>
@@ -199,7 +229,7 @@ export default function ItemRow({ field, remove, current, formType = 'default' }
           {...field}
           validateTrigger={['onChange', 'onBlur']}
           name={[field.name, 'itemName']}
-          rules={[{ required: true, message: 'Item name is required' }]}
+          rules={[{ required: true, message: 'Required' }]}
           style={{ marginBottom: 0 }}
         >
           <MerchCompleteAsync
@@ -208,7 +238,7 @@ export default function ItemRow({ field, remove, current, formType = 'default' }
             searchFields="serialNumber"
             outputValue="serialNumber"
             onItemSelect={handleMerchSelect}
-            placeholder="Select or enter item name"
+            placeholder="Item Name"
           />
         </Form.Item>
       </Col>
@@ -219,10 +249,9 @@ export default function ItemRow({ field, remove, current, formType = 'default' }
           name={[field.name, 'description']}
           style={{ marginBottom: 0 }}
         >
-          <Input.TextArea
-            rows={1}
+          <Input
             style={{ minHeight: '32px' }}
-            placeholder={isPurchaseOrder ? "中文描述" : "Item description"}
+            placeholder={isPurchaseOrder ? "中文描述" : "Description"}
           />
         </Form.Item>
       </Col>
@@ -242,67 +271,86 @@ export default function ItemRow({ field, remove, current, formType = 'default' }
         </Col>
       )}
       
-      <Col className="gutter-row" span={columnWidths.quantity} style={{ textAlign: 'center' }}>
-        <Form.Item 
-          name={[field.name, 'quantity']} 
-          rules={[{ required: true, message: 'Quantity is required' }]}
+      <Col className="gutter-row" span={columnWidths.quantity}>
+        <Form.Item
+          {...field}
+          validateTrigger={['onChange', 'onBlur']}
+          name={[field.name, 'quantity']}
+          rules={[{ required: true, message: 'Required' }]}
           style={{ marginBottom: 0 }}
         >
-          <InputNumber 
-            style={{ width: '100%' }} 
-            min={1} 
-            onChange={updateQt} 
+          <InputNumber
+            min={0}
+            style={{ width: '100%' }}
             placeholder="Qty"
-            precision={0}
+            onChange={updateQt}
           />
         </Form.Item>
       </Col>
-      <Col className="gutter-row" span={columnWidths.price} style={{ textAlign: 'right' }}>
-        <Form.Item 
-          name={[field.name, 'price']} 
-          rules={[{ required: true, message: 'Price is required' }]}
+      
+      {/* Hidden form items for storing unit values */}
+      <Form.Item
+        {...field}
+        hidden
+        name={[field.name, 'unit_en']}
+        style={{ marginBottom: 0 }}
+      />
+      <Form.Item
+        {...field}
+        hidden
+        name={[field.name, 'unit_cn']}
+        style={{ marginBottom: 0 }}
+      />
+      
+      <Col className="gutter-row" span={columnWidths.price}>
+        <Form.Item
+          {...field}
+          validateTrigger={['onChange', 'onBlur']}
+          name={[field.name, 'price']}
+          rules={[{ required: true, message: 'Required' }]}
           style={{ marginBottom: 0 }}
         >
           <InputNumber
             className="moneyInput"
-            onChange={updatePrice}
             min={0}
-            precision={2}
+            style={{ width: '100%' }}
+            placeholder="Price"
+            onChange={updatePrice}
             controls={false}
             addonAfter={money.currency_position === 'after' ? money.currency_symbol : undefined}
             addonBefore={money.currency_position === 'before' ? money.currency_symbol : undefined}
-            style={{ width: '100%' }}
-            placeholder="Price"
           />
         </Form.Item>
       </Col>
-      <Col className="gutter-row" span={columnWidths.total} style={{ textAlign: 'right' }}>
-        <InputNumber
-          readOnly
-          className="moneyInput"
-          value={totalState}
-          min={0}
-          precision={2}
-          controls={false}
-          addonAfter={money.currency_position === 'after' ? money.currency_symbol : undefined}
-          addonBefore={money.currency_position === 'before' ? money.currency_symbol : undefined}
-          formatter={(value) =>
-            money.amountFormatter({ amount: value, currency_code: money.currency_code })
-          }
-          style={{ width: '100%', fontWeight: 'bold' }}
-        />
-      </Col>
-
-      <Col flex="none">
-        <Tooltip title="Remove item">
-          <Button 
-            type="text" 
-            danger 
-            icon={<DeleteOutlined />} 
-            onClick={() => remove(field.name)} 
-            style={{ marginLeft: '8px' }}
+      
+      <Col className="gutter-row" span={columnWidths.total}>
+        <Form.Item
+          {...field}
+          name={[field.name, 'total']}
+          style={{ marginBottom: 0 }}
+        >
+          <InputNumber
+            className="moneyInput"
+            min={0}
+            readOnly
+            style={{ width: '100%' }}
+            value={totalState}
+            controls={false}
+            addonAfter={money.currency_position === 'after' ? money.currency_symbol : undefined}
+            addonBefore={money.currency_position === 'before' ? money.currency_symbol : undefined}
+            formatter={(value) => money.amountFormatter({ amount: value })}
           />
-        </Tooltip>
+        </Form.Item>
+      </Col>
+      
+      <Col className="gutter-row" span={columnWidths.deleteBtn}>
+        <Button
+          type="text"
+          danger
+          icon={<DeleteOutlined />}
+          onClick={() => remove(field.name)}
+          style={{ marginLeft: '8px' }}
+        />
       </Col>
     </Row>
   );

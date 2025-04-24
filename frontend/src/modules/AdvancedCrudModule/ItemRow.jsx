@@ -1,19 +1,22 @@
 import { useState, useEffect } from 'react';
-import { Form, Input, InputNumber, Row, Col } from 'antd';
-import AutoCompleteAsync from '@/components/AutoCompleteAsync';
+import { Form, Input, InputNumber, Row, Col, Button } from 'antd';
 import { DeleteOutlined } from '@ant-design/icons';
-import { useMoney, useDate } from '@/settings';
+import { useMoney } from '@/settings';
 import calculate from '@/utils/calculate';
 import MerchCompleteAsync from '@/components/MerchCompleteAsync';
+
 export default function ItemRow({ field, remove, current = null }) {
   const [totalState, setTotal] = useState(undefined);
   const [price, setPrice] = useState(0);
   const [quantity, setQuantity] = useState(0);
+  const [unitLabels, setUnitLabels] = useState({ en: '', cn: '' });
 
   const money = useMoney();
+  
   const updateQt = (value) => {
     setQuantity(value);
   };
+  
   const updatePrice = (value) => {
     setPrice(value);
   };
@@ -33,6 +36,13 @@ export default function ItemRow({ field, remove, current = null }) {
         if (item) {
           setQuantity(item.quantity);
           setPrice(item.price);
+          
+          if (item.unit_en || item.unit_cn) {
+            setUnitLabels({
+              en: item.unit_en || '',
+              cn: item.unit_cn || ''
+            });
+          }
         }
       } else {
         const item = items[field.fieldKey];
@@ -40,6 +50,13 @@ export default function ItemRow({ field, remove, current = null }) {
         if (item) {
           setQuantity(item.quantity);
           setPrice(item.price);
+          
+          if (item.unit_en || item.unit_cn) {
+            setUnitLabels({
+              en: item.unit_en || '',
+              cn: item.unit_cn || ''
+            });
+          }
         }
       }
     }
@@ -47,42 +64,113 @@ export default function ItemRow({ field, remove, current = null }) {
 
   useEffect(() => {
     const currentTotal = calculate.multiply(price, quantity);
-
     setTotal(currentTotal);
   }, [price, quantity]);
 
+  const handleMerchSelect = (selectedMerch) => {
+    console.log('Selected Merch:', selectedMerch);
+    
+    const form = field.form;
+    if (!form) {
+      console.error('Form instance not found');
+      return;
+    }
 
+    if (selectedMerch.unit_en || selectedMerch.unit_cn) {
+      setUnitLabels({
+        en: selectedMerch.unit_en || '',
+        cn: selectedMerch.unit_cn || ''
+      });
+      
+      form.setFieldValue([field.name, 'unit_en'], selectedMerch.unit_en || '');
+      form.setFieldValue([field.name, 'unit_cn'], selectedMerch.unit_cn || '');
+    }
+  };
+  
+  const columnWidths = {
+    itemName: 6,
+    description: 7,
+    quantity: 2,
+    price: 3,
+    total: 3,
+    deleteBtn: 1
+  };
   
   return (
-    <Row gutter={[12, 12]} style={{ position: 'relative' }}>
-      <Col className="gutter-row" span={5}>
+    <Row gutter={[12, 12]} style={{ 
+      position: 'relative', 
+      padding: '6px 0', 
+      borderBottom: '1px dashed #f0f0f0',
+      alignItems: 'center',
+      whiteSpace: 'nowrap',
+      overflow: 'hidden'
+    }}>
+      <Col className="gutter-row" span={columnWidths.itemName}>
         <Form.Item
           name={[field.name, 'itemName']}
           rules={[
             {
               required: true,
+              message: 'Required'
             },
             {
               pattern: /^(?!\s*$)[\s\S]+$/, // Regular expression to allow spaces, alphanumeric, and special characters, but not just spaces
+              message: 'Cannot be empty'
             },
           ]}
+          style={{ marginBottom: 0 }}
         >
-         
-
+          <MerchCompleteAsync
+            entity="merch"
+            displayLabels={['serialNumber']}
+            searchFields="serialNumber"
+            outputValue="serialNumber"
+            onItemSelect={handleMerchSelect}
+            placeholder="Item Name"
+          />
         </Form.Item>
       </Col>
-      <Col className="gutter-row" span={7}>
-        <Form.Item name={[field.name, 'description']}>
-          <Input placeholder="description Name" />
+      
+      <Col className="gutter-row" span={columnWidths.description}>
+        <Form.Item 
+          name={[field.name, 'description']}
+          style={{ marginBottom: 0 }}
+        >
+          <Input placeholder="Description" />
         </Form.Item>
       </Col>
-      <Col className="gutter-row" span={3}>
-        <Form.Item name={[field.name, 'quantity']} rules={[{ required: true }]}>
-          <InputNumber style={{ width: '100%' }} min={0} onChange={updateQt} />
+      
+      <Col className="gutter-row" span={columnWidths.quantity}>
+        <Form.Item 
+          name={[field.name, 'quantity']} 
+          rules={[{ required: true, message: 'Required' }]}
+          style={{ marginBottom: 0 }}
+        >
+          <InputNumber 
+            style={{ width: '100%' }} 
+            min={0} 
+            onChange={updateQt}
+            placeholder="Qty"
+          />
         </Form.Item>
       </Col>
-      <Col className="gutter-row" span={4}>
-        <Form.Item name={[field.name, 'price']} rules={[{ required: true }]}>
+      
+      {/* Hidden form items for storing unit values */}
+      <Form.Item
+        name={[field.name, 'unit_en']}
+        hidden
+      />
+      <Form.Item
+        name={[field.name, 'unit_cn']}
+        hidden
+      />
+      
+      <Col className="gutter-row" span={columnWidths.price}>
+        <Form.Item 
+          name={[field.name, 'price']} 
+          rules={[{ required: true, message: 'Required' }]}
+          style={{ marginBottom: 0 }}
+        >
           <InputNumber
             className="moneyInput"
             onChange={updatePrice}
@@ -90,29 +178,38 @@ export default function ItemRow({ field, remove, current = null }) {
             controls={false}
             addonAfter={money.currency_position === 'after' ? money.currency_symbol : undefined}
             addonBefore={money.currency_position === 'before' ? money.currency_symbol : undefined}
+            placeholder="Price"
           />
         </Form.Item>
       </Col>
-      <Col className="gutter-row" span={5}>
-        <Form.Item name={[field.name, 'total']}>
-          <Form.Item>
-            <InputNumber
-              readOnly
-              className="moneyInput"
-              value={totalState}
-              min={0}
-              controls={false}
-              addonAfter={money.currency_position === 'after' ? money.currency_symbol : undefined}
-              addonBefore={money.currency_position === 'before' ? money.currency_symbol : undefined}
-              formatter={(value) => money.amountFormatter({ amount: value })}
-            />
-          </Form.Item>
+      
+      <Col className="gutter-row" span={columnWidths.total}>
+        <Form.Item 
+          name={[field.name, 'total']}
+          style={{ marginBottom: 0 }}
+        >
+          <InputNumber
+            readOnly
+            className="moneyInput"
+            value={totalState}
+            min={0}
+            controls={false}
+            addonAfter={money.currency_position === 'after' ? money.currency_symbol : undefined}
+            addonBefore={money.currency_position === 'before' ? money.currency_symbol : undefined}
+            formatter={(value) => money.amountFormatter({ amount: value })}
+          />
         </Form.Item>
       </Col>
 
-      <div style={{ position: 'absolute', right: '-20px', top: ' 5px' }}>
-        <DeleteOutlined onClick={() => remove(field.name)} />
-      </div>
+      <Col className="gutter-row" span={columnWidths.deleteBtn}>
+        <Button
+          type="text"
+          danger
+          icon={<DeleteOutlined />}
+          onClick={() => remove(field.name)}
+          style={{ marginLeft: '8px' }}
+        />
+      </Col>
     </Row>
   );
 }

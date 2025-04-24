@@ -7,7 +7,7 @@ html
       .sheet {
         margin: 0;
         width: 100%; 
-        height: 297mm;
+        height: 297mm
       }
 
       body{
@@ -15,15 +15,18 @@ html
         margin: 0;
         padding: 0px ;
         background: #ffffff;
-        font-family: sans-serif;
+        font-family: "Arial", serif;
         font-size:12px;
         color:#222
       }
       *, *:before, *:after {
         box-sizing: inherit;
-        color:#222
+        color:#222;
+        font-family: "Arial", serif;
       }
-
+      :lang(zh) {
+        font-family: SimSun, "宋体", serif !important;
+      }
       .clearfix {
         display: block; }
       //- .invoice-container {
@@ -51,7 +54,7 @@ html
         text-align: left;
       }
       .logo {
-        width: 150px;
+        width: 300px;
       }
       .company-info{
         text-align: right;
@@ -216,6 +219,16 @@ html
       .table-invoice .service, .table-invoice .desc {
         text-align: left;
       }
+      .table-invoice .service, .table-invoice .desc, .table-invoice .num {
+        text-align: left;
+      }
+      .table-invoice td.num {
+        width: 40px;
+        text-align: center;
+      }
+      .table-invoice th.num {
+        text-align: center;
+      }
       .table-invoice td {
         padding: 10px ;
         text-align: right;
@@ -255,32 +268,34 @@ html
         .top-area
           img.logo.left(src=settings.public_server_file+settings.company_logo)
           .right.company-info
-              p.strong #{settings.company_name}
-              p #{settings.company_address}
-              p #{settings.company_reg_number}
+              p.strong WEIFANG ROYALROAD TRADING CO., LTD.
+              p(style="text-decoration: underline;") 
+                a(href="http://www.plasmcut.com") Be A Responsible Company
+              p NO.360 DongFeng East Str, WeiFang City, 261041, P.R China
+              p Tel: 86-536-8296032
+              p E-mail: andy@plasmcut.com
               
         .col.col-24
           .space  
         .left.col-14
             h1.invoice
-              | #{translate('Purchase Order')}
+              | 采购合同
             div 
               .col.col-7
-                p.strong #{translate('Date')} :
+                p.strong(style="color:#52008c;") 签订时间 :
                 p #{moment(model.date).format(dateFormat)}
               .col.col-9
-                p.strong #{translate('Expired Date')} :
+                p.strong(style="color:#52008c;") 交付时间 :
                 p #{moment(model.expiredDate).format(dateFormat)}
               .col.col-8 
-                p.strong #{translate('Number')} :
+                p.strong(style="color:#52008c;") 合同编号 :
                 p # #{model.number}/#{model.year || ""} 
               
         .right.col-10
             .billTo
-                p #{translate('Factory')} :
+                p(style="color:#52008c;") 供货方 :
                 p #{model.factory.factory_name}
                 p #{model.factory.location}
-                p #{model.factory.tel1}
                 p #{model.factory.contact}
         .col.col-24
           .space  
@@ -288,27 +303,42 @@ html
         table.table-invoice
           thead
             tr.tableHeader
-              th.service #{translate('Serial Number')}
-              th #{translate('Description')}
-              th #{translate('Laser')}
-              th #{translate('Quantity')}
-              th #{translate('PRICE')}
-              th #{translate('TOTAL')}
+              th.num 序号
+              th.service 货号
+              th 产品名称
+              th 激光内容
+              th 数量
+              th 单位
+              th 单价(含税)
+              th 税价合计
           tbody
-            each item in model.items
+            each item, index in model.items
               tr
+                td.num= ('00' + (index + 1)).slice(-3)
                 td.service= item.itemName
                 td= item.description
                 td= item.laser
                 td.qty= item.quantity
-                td.unit #{moneyFormatter({amount:item.price})}
+                td.unit= item.unit_cn || ''
+                td.price #{moneyFormatter({amount:item.price})}
                 td.total #{moneyFormatter({amount:item.total})}
             tr
-              td.grand.total(colspan='5') #{translate('TOTAL')}
+              td.grand.total(colspan='7') 合计人民币金额
               td.grand.total #{moneyFormatter({amount:model.total})}
         
       .col.col-24
-          .space     
+          .space
+      
+      if model.notes && model.notes.length > 0
+        .col.col-24
+          .left.col-12
+            p.strong 备注:
+            ul(style="list-style-type: none; padding-left: 0;")
+              each note, index in model.notes
+                li #{index + 1}. #{note}
+          .col-12
+            // 右侧留空
+     
       footer.footer-invoice
         //- | Invoice was created on a computer and is valid without the signature and seal.
           

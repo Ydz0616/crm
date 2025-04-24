@@ -266,11 +266,12 @@ function LoadInvoiceForm({ subTotal = 0, current = null }) {
         </Title>
         <div style={{ marginBottom: '10px' }}>
           <Row gutter={[12, 0]} style={{ fontWeight: 'bold', padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
-            <Col span={8}>{translate('Item Name')}</Col>
-            <Col span={8}>{translate('Description')}</Col>
+            <Col span={6}>{translate('Item Name')}</Col>
+            <Col span={7}>{translate('Description')}</Col>
             <Col span={2} style={{ textAlign: 'center' }}>{translate('Quantity')}</Col>
             <Col span={3} style={{ textAlign: 'right' }}>{translate('Price')}</Col>
             <Col span={3} style={{ textAlign: 'right' }}>{translate('Total')}</Col>
+            <Col span={1}></Col>
           </Row>
         </div>
         <Form.List name="items">

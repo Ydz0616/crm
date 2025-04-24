@@ -71,6 +71,12 @@ const orderSchema = new mongoose.Schema({
         type: Number,
         required: true,
       },
+      unit_en: {
+        type: String,
+      },
+      unit_cn: {
+        type: String,
+      },
     },
   ],
   total: {
@@ -92,7 +98,8 @@ const orderSchema = new mongoose.Schema({
     default: 0,
   },
   notes: {
-    type: String,
+    type: [String],
+    default: [],
   },
   status: {
     type: String,

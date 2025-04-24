@@ -96,6 +96,12 @@ const invoiceSchema = new mongoose.Schema({
         type: Number,
         required: true,
       },
+      unit_en: {
+        type: String,
+      },
+      unit_cn: {
+        type: String,
+      },
     },
   ],
   taxRate: {

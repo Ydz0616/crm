@@ -36,6 +36,14 @@ const schema = new mongoose.Schema({
   ETR: {
     type: Number,
     required: true
+  },
+  unit_en: {
+    type: String,
+    required: true
+  },
+  unit_cn: {
+    type: String,
+    required: true
   }
 });
 

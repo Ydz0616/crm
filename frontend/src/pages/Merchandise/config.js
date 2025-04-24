@@ -22,5 +22,13 @@ export const fields = {
   },
   ETR: {
     type: 'number',
+  },
+  unit_en: {
+    type: 'string',
+    required: true
+  },
+  unit_cn: {
+    type: 'string',
+    required: true
   }
 };
