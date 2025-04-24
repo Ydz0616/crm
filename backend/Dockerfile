@@ -2,14 +2,16 @@ FROM dockerpull.cn/node:20.9.0-alpine
 
 WORKDIR /usr/src/app
 
-# 安装 Chromium 最小依赖
+# 安装 Chromium 和中文字体
 RUN apk update && apk add --no-cache \
     chromium \
     nss \
     freetype \
     harfbuzz \
     ca-certificates \
-    ttf-freefont
+    ttf-freefont \
+    font-noto \
+    font-noto-cjk
 
 # 配置 Puppeteer 使用已安装的 Chromium
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \

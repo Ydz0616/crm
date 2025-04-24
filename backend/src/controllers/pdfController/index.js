@@ -146,12 +146,33 @@ exports.generatePdf = async (
         // 使用Puppeteer直接生成PDF
         const browser = await puppeteer.launch({
           headless: 'new',
-          args: ['--no-sandbox', '--disable-setuid-sandbox']
+          args: ['--no-sandbox', '--disable-setuid-sandbox', '--font-render-hinting=none']
         });
         const page = await browser.newPage();
         
+        // 设置中文字体
+        await page.evaluateOnNewDocument(() => {
+          document.documentElement.style.cssText = `
+            font-family: 'Noto Sans CJK SC', 'Noto Sans CJK', sans-serif;
+          `;
+        });
+        
+        // 添加内联样式确保中文显示
+        const htmlWithFonts = `
+          <style>
+            @font-face {
+              font-family: 'Noto Sans CJK SC';
+              src: local('Noto Sans CJK SC'), local('Noto Sans CJK');
+            }
+            * {
+              font-family: 'Noto Sans CJK SC', 'Noto Sans CJK', sans-serif !important;
+            }
+          </style>
+          ${htmlContent}
+        `;
+        
         // 设置页面内容
-        await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+        await page.setContent(htmlWithFonts, { waitUntil: 'networkidle0' });
         
         // 设置PDF选项
         const pdfOptions = {

@@ -34,7 +34,7 @@ spec:
               topologyKey: kubernetes.io/hostname
       containers:
       - name: crm-backend
-        image: yz743/easycrm:backend-v1.1.0
+        image: yz743/easycrm:backend-v1.1.1
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 3000
