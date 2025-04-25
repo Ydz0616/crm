@@ -32,9 +32,24 @@ spec:
                   values:
                   - crm-backend
               topologyKey: kubernetes.io/hostname
+      volumes:
+      - name: uploads-volume
+        emptyDir: {}
+      initContainers:
+      - name: setup-logo
+        image: busybox
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          mkdir -p /usr/src/app/src/public/uploads/setting
+          echo "在容器启动时检查目录"
+          ls -la /usr/src/app/src/public/uploads/setting
+        volumeMounts:
+        - name: uploads-volume
+          mountPath: /usr/src/app/src/public/uploads
       containers:
       - name: crm-backend
-        image: yz743/easycrm:backend-v1.1.2
+        image: yz743/easycrm:backend-v1.1.2a
         imagePullPolicy: Always
         ports:
         - containerPort: 3000
@@ -46,6 +61,9 @@ spec:
           requests:
             cpu: "200m"
             memory: "256Mi"
+        volumeMounts:
+        - name: uploads-volume
+          mountPath: /usr/src/app/src/public/uploads
         envFrom:
         - configMapRef:
             name: backend-config
@@ -61,7 +79,9 @@ spec:
               name: crm-secrets
               key: jwt-secret
         - name: GOTENBERG_URL
-          value: "http://gotenberg:3000"
+          value: "http://crm-gotenberg:3000"
+        - name: FORCE_USE_REMOTE_LOGO
+          value: "true"
         livenessProbe:
           httpGet:
             path: /health

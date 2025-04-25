@@ -158,11 +158,26 @@ const convertImageToBase64 = async (imgPath) => {
   try {
     console.log('准备转换图片:', imgPath);
     
+    // 如果是远程URL，优先使用远程URL而不是尝试找本地文件
+    if (imgPath.startsWith('http')) {
+      try {
+        console.log('处理远程URL图片:', imgPath);
+        const response = await axios.get(imgPath, { responseType: 'arraybuffer' });
+        const contentType = response.headers['content-type'] || 'image/png';
+        const base64 = Buffer.from(response.data, 'binary').toString('base64');
+        return `data:${contentType};base64,${base64}`;
+      } catch (error) {
+        console.error('获取远程图片失败:', error.message);
+        // 如果远程获取失败，继续尝试本地文件
+        console.log('远程获取失败，尝试查找本地文件');
+      }
+    }
+    
     // 特别处理公司logo路径
     const logoFilename = 'company-logo.png';
     if (imgPath.includes(logoFilename) || imgPath.includes('company_logo')) {
       const projectRoot = process.cwd();
-      const logoPath = path.join(projectRoot, 'backend/src/public/uploads/setting/company-logo.png');
+      const logoPath = path.join(projectRoot, 'src/public/uploads/setting/company-logo.png');
       
       console.log('检测到logo图片路径，使用固定路径:', logoPath);
       
@@ -175,35 +190,19 @@ const convertImageToBase64 = async (imgPath) => {
       }
     }
     
-    // 处理远程URL图片
-    if (imgPath.startsWith('http')) {
-      try {
-        console.log('处理远程URL图片:', imgPath);
-        const response = await axios.get(imgPath, { responseType: 'arraybuffer' });
-        const contentType = response.headers['content-type'] || 'image/png';
-        const base64 = Buffer.from(response.data, 'binary').toString('base64');
-        return `data:${contentType};base64,${base64}`;
-      } catch (error) {
-        console.error('获取远程图片失败:', error.message);
-        return null;
-      }
-    }
-    
     // 处理常规图片路径
     let resolvedPath = '';
     
     // 尝试不同的路径组合
     const pathsToTry = [
-      imgPath,                                           // 原始路径
-      path.join(process.cwd(), imgPath),                 // 从项目根目录
-      path.join(process.cwd(), 'backend', imgPath),      // 从backend目录
-      path.join(process.cwd(), 'backend/src', imgPath),  // 从backend/src目录
+      imgPath,                                // 原始路径
+      path.join(process.cwd(), imgPath),      // 从项目根目录
+      path.join(process.cwd(), 'src', imgPath), // 从src目录
       // 移除开头的斜杠
       ...(imgPath.startsWith('/') 
         ? [
             path.join(process.cwd(), imgPath.substring(1)),
-            path.join(process.cwd(), 'backend', imgPath.substring(1)),
-            path.join(process.cwd(), 'backend/src', imgPath.substring(1))
+            path.join(process.cwd(), 'src', imgPath.substring(1))
           ] 
         : []
       )
