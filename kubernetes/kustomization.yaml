@@ -9,6 +9,7 @@ resources:
   - frontend-deployment.yaml
   - ingress.yaml
   - gotenberg-deployment.yaml
+  - uploads-pvc.yaml
 
 commonLabels:
   app.kubernetes.io/managed-by: argocd

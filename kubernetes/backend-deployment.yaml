@@ -34,42 +34,40 @@ spec:
               topologyKey: kubernetes.io/hostname
       volumes:
       - name: uploads-volume
-        emptyDir: {}
+        persistentVolumeClaim:
+          claimName: uploads-pvc
       initContainers:
       - name: setup-logo
         image: busybox
         command: ["/bin/sh", "-c"]
         args:
         - |
-          # 探索实际的文件结构
-          echo "探索容器文件结构:"
-          ls -la /usr/src/app/
-          
-          # 创建正确的目录路径
+          # 创建必要的目录结构
           mkdir -p /usr/src/app/backend/src/public/uploads/setting
           mkdir -p /usr/src/app/src/public/uploads/setting
           
-          echo "在容器启动时检查目录"
+          # 检查目录
+          echo "检查上传目录结构:"
           ls -la /usr/src/app/backend/src/public/uploads/setting
           
-          # 创建默认logo文件，如果不存在
+          # 如果PVC中没有logo文件，创建1x1透明像素作为占位符
+          # 实际logo文件将通过kubectl cp命令上传
           if [ ! -f /usr/src/app/backend/src/public/uploads/setting/company-logo.png ]; then
-            echo "创建默认logo文件在backend目录"
-            # 使用base64编码的1x1透明像素
+            echo "未找到logo文件，创建默认占位图像"
             echo "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" | base64 -d > /usr/src/app/backend/src/public/uploads/setting/company-logo.png
             chmod 644 /usr/src/app/backend/src/public/uploads/setting/company-logo.png
           fi
           
-          # 同时在另一个可能的路径也创建
+          # 确保两个路径都有logo文件（通过复制而不是重新创建）
           if [ ! -f /usr/src/app/src/public/uploads/setting/company-logo.png ]; then
-            echo "创建默认logo文件在src目录"
-            echo "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" | base64 -d > /usr/src/app/src/public/uploads/setting/company-logo.png
-            chmod 644 /usr/src/app/src/public/uploads/setting/company-logo.png
+            cp /usr/src/app/backend/src/public/uploads/setting/company-logo.png /usr/src/app/src/public/uploads/setting/company-logo.png
           fi
           
-          echo "创建完成，再次检查目录:"
-          ls -la /usr/src/app/backend/src/public/uploads/setting
-          ls -la /usr/src/app/src/public/uploads/setting
+          # 设置正确的文件权限
+          chown -R 1000:1000 /usr/src/app/backend/src/public/uploads
+          chown -R 1000:1000 /usr/src/app/src/public/uploads
+          chmod -R 755 /usr/src/app/backend/src/public/uploads
+          chmod -R 755 /usr/src/app/src/public/uploads
         volumeMounts:
         - name: uploads-volume
           mountPath: /usr/src/app/src/public/uploads
