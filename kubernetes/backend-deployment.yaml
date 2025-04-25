@@ -41,15 +41,43 @@ spec:
         command: ["/bin/sh", "-c"]
         args:
         - |
+          # 探索实际的文件结构
+          echo "探索容器文件结构:"
+          ls -la /usr/src/app/
+          
+          # 创建正确的目录路径
+          mkdir -p /usr/src/app/backend/src/public/uploads/setting
           mkdir -p /usr/src/app/src/public/uploads/setting
+          
           echo "在容器启动时检查目录"
+          ls -la /usr/src/app/backend/src/public/uploads/setting
+          
+          # 创建默认logo文件，如果不存在
+          if [ ! -f /usr/src/app/backend/src/public/uploads/setting/company-logo.png ]; then
+            echo "创建默认logo文件在backend目录"
+            # 使用base64编码的1x1透明像素
+            echo "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" | base64 -d > /usr/src/app/backend/src/public/uploads/setting/company-logo.png
+            chmod 644 /usr/src/app/backend/src/public/uploads/setting/company-logo.png
+          fi
+          
+          # 同时在另一个可能的路径也创建
+          if [ ! -f /usr/src/app/src/public/uploads/setting/company-logo.png ]; then
+            echo "创建默认logo文件在src目录"
+            echo "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" | base64 -d > /usr/src/app/src/public/uploads/setting/company-logo.png
+            chmod 644 /usr/src/app/src/public/uploads/setting/company-logo.png
+          fi
+          
+          echo "创建完成，再次检查目录:"
+          ls -la /usr/src/app/backend/src/public/uploads/setting
           ls -la /usr/src/app/src/public/uploads/setting
         volumeMounts:
         - name: uploads-volume
           mountPath: /usr/src/app/src/public/uploads
+        - name: uploads-volume
+          mountPath: /usr/src/app/backend/src/public/uploads
       containers:
       - name: crm-backend
-        image: yz743/easycrm:backend-v1.1.2b
+        image: yz743/easycrm:backend-v1.1.2c
         imagePullPolicy: Always
         ports:
         - containerPort: 3000
@@ -79,9 +107,13 @@ spec:
               name: crm-secrets
               key: jwt-secret
         - name: GOTENBERG_URL
-          value: "http://gotenberg:3000"
+          value: "http://gotenberg.default.svc.cluster.local:3000"
         - name: FORCE_USE_REMOTE_LOGO
-          value: "true"
+          value: "false"
+        - name: DEFAULT_LOGO_PATH
+          value: "/usr/src/app/backend/src/public/uploads/setting/company-logo.png"
+        - name: LOGO_URL_PREFIX
+          value: ""
         livenessProbe:
           httpGet:
             path: /health
