@@ -79,7 +79,7 @@ spec:
               name: crm-secrets
               key: jwt-secret
         - name: GOTENBERG_URL
-          value: "http://crm-gotenberg:3000"
+          value: "http://gotenberg:3000"
         - name: FORCE_USE_REMOTE_LOGO
           value: "true"
         livenessProbe:

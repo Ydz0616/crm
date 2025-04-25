@@ -52,7 +52,7 @@ const generatePdfWithGotenberg = async (htmlContent, options = {}) => {
     }));
     
     // Gotenberg 8的新API路径
-    const apiEndpoint = `${GOTENBERG_URL}/chrome/convert/html`;
+    const apiEndpoint = `${GOTENBERG_URL}/forms/chromium/convert/html`;
     console.log(`发送请求到Gotenberg服务: ${apiEndpoint}`);
     
     // 发送请求到Gotenberg服务
