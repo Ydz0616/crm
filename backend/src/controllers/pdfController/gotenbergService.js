@@ -40,26 +40,16 @@ const generatePdfWithGotenberg = async (htmlContent, options = {}) => {
       contentType: 'text/html; charset=UTF-8',
     });
     
-    // 添加PDF配置 - Gotenberg 8使用不同的参数名称
-    const pdfConfig = {
-      margin: {
-        top: options.margin?.top || '0.4in',
-        bottom: options.margin?.bottom || '0.4in',
-        left: options.margin?.left || '0.4in',
-        right: options.margin?.right || '0.4in',
-      },
-      printBackground: options.printBackground || true,
-      landscape: options.landscape || false,
-      scale: options.scale || 1.0,
-      waitTimeout: '30s', // 增加等待时间，确保图片加载完成
-    };
-    
-    // 添加配置到FormData - Gotenberg 8使用JSON格式的metadata
-    form.append('metadata', JSON.stringify({
-      pdfFormat: {
-        ...pdfConfig
-      }
-    }));
+    // 添加PDF配置 - 使用Gotenberg 8兼容的格式
+    // 以下将各个参数作为独立字段添加，而不是使用嵌套的metadata JSON
+    form.append('marginTop', options.margin?.top || '0.4in');
+    form.append('marginBottom', options.margin?.bottom || '0.4in');
+    form.append('marginLeft', options.margin?.left || '0.4in');
+    form.append('marginRight', options.margin?.right || '0.4in');
+    form.append('printBackground', String(options.printBackground !== false));
+    form.append('landscape', String(options.landscape === true));
+    form.append('scale', String(options.scale || 1.0));
+    form.append('waitTimeout', '30s');
     
     // 使用主要API路径，根据Gotenberg 8.x版本的标准
     const apiEndpoint = `${GOTENBERG_URL}/forms/chromium/convert/html`;

@@ -77,7 +77,7 @@ spec:
           mountPath: /usr/src/app/backend/src/public/uploads
       containers:
       - name: crm-backend
-        image: yz743/easycrm:backend-v1.1.2c
+        image: yz743/easycrm:backend-v1.1.2d
         imagePullPolicy: Always
         ports:
         - containerPort: 3000
