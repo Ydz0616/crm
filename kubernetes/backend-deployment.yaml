@@ -34,7 +34,7 @@ spec:
               topologyKey: kubernetes.io/hostname
       containers:
       - name: crm-backend
-        image: yz743/easycrm:backend-v1.1.1
+        image: yz743/easycrm:backend-v1.1.1a
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 3000
@@ -60,6 +60,8 @@ spec:
             secretKeyRef:
               name: crm-secrets
               key: jwt-secret
+        - name: GOTENBERG_URL
+          value: "http://gotenberg:3000"
         livenessProbe:
           httpGet:
             path: /health

@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gotenberg
+  labels:
+    app: gotenberg
+    app.kubernetes.io/instance: easycrm
+    app.kubernetes.io/part-of: crm
+    app.kubernetes.io/component: gotenberg
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gotenberg
+  template:
+    metadata:
+      labels:
+        app: gotenberg
+    spec:
+      containers:
+      - name: gotenberg
+        image: gotenberg/gotenberg:8
+        ports:
+        - containerPort: 3000
+          name: http
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "400Mi"
+          requests:
+            cpu: "200m"
+            memory: "200Mi"
+        # 健康检查确保服务正常运行
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+        # 设置命令行参数
+        args:
+        - --api-timeout=30s
+        - --chromium-ignore-certificate-errors
+        - --chromium-allow-list=file:///tmp/.*
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gotenberg
+  labels:
+    app.kubernetes.io/instance: easycrm
+    app.kubernetes.io/part-of: crm
+    app.kubernetes.io/component: gotenberg
+spec:
+  selector:
+    app: gotenberg
+  ports:
+  - port: 3000
+    targetPort: http
+    protocol: TCP
+    name: http
+  type: ClusterIP 

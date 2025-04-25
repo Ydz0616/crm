@@ -4,6 +4,9 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
+// 从环境变量中获取Gotenberg服务URL，默认为本地开发环境URL
+const GOTENBERG_URL = process.env.GOTENBERG_URL || 'http://localhost:3000';
+
 /**
  * Gotenberg PDF生成服务
  * 使用Gotenberg服务将HTML转换为PDF
@@ -29,8 +32,8 @@ const generatePdfWithGotenberg = async (htmlContent, options = {}) => {
     
     // 添加PDF配置
     const pdfConfig = {
-      paperWidth: options.width || 8.27, // A4 width in inches
-      paperHeight: options.height || 11.7, // A4 height in inches
+      paperWidth: options.width || 8.27, // A4宽度，单位英寸
+      paperHeight: options.height || 11.7, // A4高度，单位英寸
       marginTop: options.margin?.top || '0.4',
       marginBottom: options.margin?.bottom || '0.4',
       marginLeft: options.margin?.left || '0.4',
@@ -51,8 +54,10 @@ const generatePdfWithGotenberg = async (htmlContent, options = {}) => {
       }
     });
     
+    console.log(`发送请求到Gotenberg服务: ${GOTENBERG_URL}/forms/chromium/convert/html`);
+    
     // 发送请求到Gotenberg服务
-    const response = await axios.post('http://localhost:3000/forms/chromium/convert/html', form, {
+    const response = await axios.post(`${GOTENBERG_URL}/forms/chromium/convert/html`, form, {
       headers: {
         ...form.getHeaders(),
       },

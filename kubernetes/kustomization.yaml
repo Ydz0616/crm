@@ -8,6 +8,7 @@ resources:
   - backend-deployment.yaml
   - frontend-deployment.yaml
   - ingress.yaml
+  - gotenberg-deployment.yaml
 
 commonLabels:
   app.kubernetes.io/managed-by: argocd
