@@ -30,34 +30,33 @@ const generatePdfWithGotenberg = async (htmlContent, options = {}) => {
       contentType: 'text/html; charset=UTF-8',
     });
     
-    // 添加PDF配置
+    // 添加PDF配置 - Gotenberg 8使用不同的参数名称
     const pdfConfig = {
-      paperWidth: options.width || 8.27, // A4宽度，单位英寸
-      paperHeight: options.height || 11.7, // A4高度，单位英寸
-      marginTop: options.margin?.top || '0.4',
-      marginBottom: options.margin?.bottom || '0.4',
-      marginLeft: options.margin?.left || '0.4',
-      marginRight: options.margin?.right || '0.4',
-      preferCssPageSize: options.preferCssPageSize || false,
+      margin: {
+        top: options.margin?.top || '0.4in',
+        bottom: options.margin?.bottom || '0.4in',
+        left: options.margin?.left || '0.4in',
+        right: options.margin?.right || '0.4in',
+      },
       printBackground: options.printBackground || true,
       landscape: options.landscape || false,
       scale: options.scale || 1.0,
-      waitForExpressions: true,
-      nativePageRanges: options.pageRanges || '',
       waitTimeout: '30s', // 增加等待时间，确保图片加载完成
     };
     
-    // 添加配置到FormData
-    Object.entries(pdfConfig).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        form.append(key, value.toString());
+    // 添加配置到FormData - Gotenberg 8使用JSON格式的metadata
+    form.append('metadata', JSON.stringify({
+      pdfFormat: {
+        ...pdfConfig
       }
-    });
+    }));
     
-    console.log(`发送请求到Gotenberg服务: ${GOTENBERG_URL}/forms/chromium/convert/html`);
+    // Gotenberg 8的新API路径
+    const apiEndpoint = `${GOTENBERG_URL}/chrome/convert/html`;
+    console.log(`发送请求到Gotenberg服务: ${apiEndpoint}`);
     
     // 发送请求到Gotenberg服务
-    const response = await axios.post(`${GOTENBERG_URL}/forms/chromium/convert/html`, form, {
+    const response = await axios.post(apiEndpoint, form, {
       headers: {
         ...form.getHeaders(),
       },
