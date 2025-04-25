@@ -2,20 +2,10 @@ FROM dockerpull.cn/node:20.9.0-alpine
 
 WORKDIR /usr/src/app
 
-# 安装 Chromium 和中文字体
+# 安装中文字体，用于Gotenberg渲染PDF中的中文
 RUN apk update && apk add --no-cache \
-    chromium \
-    nss \
-    freetype \
-    harfbuzz \
-    ca-certificates \
-    ttf-freefont \
     font-noto \
     font-noto-cjk
-
-# 配置 Puppeteer 使用已安装的 Chromium
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
-    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
 # 使用阿里云npm镜像
 RUN npm config set registry https://registry.npmmirror.com && \

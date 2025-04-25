@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.509.0",
+    "axios": "^1.9.0",
     "bcryptjs": "^2.4.3",
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.6",
@@ -24,8 +25,8 @@
     "express": "^4.18.2",
     "express-fileupload": "^1.4.3",
     "express-rate-limit": "^7.1.5",
+    "form-data": "^4.0.2",
     "glob": "10.3.10",
-    "puppeteer": "^22.8.2",
     "joi": "^17.11.0",
     "jsonwebtoken": "^9.0.2",
     "lodash": "^4.17.21",

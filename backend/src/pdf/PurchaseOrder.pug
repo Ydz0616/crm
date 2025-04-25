@@ -1,7 +1,6 @@
 doctype html
 html
   head
-    link(rel="shortcut icon" type="image/png" href="/images/icons/favicon.png")
     meta(name="viewport" content="width=device-width, initial-scale=1")
     style.
       .sheet {
@@ -266,7 +265,9 @@ html
     
       header.clearfix
         .top-area
-          img.logo.left(src=settings.public_server_file+settings.company_logo)
+          - const logoSrc = settings.company_logo.startsWith('http') ? settings.company_logo : (settings.public_server_file + settings.company_logo)
+          - console.log('Logo URL in template:', logoSrc)
+          img.logo.left(src=logoSrc)
           .right.company-info
               p.strong WEIFANG ROYALROAD TRADING CO., LTD.
               p(style="text-decoration: underline;") 
