@@ -107,7 +107,7 @@ spec:
               name: crm-secrets
               key: jwt-secret
         - name: GOTENBERG_URL
-          value: "http://gotenberg.default.svc.cluster.local:3000"
+          value: "http://crm-gotenberg.crm-system.svc.cluster.local:3000"
         - name: FORCE_USE_REMOTE_LOGO
           value: "false"
         - name: DEFAULT_LOGO_PATH
