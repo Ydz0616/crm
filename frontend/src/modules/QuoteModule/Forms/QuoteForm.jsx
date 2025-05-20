@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import dayjs from 'dayjs';
 import { Form, Input, InputNumber, Button, Select, Divider, Row, Col, Card, Typography } from 'antd';
-import { PlusOutlined, ShoppingOutlined, CalendarOutlined, DollarOutlined, UserOutlined } from '@ant-design/icons';
+import { PlusOutlined, ShoppingOutlined, CalendarOutlined, DollarOutlined, UserOutlined, DeleteOutlined } from '@ant-design/icons';
 import { DatePicker } from 'antd';
 import AutoCompleteAsync from '@/components/AutoCompleteAsync';
 import ItemRow from '@/modules/ErpPanelModule/ItemRow';
@@ -33,15 +33,15 @@ function LoadQuoteForm({ subTotal = 0, current = null }) {
   const [lastNumber, setLastNumber] = useState(() => last_quote_number + 1);
 
   const [total, setTotal] = useState(0);
-  const [taxRate, setTaxRate] = useState(0);
-  const [taxTotal, setTaxTotal] = useState(0);
+  const [freight, setFreight] = useState(0);
+  const [discount, setDiscount] = useState(0);
   const [currentYear, setCurrentYear] = useState(() => new Date().getFullYear());
-  const handelTaxChange = (value) => {
-    setTaxRate(value / 100);
-  };
-
+  
   const [selectedCurrency, setSelectedCurrency] = useState(null);
   const { moneyFormatter } = useMoney();
+
+  // Initialize notes if current is provided
+  const initialNotes = current && current.notes ? (Array.isArray(current.notes) ? current.notes : [current.notes]) : [];
 
   const handleCurrencyChange = (value, currencyObject) => {
     console.log('Currency Change - Value:', value);
@@ -60,19 +60,30 @@ function LoadQuoteForm({ subTotal = 0, current = null }) {
     }
   };
 
+  const handleFreightChange = (value) => {
+    setFreight(value || 0);
+  };
+
+  const handleDiscountChange = (value) => {
+    setDiscount(value || 0);
+  };
+
   useEffect(() => {
     if (current) {
-      const { taxRate = 0, year, number } = current;
-      setTaxRate(taxRate / 100);
+      const { year, number, freight = 0, discount = 0 } = current;
       setCurrentYear(year);
       setLastNumber(number);
+      setFreight(freight);
+      setDiscount(discount);
     }
   }, [current]);
+  
   useEffect(() => {
-    const currentTotal = calculate.add(calculate.multiply(subTotal, taxRate), subTotal);
-    setTaxTotal(Number.parseFloat(calculate.multiply(subTotal, taxRate)));
-    setTotal(Number.parseFloat(currentTotal));
-  }, [subTotal, taxRate]);
+    // 计算总价 = 小计 + 运费 - 折扣
+    const freightTotal = calculate.add(subTotal, freight);
+    const finalTotal = calculate.sub(freightTotal, discount);
+    setTotal(Number.parseFloat(finalTotal));
+  }, [subTotal, freight, discount]);
 
   const addField = useRef(false);
 
@@ -185,25 +196,43 @@ function LoadQuoteForm({ subTotal = 0, current = null }) {
           </Col>
           <Col className="gutter-row" span={6}>
             <Form.Item
-              name="taxRate"
-              label={translate('Tax Rate %')}
+              name="freight"
+              label={translate('Freight')}
+              initialValue={0}
               rules={[
                 {
-                  required: true,
-                  message: translate('Please select a tax rate'),
+                  type: 'number',
+                  message: translate('Please enter a valid freight amount'),
                 },
               ]}
             >
-              <SelectAsync
-                value={taxRate}
-                onChange={handelTaxChange}
-                entity={'taxes'}
-                outputValue={'taxValue'}
-                displayLabels={['taxName']}
-                withRedirect={true}
-                urlToRedirect="/taxes"
-                redirectLabel={translate('Add New Tax')}
-                placeholder={translate('Select Tax Value')}
+              <InputNumber 
+                style={{ width: '100%' }} 
+                step={0.01}
+                precision={2}
+                min={0}
+                onChange={handleFreightChange}
+              />
+            </Form.Item>
+          </Col>
+          <Col className="gutter-row" span={6}>
+            <Form.Item
+              name="discount"
+              label={translate('Discount')}
+              initialValue={0}
+              rules={[
+                {
+                  type: 'number',
+                  message: translate('Please enter a valid discount amount'),
+                },
+              ]}
+            >
+              <InputNumber 
+                style={{ width: '100%' }} 
+                step={0.01}
+                precision={2}
+                min={0}
+                onChange={handleDiscountChange}
               />
             </Form.Item>
           </Col>
@@ -250,14 +279,48 @@ function LoadQuoteForm({ subTotal = 0, current = null }) {
           <Col className="gutter-row" span={24}>
             <Form.Item 
               label={translate('Notes')} 
-              name="notes"
               tooltip={translate('Add any special instructions or notes about this quote')}
+              style={{ marginBottom: '8px' }}
             >
-              <Input.TextArea 
-                style={{ width: '100%' }} 
-                rows={4} 
-                placeholder={translate('Enter any additional notes or information here...')}
-              />
+              <Form.List name="notes" initialValue={initialNotes}>
+                {(fields, { add, remove }) => (
+                  <>
+                    {fields.map((field, index) => (
+                      <Row key={field.key} style={{ marginBottom: '8px' }}>
+                        <Col span={22}>
+                          <Form.Item
+                            {...field}
+                            noStyle
+                          >
+                            <Input 
+                              placeholder={`${translate('Note')} #${index + 1}`}
+                              style={{ width: '100%' }}
+                            />
+                          </Form.Item>
+                        </Col>
+                        <Col span={2} style={{ paddingLeft: '8px' }}>
+                          <Button 
+                            type="text" 
+                            danger 
+                            onClick={() => remove(field.name)} 
+                            icon={<DeleteOutlined />}
+                          />
+                        </Col>
+                      </Row>
+                    ))}
+                    <Form.Item>
+                      <Button
+                        type="dashed"
+                        onClick={() => add()}
+                        icon={<PlusOutlined />}
+                        style={{ width: '100%' }}
+                      >
+                        {translate('Add Note')}
+                      </Button>
+                    </Form.Item>
+                  </>
+                )}
+              </Form.List>
             </Form.Item>
           </Col>
         </Row>
@@ -269,8 +332,9 @@ function LoadQuoteForm({ subTotal = 0, current = null }) {
         </Title>
         <div style={{ marginBottom: '10px' }}>
           <Row gutter={[12, 0]} style={{ fontWeight: 'bold', padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
-            <Col span={6}>{translate('Item Name')}</Col>
-            <Col span={7}>{translate('Description')}</Col>
+            <Col span={5}>{translate('Item Name')}</Col>
+            <Col span={5}>{translate('Description')}</Col>
+            <Col span={3}>{translate('Laser')}</Col>
             <Col span={2} style={{ textAlign: 'center' }}>{translate('Quantity')}</Col>
             <Col span={3} style={{ textAlign: 'right' }}>{translate('Price')}</Col>
             <Col span={3} style={{ textAlign: 'right' }}>{translate('Total')}</Col>
@@ -281,7 +345,13 @@ function LoadQuoteForm({ subTotal = 0, current = null }) {
           {(fields, { add, remove }) => (
             <>
               {fields.map((field) => (
-                <ItemRow key={field.key} remove={remove} field={field} current={current} />
+                <ItemRow 
+                  key={field.key} 
+                  remove={remove} 
+                  field={field} 
+                  current={current}
+                  formType="invoice"
+                />
               ))}
               <Form.Item>
                 <Button
@@ -316,10 +386,16 @@ function LoadQuoteForm({ subTotal = 0, current = null }) {
                   <MoneyInputFormItem readOnly value={subTotal} />
                 </Col>
                 <Col span={12} style={{ textAlign: 'right' }}>
-                  <Text strong>{translate('Tax')} ({taxRate * 100}%):</Text>
+                  <Text strong>{translate('Freight')}:</Text>
                 </Col>
                 <Col span={12}>
-                  <MoneyInputFormItem readOnly value={taxTotal} />
+                  <MoneyInputFormItem readOnly value={freight} />
+                </Col>
+                <Col span={12} style={{ textAlign: 'right' }}>
+                  <Text strong>{translate('Discount')}:</Text>
+                </Col>
+                <Col span={12}>
+                  <MoneyInputFormItem readOnly value={discount} />
                 </Col>
                 <Divider style={{ margin: '12px 0' }} />
                 <Col span={12} style={{ textAlign: 'right' }}>

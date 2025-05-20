@@ -19,14 +19,13 @@ const create = async (req, res) => {
     });
   }
 
-  const { items = [], taxRate = 0, discount = 0 } = value;
+  const { items = [], freight = 0, discount = 0 } = value;
 
   // default
   let subTotal = 0;
-  let taxTotal = 0;
   let total = 0;
 
-  //Calculate the items array with subTotal, total, taxTotal
+  //Calculate the items array with subTotal, total
   items.map((item) => {
     let total = calculate.multiply(item['quantity'], item['price']);
     //sub total
@@ -34,15 +33,18 @@ const create = async (req, res) => {
     //item total
     item['total'] = total;
   });
-  taxTotal = calculate.multiply(subTotal, taxRate / 100);
-  total = calculate.add(subTotal, taxTotal);
+  
+  // 计算总价 = 小计 + 运费 - 折扣
+  const freightTotal = calculate.add(subTotal, freight);
+  total = calculate.sub(freightTotal, discount);
 
   body['subTotal'] = subTotal;
-  body['taxTotal'] = taxTotal;
+  body['freight'] = freight;
+  body['discount'] = discount;
   body['total'] = total;
   body['items'] = items;
 
-  let paymentStatus = calculate.sub(total, discount) === 0 ? 'paid' : 'unpaid';
+  let paymentStatus = calculate.sub(total, 0) === 0 ? 'paid' : 'unpaid';
 
   body['paymentStatus'] = paymentStatus;
   body['createdBy'] = req.admin._id;

@@ -8,7 +8,6 @@ const schema = Joi.object({
   expiredDate: Joi.date().required(),
   date: Joi.date().required(),
   currency: Joi.string().allow(''),
-  relatedPurchaseOrders: Joi.array().items(Joi.string()).optional(),
   freight: Joi.number().default(0),
   discount: Joi.number().default(0),
   // array cannot be empty
@@ -30,4 +29,4 @@ const schema = Joi.object({
   taxRate: Joi.alternatives().try(Joi.number(), Joi.string()).default(0),
 });
 
-module.exports = schema;
+module.exports = schema; 

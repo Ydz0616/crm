@@ -14,13 +14,14 @@ html
         margin: 0;
         padding: 0px ;
         background: #ffffff;
-        font-family: sans-serif;
+        font-family: 'Noto Sans CJK SC', 'Noto Sans CJK', sans-serif;
         font-size:12px;
         color:#222
       }
       *, *:before, *:after {
         box-sizing: inherit;
-        color:#222
+        color:#222;
+        font-family: 'Noto Sans CJK SC', 'Noto Sans CJK', sans-serif;
       }
 
       .clearfix {
@@ -215,6 +216,16 @@ html
       .table-invoice .service, .table-invoice .desc {
         text-align: left;
       }
+      .table-invoice .service, .table-invoice .desc, .table-invoice .num {
+        text-align: left;
+      }
+      .table-invoice td.num {
+        width: 40px;
+        text-align: center;
+      }
+      .table-invoice th.num {
+        text-align: center;
+      }
       .table-invoice td {
         padding: 10px ;
         text-align: right;
@@ -259,7 +270,9 @@ html
     
       header.clearfix
         .top-area
-          img.logo.left(src=settings.public_server_file+settings.company_logo)
+          - const logoSrc = settings.company_logo.startsWith('http') ? settings.company_logo : (settings.public_server_file + settings.company_logo)
+          - console.log('Logo URL in template:', logoSrc)
+          img.logo.left(src=logoSrc)
           .right.company-info
               p.strong WEIFANG ROYALROAD TRADING CO., LTD.
               p(style="text-decoration: underline;") 
@@ -286,7 +299,7 @@ html
               
         .right.col-10
             .billTo
-                p #{translate('Client')} :
+                p(style="color:#52008c;") #{translate('Client')} :
                 p #{model.client.name}
                 p #{model.client.address}
                 p #{model.client.phone}
@@ -297,31 +310,48 @@ html
         table.table-invoice
           thead
             tr.tableHeader
-              th.service #{translate('Serial Number')}
+              th.num #{translate('Serial Number')}
+              th.service #{translate('Item Name')}
               th #{translate('Description')}
+              th #{translate('Laser')}
               th #{translate('Quantity')}
               th #{translate('PRICE')}
               th #{translate('TOTAL')}
           tbody
-            each item in model.items
+            each item, index in model.items
               tr
+                td.num= ('00' + (index + 1)).slice(-3)
                 td.service= item.itemName
                 td= item.description
+                td= item.laser || ''
                 td.qty= item.quantity
                 td.unit #{moneyFormatter({amount:item.price})}
                 td.total #{moneyFormatter({amount:item.total})}
             tr
-              td(colspan='4') #{translate('SUB TOTAL')}
+              td(colspan='6') #{translate('SUB TOTAL')}
               td.total #{moneyFormatter({amount:model.subTotal})}
             tr
-              td(colspan='4') #{translate('TAX')} #{model.taxRate} %
-              td.total #{moneyFormatter({amount:model.taxTotal})}
+              td(colspan='6') #{translate('FREIGHT')}
+              td.total #{moneyFormatter({amount:model.freight || 0})}
             tr
-              td.grand.total(colspan='4') #{translate('TOTAL')}
+              td(colspan='6') #{translate('DISCOUNT')}
+              td.total #{moneyFormatter({amount:model.discount || 0})}
+            tr
+              td.grand.total(colspan='6') #{translate('TOTAL')}
               td.grand.total #{moneyFormatter({amount:model.total})}
         
       .col.col-24
-          .space     
+          .space
+      
+      if model.notes && model.notes.length > 0
+        .col.col-24
+          .left.col-12
+            p.strong #{translate('Notes')}:
+            ul(style="list-style-type: none; padding-left: 0;")
+              each note, index in model.notes
+                li #{index + 1}. #{note}
+          .col-12
+            // 右侧留空
       footer.footer-invoice
         //- | Invoice was created on a computer and is valid without the signature and seal.
           

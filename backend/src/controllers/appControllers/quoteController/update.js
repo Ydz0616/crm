@@ -5,9 +5,22 @@ const Model = mongoose.model('Quote');
 const custom = require('@/controllers/pdfController');
 
 const { calculate } = require('@/helpers');
+const schema = require('./schemaValidate');
 
 const update = async (req, res) => {
-  const { items = [], taxRate = 0, discount = 0 } = req.body;
+  let body = req.body;
+
+  const { error, value } = schema.validate(body);
+  if (error) {
+    const { details } = error;
+    return res.status(400).json({
+      success: false,
+      result: null,
+      message: details[0]?.message,
+    });
+  }
+
+  const { items = [], freight = 0, discount = 0 } = value;
 
   if (items.length === 0) {
     return res.status(400).json({
@@ -18,11 +31,9 @@ const update = async (req, res) => {
   }
   // default
   let subTotal = 0;
-  let taxTotal = 0;
   let total = 0;
-  // let credit = 0;
 
-  //Calculate the items array with subTotal, total, taxTotal
+  //Calculate the items array with subTotal, total
   items.map((item) => {
     let total = calculate.multiply(item['quantity'], item['price']);
     //sub total
@@ -30,13 +41,14 @@ const update = async (req, res) => {
     //item total
     item['total'] = total;
   });
-  taxTotal = calculate.multiply(subTotal, taxRate / 100);
-  total = calculate.add(subTotal, taxTotal);
-
-  let body = req.body;
+  
+  // 计算总价 = 小计 + 运费 - 折扣
+  const freightTotal = calculate.add(subTotal, freight);
+  total = calculate.sub(freightTotal, discount);
 
   body['subTotal'] = subTotal;
-  body['taxTotal'] = taxTotal;
+  body['freight'] = freight;
+  body['discount'] = discount;
   body['total'] = total;
   body['items'] = items;
   body['pdf'] = 'quote-' + req.params.id + '.pdf';
@@ -58,4 +70,5 @@ const update = async (req, res) => {
     message: 'we update this document ',
   });
 };
+
 module.exports = update;

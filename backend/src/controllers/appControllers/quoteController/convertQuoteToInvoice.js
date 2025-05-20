@@ -34,14 +34,13 @@ const convertQuoteToInvoice = async (req, res) => {
       expiredDate: quote.expiredDate,
       client: quote.client._id,
       items: quote.items,
-      taxRate: quote.taxRate,
       subTotal: quote.subTotal,
-      taxTotal: quote.taxTotal,
       total: quote.total,
       credit: quote.credit,
       currency: quote.currency,
-      discount: quote.discount,
+      discount: quote.discount || 0,
       notes: quote.notes,
+      freight: quote.freight || 0,
       // Invoice specific fields
       payment: [],
       paymentStatus: 'unpaid',
@@ -50,10 +49,7 @@ const convertQuoteToInvoice = async (req, res) => {
       approved: false,
       createdBy: req.admin._id,
       // Add reference to the original quote
-      converted: {
-        from: 'quote',
-        quote: quote._id
-      }
+      relatedQuotes: [quote._id]
     });
 
     // Save new invoice

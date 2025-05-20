@@ -12,8 +12,10 @@ export default function ItemRow({ field, remove, current, formType = 'default' }
   const [quantity, setQuantity] = useState(0);
   const [unitLabels, setUnitLabels] = useState({ en: '', cn: '' });
 
-  // Check if this form is for Purchase Order - used for conditional rendering
+  // Check if this form is for Purchase Order or Invoice - used for conditional rendering
   const isPurchaseOrder = formType === 'purchaseOrder';
+  const isInvoice = formType === 'invoice';
+  const showLaser = isPurchaseOrder || isInvoice;
 
   const money = useMoney();
   
@@ -160,7 +162,7 @@ export default function ItemRow({ field, remove, current, formType = 'default' }
     items[field.name] = {
       ...items[field.name],
       itemName: selectedMerch.serialNumber,
-      // Use Chinese description for PO and English for others
+      // Use appropriate description based on form type
       description: isPurchaseOrder 
         ? (selectedMerch.description_cn || '') 
         : (selectedMerch.description_en || ''),
@@ -175,8 +177,8 @@ export default function ItemRow({ field, remove, current, formType = 'default' }
       cn: selectedMerch.unit_cn || ''
     });
     
-    // 如果是PO，保留之前的laser值
-    if (isPurchaseOrder) {
+    // 如果是PO或Invoice，保留之前的laser值
+    if (showLaser) {
       items[field.name].laser = currentLaser;
     }
 
@@ -188,7 +190,7 @@ export default function ItemRow({ field, remove, current, formType = 'default' }
 
   // Calculate column widths based on form type
   const getColumnWidths = () => {
-    if (isPurchaseOrder) {
+    if (showLaser) {
       return {
         itemName: 5, 
         description: 5, 
@@ -256,7 +258,7 @@ export default function ItemRow({ field, remove, current, formType = 'default' }
         </Form.Item>
       </Col>
       
-      {isPurchaseOrder && (
+      {showLaser && (
         <Col className="gutter-row" span={columnWidths.laser}>
           <Form.Item
             {...field}

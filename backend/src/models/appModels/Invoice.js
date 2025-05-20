@@ -67,6 +67,9 @@ const invoiceSchema = new mongoose.Schema({
       description: {
         type: String,
       },
+      laser: {
+        type: String,
+      },
       quantity: {
         type: Number,
         default: 1,
@@ -104,6 +107,10 @@ const invoiceSchema = new mongoose.Schema({
       },
     },
   ],
+  freight: {
+    type: Number,
+    default: 0,
+  },
   taxRate: {
     type: Number,
     default: 0,
@@ -154,7 +161,8 @@ const invoiceSchema = new mongoose.Schema({
     default: false,
   },
   notes: {
-    type: String,
+    type: [String],
+    default: [],
   },
   status: {
     type: String,

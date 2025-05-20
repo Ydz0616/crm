@@ -27,7 +27,7 @@ const update = async (req, res) => {
 
   const { credit } = previousInvoice;
 
-  const { items = [], taxRate = 0, discount = 0 } = req.body;
+  const { items = [], freight = 0, discount = 0 } = req.body;
 
   if (items.length === 0) {
     return res.status(400).json({
@@ -39,10 +39,9 @@ const update = async (req, res) => {
 
   // default
   let subTotal = 0;
-  let taxTotal = 0;
   let total = 0;
 
-  //Calculate the items array with subTotal, total, taxTotal
+  //Calculate the items array with subTotal, total
   items.map((item) => {
     let total = calculate.multiply(item['quantity'], item['price']);
     //sub total
@@ -50,11 +49,14 @@ const update = async (req, res) => {
     //item total
     item['total'] = total;
   });
-  taxTotal = calculate.multiply(subTotal, taxRate / 100);
-  total = calculate.add(subTotal, taxTotal);
+  
+  // 计算总价 = 小计 + 运费 - 折扣
+  const freightTotal = calculate.add(subTotal, freight);
+  total = calculate.sub(freightTotal, discount);
 
   body['subTotal'] = subTotal;
-  body['taxTotal'] = taxTotal;
+  body['freight'] = freight;
+  body['discount'] = discount;
   body['total'] = total;
   body['items'] = items;
   body['pdf'] = 'invoice-' + req.params.id + '.pdf';
@@ -62,7 +64,7 @@ const update = async (req, res) => {
   // Find document by id and updates with the required fields
 
   let paymentStatus =
-    calculate.sub(total, discount) === credit ? 'paid' : credit > 0 ? 'partially' : 'unpaid';
+    calculate.sub(total, 0) === credit ? 'paid' : credit > 0 ? 'partially' : 'unpaid';
   body['paymentStatus'] = paymentStatus;
 
   const result = await Model.findOneAndUpdate({ _id: req.params.id, removed: false }, body, {

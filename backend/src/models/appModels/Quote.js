@@ -44,6 +44,9 @@ const quoteSchema = new mongoose.Schema({
       description: {
         type: String,
       },
+      laser: {
+        type: String,
+      },
       quantity: {
         type: Number,
         required: true,
@@ -102,8 +105,13 @@ const quoteSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  freight: {
+    type: Number,
+    default: 0,
+  },
   notes: {
-    type: String,
+    type: [String],
+    default: [],
   },
   status: {
     type: String,
