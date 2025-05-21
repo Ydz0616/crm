@@ -164,6 +164,30 @@ const invoiceSchema = new mongoose.Schema({
     type: [String],
     default: [],
   },
+  termsOfDelivery: {
+    type: [String],
+    default: [],
+  },
+  shippingMark: {
+    type: [String],
+    default: [],
+  },
+  paymentTerms: {
+    type: [String],
+    default: [],
+  },
+  bankDetails: {
+    type: String,
+    default: '',
+  },
+  packaging: {
+    type: [String],
+    default: [],
+  },
+  shipmentDocuments: {
+    type: [String],
+    default: [],
+  },
   status: {
     type: String,
     enum: ['draft', 'pending', 'sent', 'refunded', 'cancelled', 'on hold'],

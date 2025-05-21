@@ -15,7 +15,7 @@ export default function ItemRow({ field, remove, current, formType = 'default' }
   // Check if this form is for Purchase Order or Invoice - used for conditional rendering
   const isPurchaseOrder = formType === 'purchaseOrder';
   const isInvoice = formType === 'invoice';
-  const showLaser = isPurchaseOrder || isInvoice;
+  const showLaser = isPurchaseOrder; // Only show laser field for Purchase Orders, not Invoices or Quotes
 
   const money = useMoney();
   
@@ -203,7 +203,7 @@ export default function ItemRow({ field, remove, current, formType = 'default' }
     } else {
       return {
         itemName: 6, 
-        description: 7, 
+        description: 8, 
         quantity: 2,    // 减小数量列的宽度
         price: 3,       // 价格列宽度为3
         total: 3,

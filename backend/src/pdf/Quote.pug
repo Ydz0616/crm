@@ -42,7 +42,10 @@ html
       .top-area {    
         display: block;
         width:100%;
-        
+        height: 12.5%;
+        position: relative;
+        padding: 10px 15px;
+        box-sizing: border-box;
       }
       alignRight :{
         text-align: right !important;
@@ -51,29 +54,48 @@ html
         text-align: left;
       }
       .logo {
-        width: 300px;
+        width: 250px;
+        position: absolute;
+        left: 15px;
+        top: 10px;
       }
-      .company-info{
+      .title-area {
+        position: absolute;
+        right: 15px;
+        top: 10px;
         text-align: right;
-        font-size:12px;
+        width: 45%;
       }
       h1.invoice{
-        font-size:32px;
+        font-size:28px;
         color:#52008c;
         margin-top:0;
+        margin-bottom: 10px;
       }
       p.strong{
         font-weight:700;
       }
-      .billTo p {
-        text-align: right !important;
-        float:right;
-        display:block;
-        font-size:12px;
-        width:100%;
-        margin-top:0;
-        margin-bottom:10px;
-        
+      .info-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        width: 100%;
+      }
+      .info-column {
+        flex: 1;
+        padding: 10px;
+        text-align: left;
+      }
+      .info-column h3 {
+        color: #52008c;
+        margin-top: 0;
+        margin-bottom: 10px;
+        font-size: 14px;
+        font-weight: bold;
+      }
+      .info-column p {
+        margin: 5px 0;
+        font-size: 12px;
       }
 
       .tableHeader{
@@ -240,6 +262,9 @@ html
       .table-invoice td.grand {
         border-top: 1px solid #5d6975;
       }
+      .grand.total {
+        font-size: 14px;
+      }
       .service span{
         display:block;
         clear:both;
@@ -265,6 +290,33 @@ html
         padding: 20px 0;
         text-align: center;
       }
+      
+      .signature-area {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 40px;
+        width: 100%;
+      }
+      
+      .signature-box {
+        width: 45%;
+      }
+      
+      .signature-line {
+        border-top: 1px solid #000;
+        padding-top: 5px;
+        margin-top: 40px;
+      }
+      
+      .signature-title {
+        font-weight: bold;
+      }
+      
+      .thank-you {
+        text-align: center;
+        margin-top: 30px;
+        font-size: 16px;
+      }
  
   body
     
@@ -272,88 +324,180 @@ html
         .top-area
           - const logoSrc = settings.company_logo.startsWith('http') ? settings.company_logo : (settings.public_server_file + settings.company_logo)
           - console.log('Logo URL in template:', logoSrc)
-          img.logo.left(src=logoSrc)
-          .right.company-info
-              p.strong WEIFANG ROYALROAD TRADING CO., LTD.
-              p(style="text-decoration: underline;") 
-                a(href="http://www.plasmcut.com") Be A Responsible Company
-              p NO.360 DongFeng East Str, WeiFang City, 261041, P.R China
-              p Tel: 86-536-8296032
-              p E-mail: andy@plasmcut.com
-              
-        .col.col-24
-          .space  
-        .left.col-14
+          img.logo(src=logoSrc)
+          .title-area
             h1.invoice
               | #{translate('quote')}
             div 
-              .col.col-7
-                p.strong #{translate('Date')} :
-                p #{moment(model.date).format(dateFormat)}
-              .col.col-9
-                p.strong #{translate('Expired Date')} :
-                p #{moment(model.expiredDate).format(dateFormat)}
-              .col.col-8 
-                p.strong #{translate('Number')} :
-                p # #{model.number}/#{model.year || ""} 
+              p.strong Number: # #{model.number}/#{model.year || ""}
+              p.strong Date: #{moment(model.date).format(dateFormat)}
+              p.strong Expired Date: #{moment(model.expiredDate).format(dateFormat)}
               
-        .right.col-10
-            .billTo
-                p(style="color:#52008c;") #{translate('Client')} :
-                p #{model.client.name}
-                p #{model.client.address}
-                p #{model.client.phone}
-                p #{model.client.email}
-        .col.col-24
-          .space  
+        .space(style="margin-top: 20px; width: 100%; clear: both;")
+        
+        .info-row
+          .info-column
+            h3 From:
+            p WEIFANG ROYALROAD TRADING CO., LTD.
+            p Be A Responsible Company
+            p NO.360 DongFeng East Str, WeiFang City, 261041, P.R China
+            p +86-536-8296032
+            p andy@plasmcut.com
+              
+          .info-column
+            h3 Bill To:
+            p #{model.client.name}
+            p #{model.client.address}
+            p #{model.client.phone}
+            p #{model.client.email}
+              
+          .info-column
+            h3 Ship To:
+            p The buyer's carrier-designated address
+              
       main
         table.table-invoice
           thead
             tr.tableHeader
-              th.num #{translate('Serial Number')}
-              th.service #{translate('Item Name')}
-              th #{translate('Description')}
-              th #{translate('Laser')}
-              th #{translate('Quantity')}
-              th #{translate('PRICE')}
-              th #{translate('TOTAL')}
+              th.num No
+              th.service Item
+              th Description
+              th Quantity
+              th Price
+              th Total
           tbody
             each item, index in model.items
               tr
                 td.num= ('00' + (index + 1)).slice(-3)
                 td.service= item.itemName
                 td= item.description
-                td= item.laser || ''
                 td.qty= item.quantity
-                td.unit #{moneyFormatter({amount:item.price})}
-                td.total #{moneyFormatter({amount:item.total})}
+                td.unit= moneyFormatter({amount:item.price})
+                td.total= moneyFormatter({amount:item.total})
             tr
-              td(colspan='6') #{translate('SUB TOTAL')}
+              td(colspan='5') SUB TOTAL
               td.total #{moneyFormatter({amount:model.subTotal})}
             tr
-              td(colspan='6') #{translate('FREIGHT')}
-              td.total #{moneyFormatter({amount:model.freight || 0})}
+              td(colspan='5') FREIGHT
+              td.total #{moneyFormatter({amount:model.freight})}
             tr
-              td(colspan='6') #{translate('DISCOUNT')}
+              td(colspan='5') DISCOUNT
               td.total #{moneyFormatter({amount:model.discount || 0})}
             tr
-              td.grand.total(colspan='6') #{translate('TOTAL')}
-              td.grand.total #{moneyFormatter({amount:model.total})}
+              td.grand.total(colspan='5') <strong>TOTAL DUE</strong>
+              td.grand.total <strong>#{moneyFormatter({amount:model.total})}</strong>
         
       .col.col-24
           .space
       
-      if model.notes && model.notes.length > 0
+      - var showTermsSection = (model.termsOfDelivery && model.termsOfDelivery.length > 0) || (model.shippingMark && model.shippingMark.length > 0) || (model.paymentTerms && model.paymentTerms.length > 0) || model.bankDetails || (model.packaging && model.packaging.length > 0) || (model.shipmentDocuments && model.shipmentDocuments.length > 0) || (model.notes && model.notes.length > 0)
+      
+      if showTermsSection
         .col.col-24
-          .left.col-12
-            p.strong #{translate('Notes')}:
-            ul(style="list-style-type: none; padding-left: 0;")
-              each note, index in model.notes
-                li #{index + 1}. #{note}
-          .col-12
-            // 右侧留空
+          if model.paymentTerms && model.paymentTerms.length > 0
+            p
+              strong(style="font-weight: bold;") Payment Terms:
+              ul(style="list-style-type: none; padding-left: 0; margin-top: 5px;")
+                each term, index in model.paymentTerms
+                  li #{term}
+            .space(style="margin-top: 10px; margin-bottom: 10px;")
+          
+          if model.bankDetails
+            p
+              strong(style="font-weight: bold;") Bank Details:
+            
+            if model.bankDetails === 'boc'
+              ul(style="list-style-type: none; padding-left: 0; margin-top: 5px;")
+                li BENEFICIARY: WEIFANG ROYALROAD TRADING CO., LTD. 
+                li BEN A/C: 237 702 187 365 
+                li BEN BANK: BANK OF CHINA WEIFANG BRANCH 
+                li BANK ADD: NO.387 SHENGLI EAST STREET, WEIFANG SHANDONG, CHINA 
+                li SWIFT CODE: BKCHCNBJ500
+            
+            if model.bankDetails === 'everbright'
+              ul(style="list-style-type: none; padding-left: 0; margin-top: 5px;")
+                li BENEFICIARY: WEIFANG ROYALROAD TRADING CO., LTD. 
+                li BEN A/C: 379 701 880 000 058 40 
+                li BEN BANK: China Everbright Bank, JINAN Branch 
+                li BANK ADD: NO.85 JingQi Road, JINAN 250001, P.R.China 
+                li SWIFT CODE: EVERCNBJJN1
+            
+            if model.bankDetails === 'rural'
+              ul(style="list-style-type: none; padding-left: 0; margin-top: 5px;")
+                li BENEFICIARY: WEIFANG ROYALROAD TRADING CO., LTD. 
+                li BEN A/C: 239 003 004 420 500 001 9309 
+                li BEN BANK: WEIFANG RURAL COMMERCIAL BANK CO., LTD 
+                li BANK ADD: No.1409, Xinhua Road, Kuiwen District, Weifang City, Shandong, P.R. China 
+                li CNAPS CODE：402 458 000 581
+                li Swift code: WRCBCNBJ
+            
+            if model.bankDetails === 'vtb'
+              ul(style="list-style-type: none; padding-left: 0; margin-top: 5px;")
+                li Beneficiary Bank Name: VTB Bank (PJSC) Shanghai Branch 
+                li SWIFT Code: VTBRCNSH
+                li Beneficiary Bank Code: 767290000018 
+                li Beneficiary Bank' Correspondent Bank: VTB BANK(PJSC) MOSCOW, VTBRRUMM 
+                li Beneficiary Bank Address: Office 2503-2505, Shanghai Tower, 501 Middle YinCheng Road, Shanghai, China 20012 
+                li Beneficiary Account No: 40807156500610017184 
+                li Beneficiary Name: WEIFANG ROYALROAD TRADING CO., LTD. 
+                li Beneficiary Address: Office A1509, SYNO Tower, No. 360 East Dongfeng Street, WeiFang, ShanDong, China 261041 
+                li Beneficiary Tel No: +86-536-8296032
+            
+            .space(style="margin-top: 10px; margin-bottom: 10px;")
+            
+          if model.termsOfDelivery && model.termsOfDelivery.length > 0
+            p
+              strong(style="font-weight: bold;") Terms of Delivery (Incoterms® 2020):
+              ul(style="list-style-type: none; padding-left: 0; margin-top: 5px;")
+                each term, index in model.termsOfDelivery
+                  li #{term}
+            .space(style="margin-top: 10px; margin-bottom: 10px;")
+          
+          if model.shippingMark && model.shippingMark.length > 0
+            p
+              strong(style="font-weight: bold;") Shipping Mark:
+              ul(style="list-style-type: none; padding-left: 0; margin-top: 5px;")
+                each mark, index in model.shippingMark
+                  li #{mark}
+            .space(style="margin-top: 10px; margin-bottom: 10px;")
+          
+          if model.shipmentDocuments && model.shipmentDocuments.length > 0
+            p
+              strong(style="font-weight: bold;") Shipment & Documents:
+              ul(style="list-style-type: none; padding-left: 0; margin-top: 5px;")
+                each doc, index in model.shipmentDocuments
+                  li #{doc}
+            .space(style="margin-top: 10px; margin-bottom: 10px;")
+          
+          if model.packaging && model.packaging.length > 0
+            p
+              strong(style="font-weight: bold;") Packaging:
+              ul(style="list-style-type: none; padding-left: 0; margin-top: 5px;")
+                each pack, index in model.packaging
+                  li #{pack}
+            .space(style="margin-top: 10px; margin-bottom: 10px;")
+          
+          if model.notes && model.notes.length > 0
+            p
+              strong(style="font-weight: bold;") Other conditions:
+              ul(style="list-style-type: none; padding-left: 0; margin-top: 5px;")
+                each note, index in model.notes
+                  li #{note}
+            .space(style="margin-top: 10px; margin-bottom: 10px;")
+      
+      .signature-area
+        .signature-box
+          .signature-line
+          p.signature-title Seller's Signature:
+        .signature-box
+          .signature-line
+          p.signature-title Buyer's Signature:
+      
+      .thank-you
+        p <strong>THANK YOU FOR YOUR BUSINESS!</strong>
+      
       footer.footer-invoice
-        //- | Invoice was created on a computer and is valid without the signature and seal.
+        //- | Quote was created on a computer and is valid without the signature and seal.
           
 
    
