@@ -158,7 +158,7 @@ export default function ReadItem({ config, selectedItem }) {
             key={`${uniqueId()}`}
             onClick={() => {
               window.open(
-                `${DOWNLOAD_BASE_URL}${entity}/${entity}-${currentAdavancedCrud._id}.pdf`,
+                `${DOWNLOAD_BASE_URL}${entity}/${entity}-${currentAdavancedCrud._id}.pdf?v=${Date.now()}`,
                 '_blank'
               );
             }}

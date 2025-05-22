@@ -21,24 +21,20 @@ module.exports = downloadPdf = async (req, res, { directory, id }) => {
       }
 
       // Continue process if result is returned
-
       const fileId = modelName.toLowerCase() + '-' + result._id + '.pdf';
-      const folderPath = modelName.toLowerCase();
-      const targetLocation = `src/public/download/${folderPath}/${fileId}`;
-      await custom.generatePdf(
+      
+      // 直接生成PDF并返回，不保存到文件系统
+      await custom.generatePdfStream(
         modelName,
-        { filename: folderPath, format: 'A4', targetLocation },
+        { filename: fileId, format: 'A4' },
         result,
-        async () => {
-          return res.download(targetLocation, (error) => {
-            if (error)
-              return res.status(500).json({
-                success: false,
-                result: null,
-                message: "Couldn't find file",
-                error: error.message,
-              });
-          });
+        (pdfBuffer) => {
+          // 设置响应头
+          res.setHeader('Content-Type', 'application/pdf');
+          res.setHeader('Content-Disposition', `attachment; filename=${fileId}`);
+          
+          // 直接发送PDF数据
+          res.send(pdfBuffer);
         }
       );
     } else {
@@ -54,8 +50,8 @@ module.exports = downloadPdf = async (req, res, { directory, id }) => {
       return res.status(400).json({
         success: false,
         result: null,
-        error: error.messagse,
-        message: 'Required fields are not supplied hey',
+        error: error.message,
+        message: 'Required fields are not supplied',
       });
     } else if (error.name == 'BSONTypeError') {
       // If error is thrown by Mongoose due to invalid ID
