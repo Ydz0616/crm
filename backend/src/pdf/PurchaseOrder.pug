@@ -44,7 +44,10 @@ html
       .top-area {    
         display: block;
         width:100%;
-        
+        height: 12.5%;
+        position: relative;
+        padding: 10px 15px;
+        box-sizing: border-box;
       }
       alignRight :{
         text-align: right !important;
@@ -53,29 +56,55 @@ html
         text-align: left;
       }
       .logo {
-        width: 300px;
+        width: 250px;
+        position: absolute;
+        left: 15px;
+        top: 10px;
       }
-      .company-info{
+      .title-area {
+        position: absolute;
+        right: 15px;
+        top: 10px;
         text-align: right;
-        font-size:12px;
+        width: 45%;
       }
       h1.invoice{
-        font-size:32px;
+        font-size:28px;
         color:#52008c;
         margin-top:0;
+        margin-bottom: 10px;
       }
       p.strong{
         font-weight:700;
       }
-      .billTo p {
-        text-align: right !important;
-        float:right;
-        display:block;
-        font-size:12px;
-        width:100%;
-        margin-top:0;
-        margin-bottom:10px;
-        
+      
+      .info-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        width: 100%;
+      }
+      .info-column {
+        flex: 1;
+        padding: 10px;
+        text-align: left;
+      }
+      .info-column.company {
+        flex: 1.5;
+      }
+      .info-column.bill-to {
+        flex: 1.5;
+      }
+      .info-column h3 {
+        color: #52008c;
+        margin-top: 0;
+        margin-bottom: 10px;
+        font-size: 14px;
+        font-weight: bold;
+      }
+      .info-column p {
+        margin: 5px 0;
+        font-size: 12px;
       }
 
       .tableHeader{
@@ -201,7 +230,7 @@ html
         background: #fcfeff;
       }
       .table-invoice th, .table-invoice td {
-        text-align: center;
+        text-align: left;
       }
       .table-invoice th {
         padding: 8px 10px;
@@ -210,7 +239,7 @@ html
         white-space: nowrap;
         font-weight: 700;
         font-size: 12px;
-        text-align: right;
+        text-align: left;
       }
       tbody{
         border-bottom: 1px solid #c2e0f2;
@@ -223,14 +252,14 @@ html
       }
       .table-invoice td.num {
         width: 40px;
-        text-align: center;
+        text-align: left;
       }
       .table-invoice th.num {
-        text-align: center;
+        text-align: left;
       }
       .table-invoice td {
-        padding: 10px ;
-        text-align: right;
+        padding: 10px;
+        text-align: left;
         font-size: 11px;
       }
       .table-invoice td.service, .table-invoice td.desc {
@@ -241,6 +270,9 @@ html
       }
       .table-invoice td.grand {
         border-top: 1px solid #5d6975;
+      }
+      .grand.total {
+        font-size: 14px;
       }
       .service span{
         display:block;
@@ -261,46 +293,63 @@ html
         margin-top:30px
         color: #5d6975;
       }
+      
+      .signature-area {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 40px;
+        width: 100%;
+      }
+      
+      .signature-box {
+        width: 45%;
+      }
+      
+      .signature-line {
+        border-top: 1px solid #000;
+        padding-top: 5px;
+        margin-top: 40px;
+      }
+      
+      .signature-title {
+        font-weight: bold;
+      }
+      
+      .thank-you {
+        text-align: center;
+        margin-top: 30px;
+        font-size: 16px;
+      }
   body
     
       header.clearfix
         .top-area
           - const logoSrc = settings.company_logo.startsWith('http') ? settings.company_logo : (settings.public_server_file + settings.company_logo)
           - console.log('Logo URL in template:', logoSrc)
-          img.logo.left(src=logoSrc)
-          .right.company-info
-              p.strong WEIFANG ROYALROAD TRADING CO., LTD.
-              p(style="text-decoration: underline;") 
-                a(href="http://www.plasmcut.com") Be A Responsible Company
-              p NO.360 DongFeng East Str, WeiFang City, 261041, P.R China
-              p Tel: 86-536-8296032
-              p E-mail: andy@plasmcut.com
-              
-        .col.col-24
-          .space  
-        .left.col-14
+          img.logo(src=logoSrc)
+          .title-area
             h1.invoice
               | 采购合同
             div 
-              .col.col-7
-                p.strong(style="color:#52008c;") 签订时间 :
-                p #{moment(model.date).format(dateFormat)}
-              .col.col-9
-                p.strong(style="color:#52008c;") 交付时间 :
-                p #{moment(model.expiredDate).format(dateFormat)}
-              .col.col-8 
-                p.strong(style="color:#52008c;") 合同编号 :
-                p # #{model.number}/#{model.year || ""} 
+              p.strong 合同编号: # #{model.number}/#{model.year || ""} 
+              p.strong 签订时间: #{moment(model.date).format(dateFormat)}
               
-        .right.col-10
-            .billTo
-                p(style="color:#52008c;") 供货方 :
-                p #{model.factory.factory_name}
-                p #{model.factory.location}
-                p #{model.factory.contact}
-        .col.col-24
-          .space  
-      
+        .space(style="margin-top: 20px; width: 100%; clear: both;")
+        
+        .info-row
+          .info-column.company
+            p.strong 潍坊景程贸易有限公司
+            p 潍坊市奎文区东风东街360号泰华商务大厦1509号
+            p +86-536-8296032
+            p andy@plasmcut.com
+              
+          .info-column.bill-to
+            h3 供货方:
+            p #{model.factory.factory_name}
+            p #{model.factory.location}
+            p #{model.factory.contact}
+              
+      main
         table.table-invoice
           thead
             tr.tableHeader
@@ -324,24 +373,31 @@ html
                 td.price #{moneyFormatter({amount:item.price})}
                 td.total #{moneyFormatter({amount:item.total})}
             tr
-              td.grand.total(colspan='7') 合计人民币金额
-              td.grand.total #{moneyFormatter({amount:model.total})}
+              td.grand.total(colspan='7') <strong>合计人民币金额</strong>
+              td.grand.total <strong>#{moneyFormatter({amount:model.total})}</strong>
         
       .col.col-24
           .space
       
       if model.notes && model.notes.length > 0
         .col.col-24
-          .left.col-12
-            p.strong 备注:
-            ul(style="list-style-type: none; padding-left: 0;")
+          p
+            strong(style="font-weight: bold;") 备注:
+            ul(style="list-style-type: none; padding-left: 0; margin-top: 5px;")
               each note, index in model.notes
                 li #{index + 1}. #{note}
-          .col-12
-            // 右侧留空
+          .space(style="margin-top: 10px; margin-bottom: 10px;")
      
+      .signature-area
+        .signature-box
+          .signature-line
+          p.signature-title 买方签字:
+        .signature-box
+          .signature-line
+          p.signature-title 卖方签字:
+      
+
       footer.footer-invoice
         //- | Invoice was created on a computer and is valid without the signature and seal.
           
-
    

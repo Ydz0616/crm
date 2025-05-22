@@ -86,6 +86,15 @@ html
         padding: 10px;
         text-align: left;
       }
+      .info-column.company {
+        flex: 1.6;
+      }
+      .info-column.bill-to {
+        flex: 1;
+      }
+      .info-column.ship-to {
+        flex: 1;
+      }
       .info-column h3 {
         color: #52008c;
         margin-top: 0;
@@ -221,7 +230,7 @@ html
         background: #fcfeff;
       }
       .table-invoice th, .table-invoice td {
-        text-align: center;
+        text-align: left;
       }
       .table-invoice th {
         padding: 8px 10px;
@@ -230,7 +239,7 @@ html
         white-space: nowrap;
         font-weight: 700;
         font-size: 12px;
-        text-align: right;
+        text-align: left;
       }
       tbody{
         border-bottom: 1px solid #c2e0f2;
@@ -243,14 +252,14 @@ html
       }
       .table-invoice td.num {
         width: 40px;
-        text-align: center;
+        text-align: left;
       }
       .table-invoice th.num {
-        text-align: center;
+        text-align: left;
       }
       .table-invoice td {
-        padding: 10px ;
-        text-align: right;
+        padding: 10px;
+        text-align: left;
         font-size: 11px;
       }
       .table-invoice td.service, .table-invoice td.desc {
@@ -336,22 +345,22 @@ html
         .space(style="margin-top: 20px; width: 100%; clear: both;")
         
         .info-row
-          .info-column
-            h3 From:
-            p WEIFANG ROYALROAD TRADING CO., LTD.
-            p Be A Responsible Company
+          .info-column.company
+            p.strong WEIFANG ROYALROAD TRADING CO., LTD.
+            p 
+              a(href="https://www.plasmcut.com/") Be A Responsible Company
             p NO.360 DongFeng East Str, WeiFang City, 261041, P.R China
             p +86-536-8296032
             p andy@plasmcut.com
               
-          .info-column
+          .info-column.bill-to
             h3 Bill To:
             p #{model.client.name}
             p #{model.client.address}
             p #{model.client.phone}
             p #{model.client.email}
               
-          .info-column
+          .info-column.ship-to
             h3 Ship To:
             p The buyer's carrier-designated address
               
@@ -436,7 +445,7 @@ html
                 li Beneficiary Bank Name: VTB Bank (PJSC) Shanghai Branch 
                 li SWIFT Code: VTBRCNSH
                 li Beneficiary Bank Code: 767290000018 
-                li Beneficiary Bank' Correspondent Bank: VTB BANK(PJSC) MOSCOW, VTBRRUMM 
+                li Beneficiary Bank's Correspondent Bank: VTB BANK(PJSC) MOSCOW, VTBRRUMM 
                 li Beneficiary Bank Address: Office 2503-2505, Shanghai Tower, 501 Middle YinCheng Road, Shanghai, China 20012 
                 li Beneficiary Account No: 40807156500610017184 
                 li Beneficiary Name: WEIFANG ROYALROAD TRADING CO., LTD. 
