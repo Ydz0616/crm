@@ -23,24 +23,32 @@ export default function Delete({ config }) {
 
   useEffect(() => {
     if (isSuccess) {
+      dispatch(erp.resetAction({ actionType: 'delete' }));
       modal.close();
       const options = { page: 1, items: 10 };
       dispatch(erp.list({ entity, options }));
     }
     if (current) {
       let labels = deleteModalLabels.map((x) => valueByString(current, x)).join(' ');
-
       setDisplayItem(labels);
     }
   }, [isSuccess, current]);
 
+  useEffect(() => {
+    if (!deleteModal.isOpen) {
+      dispatch(erp.resetAction({ actionType: 'delete' }));
+    }
+  }, [deleteModal.isOpen]);
+
   const handleOk = () => {
     const id = current._id;
     dispatch(erp.delete({ entity, id }));
-    modal.close();
   };
   const handleCancel = () => {
-    if (!isLoading) modal.close();
+    if (!isLoading) {
+      modal.close();
+      dispatch(erp.resetAction({ actionType: 'delete' }));
+    }
   };
   return (
     <Modal
