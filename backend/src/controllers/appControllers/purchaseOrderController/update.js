@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Model = mongoose.model('PurchaseOrder');
 const Invoice = mongoose.model('Invoice');
+const Merch = mongoose.model('Merch');
 const { calculate } = require('@/helpers');
 const moment = require('moment');
 
@@ -38,14 +39,47 @@ const update = async (req, res) => {
     // default
     let total = 0;
 
-    //Calculate the items array with total
-    items.map((item) => {
+    // 处理每个项目，确保单位信息存在
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
       let itemTotal = calculate.multiply(item['quantity'], item['price']);
-      //add to total
+      
+      // 添加到总计
       total = calculate.add(total, itemTotal);
-      //item total
+      
+      // 设置项目总计
       item['total'] = itemTotal;
-    });
+      
+      // 尝试从商品数据库获取单位信息
+      try {
+        // 先检查是否已经有单位信息
+        if (!item.unit_cn || !item.unit_en) {
+          // 尝试从数据库中找到匹配的商品
+          const merchItem = await Merch.findOne({ serialNumber: item.itemName });
+          
+          if (merchItem) {
+            // 如果找到匹配的商品，使用其单位信息
+            item.unit_cn = merchItem.unit_cn;
+            item.unit_en = merchItem.unit_en;
+            console.log(`Updated units from Merch DB: ${item.itemName}, unit_cn: ${item.unit_cn}, unit_en: ${item.unit_en}`);
+          } else {
+            // 如果在数据库中找不到，尝试从之前的订单中恢复
+            if (previousOrder.items && previousOrder.items.length > 0) {
+              const prevItem = previousOrder.items.find(prevItem => prevItem.itemName === item.itemName);
+              if (prevItem) {
+                if (!item.unit_cn) item.unit_cn = prevItem.unit_cn;
+                if (!item.unit_en) item.unit_en = prevItem.unit_en;
+                console.log(`Recovered units from previous order: ${item.itemName}, unit_cn: ${item.unit_cn}, unit_en: ${item.unit_en}`);
+              }
+            }
+          }
+        } else {
+          console.log(`Item already has units: ${item.itemName}, unit_cn: ${item.unit_cn}, unit_en: ${item.unit_en}`);
+        }
+      } catch (err) {
+        console.error(`Error getting unit information for ${item.itemName}:`, err);
+      }
+    }
 
     // Apply discount if provided
     if (discount > 0) {

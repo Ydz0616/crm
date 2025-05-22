@@ -371,6 +371,7 @@ html
               th.service Item
               th Description
               th Quantity
+              th Unit
               th Price
               th Total
           tbody
@@ -380,19 +381,20 @@ html
                 td.service= item.itemName
                 td= item.description
                 td.qty= item.quantity
-                td.unit= moneyFormatter({amount:item.price})
+                td.unit= item.unit_en || ''
+                td.price= moneyFormatter({amount:item.price})
                 td.total= moneyFormatter({amount:item.total})
             tr
-              td(colspan='5') SUB TOTAL
+              td(colspan='6') SUB TOTAL
               td.total #{moneyFormatter({amount:model.subTotal})}
             tr
-              td(colspan='5') FREIGHT
+              td(colspan='6') FREIGHT
               td.total #{moneyFormatter({amount:model.freight})}
             tr
-              td(colspan='5') DISCOUNT
+              td(colspan='6') DISCOUNT
               td.total #{moneyFormatter({amount:model.discount || 0})}
             tr
-              td.grand.total(colspan='5') <strong>TOTAL DUE</strong>
+              td.grand.total(colspan='6') <strong>TOTAL DUE</strong>
               td.grand.total <strong>#{moneyFormatter({amount:model.total})}</strong>
         
       .col.col-24

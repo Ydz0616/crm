@@ -26,6 +26,16 @@ const convertQuoteToInvoice = async (req, res) => {
       });
     }
 
+    // Ensure items have unit information preserved
+    const items = quote.items.map(item => {
+      return {
+        ...item.toObject(),
+        // 确保单位信息被保留
+        unit_cn: item.unit_cn,
+        unit_en: item.unit_en
+      };
+    });
+
     // Create new invoice from quote data
     const invoice = new Invoice({
       number: quote.number,
@@ -33,7 +43,7 @@ const convertQuoteToInvoice = async (req, res) => {
       date: quote.date,
       expiredDate: quote.expiredDate,
       client: quote.client._id,
-      items: quote.items,
+      items: items, // 使用处理过的items数组
       subTotal: quote.subTotal,
       total: quote.total,
       credit: quote.credit,
