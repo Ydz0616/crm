@@ -9,6 +9,7 @@ import {
   CloseCircleOutlined,
   RetweetOutlined,
   MailOutlined,
+  FileExcelOutlined,
 } from '@ant-design/icons';
 
 import { useSelector, useDispatch } from 'react-redux';
@@ -173,13 +174,15 @@ export default function ReadItem({ config, selectedItem }) {
           </Button>,
           <Button
             key={`${uniqueId()}`}
-            loading={mailInProgress}
             onClick={() => {
-              send(currentErp._id);
+              window.open(
+                `/export/excel/${entity.toLowerCase()}/${currentErp._id}`,
+                '_blank'
+              );
             }}
-            icon={<MailOutlined />}
+            icon={<FileExcelOutlined />}
           >
-            {translate('Send by Email')}
+            {translate('Export to Excel')}
           </Button>,
           <Button
             key={`${uniqueId()}`}
@@ -191,7 +194,6 @@ export default function ReadItem({ config, selectedItem }) {
           >
             {translate('Convert to Invoice')}
           </Button>,
-
           <Button
             key={`${uniqueId()}`}
             onClick={() => {

@@ -31,6 +31,11 @@ export default ({ mode }) => {
           changeOrigin: true,
           secure: false,
         },
+        '/export': {
+          target: proxy_url,
+          changeOrigin: true,
+          secure: false,
+        },
       },
     },
   };
