@@ -386,16 +386,20 @@ html
                 td.price= moneyFormatter({amount:item.price})
                 td.total= moneyFormatter({amount:item.total})
             tr
-              td(colspan='6') SUB TOTAL
+              td(colspan='4')
+              td(colspan='2', style="text-align: right;") SUB TOTAL
               td.total #{moneyFormatter({amount:model.subTotal})}
             tr
-              td(colspan='6') FREIGHT
+              td(colspan='4')
+              td(colspan='2', style="text-align: right;") FREIGHT
               td.total #{moneyFormatter({amount:model.freight})}
             tr
-              td(colspan='6') DISCOUNT
+              td(colspan='4')
+              td(colspan='2', style="text-align: right;") DISCOUNT
               td.total #{moneyFormatter({amount:model.discount || 0})}
             tr
-              td.grand.total(colspan='6') <strong>TOTAL DUE</strong>
+              td(colspan='4')
+              td.grand.total(colspan='2', style="text-align: right;") <strong>TOTAL DUE</strong>
               td.grand.total <strong>#{moneyFormatter({amount:model.total})}</strong>
         
       .col.col-24

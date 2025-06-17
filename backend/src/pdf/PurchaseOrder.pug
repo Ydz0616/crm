@@ -373,7 +373,8 @@ html
                 td.price #{moneyFormatter({amount:item.price})}
                 td.total #{moneyFormatter({amount:item.total})}
             tr
-              td.grand.total(colspan='7') <strong>合计人民币金额</strong>
+              td.grand.total(colspan='3') <strong>合计人民币金额</strong>
+              td.grand.total(colspan='4', style="text-align: center;") <strong>大写：#{model.totalInChinese}</strong>
               td.grand.total <strong>#{moneyFormatter({amount:model.total})}</strong>
         
       .col.col-24

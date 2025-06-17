@@ -8,6 +8,8 @@ const { listAllSettings, loadSettings } = require('@/middlewares/settings');
 const { getData } = require('@/middlewares/serverData');
 const useLanguage = require('@/locale/useLanguage');
 const { useMoney, useDate } = require('@/settings');
+// 导入中文大写金额转换函数
+const { numberToChineseAmount } = require('@/utils/numberToChinese');
 
 // 所有PDF文件类型现在都使用Gotenberg
 const pugFiles = ['invoice', 'offer', 'quote', 'payment', 'purchaseorder'];
@@ -158,6 +160,12 @@ exports.generatePdfStream = async (
         } else {
           console.warn('[PDF生成] 找不到logo文件:', fixedLogoPath);
         }
+      }
+
+      // 如果是采购订单，添加中文大写金额
+      if (modelName.toLowerCase() === 'purchaseorder' && result.total) {
+        result.totalInChinese = numberToChineseAmount(result.total);
+        console.log('[PDF生成] 添加中文大写金额:', result.totalInChinese);
       }
 
       const htmlContent = pug.renderFile('src/pdf/' + modelName + '.pug', {
@@ -364,6 +372,12 @@ exports.generatePdf = async (
         } else {
           console.warn('[PDF生成] 找不到logo文件:', fixedLogoPath);
         }
+      }
+
+      // 如果是采购订单，添加中文大写金额
+      if (modelName.toLowerCase() === 'purchaseorder' && result.total) {
+        result.totalInChinese = numberToChineseAmount(result.total);
+        console.log('[PDF生成] 添加中文大写金额:', result.totalInChinese);
       }
 
       const htmlContent = pug.renderFile('src/pdf/' + modelName + '.pug', {
