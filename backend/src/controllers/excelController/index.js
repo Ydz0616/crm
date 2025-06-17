@@ -142,8 +142,7 @@ exports.exportInvoiceToExcel = async (req, res) => {
         summaryStartCol: 6, // 小计行的标签从第6列开始
         summaryValueCol: 7, // 小计行的值在第7列
         footerText,
-        numberFormatCols: [4, 6, 7], // 设置金额列的格式 (Q'TY, Unit Price, Total Amount)
-        includeHeaders: false // 不包含表头行
+        numberFormatCols: [4, 6, 7] // 设置金额列的格式 (Q'TY, Unit Price, Total Amount)
       };
       
       const buffer = await generateExcel(rows, excelOptions);
@@ -305,8 +304,7 @@ exports.exportQuoteToExcel = async (req, res) => {
         summaryStartCol: 6, // 小计行的标签从第6列开始
         summaryValueCol: 7, // 小计行的值在第7列
         footerText,
-        numberFormatCols: [4, 6, 7], // 设置金额列的格式 (Q'TY, Unit Price, Total Amount)
-        includeHeaders: false // 不包含表头行
+        numberFormatCols: [4, 6, 7] // 设置金额列的格式 (Q'TY, Unit Price, Total Amount)
       };
       
       const buffer = await generateExcel(rows, excelOptions);
@@ -457,8 +455,7 @@ exports.exportPurchaseOrderToExcel = async (req, res) => {
         summaryStartCol: 7, // 小计行的标签从第7列开始
         summaryValueCol: 8, // 小计行的值在第8列
         footerText,
-        numberFormatCols: [5, 7, 8], // 设置金额列的格式 (数量, 单价, 税价合计)
-        includeHeaders: false // 不包含表头行
+        numberFormatCols: [5, 7, 8] // 设置金额列的格式 (数量, 单价, 税价合计)
       };
       
       const buffer = await generateExcel(rows, excelOptions);

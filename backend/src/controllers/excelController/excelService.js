@@ -27,9 +27,14 @@ const generateExcel = async (data, options = {}) => {
       }
     });
     
-    // 设置列定义
+    // 设置列定义，但不包含表头
     if (options.columnDefinitions) {
-      worksheet.columns = options.columnDefinitions;
+      // 创建不带表头的列定义
+      const columnsWithoutHeaders = options.columnDefinitions.map(col => {
+        const { header, ...rest } = col;
+        return rest;
+      });
+      worksheet.columns = columnsWithoutHeaders;
     }
     
     let currentRow = 1;
@@ -100,8 +105,7 @@ const generateExcel = async (data, options = {}) => {
       currentRow++;
     }
     
-    // 只在商品区块前插入表头
-    let insertedHeader = false;
+    // 添加表头 - 只添加一次
     if (options.headers && Array.isArray(data) && data.length > 0) {
       const headerRow = worksheet.addRow(options.headers);
       currentRow++;
@@ -122,7 +126,6 @@ const generateExcel = async (data, options = {}) => {
         cell.alignment = { vertical: 'middle', horizontal: 'center' };
         cell.font = { bold: true, color: { argb: '52008c' } };
       });
-      insertedHeader = true;
     }
     
     // 添加数据行
