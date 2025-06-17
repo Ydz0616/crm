@@ -296,4 +296,30 @@ export const erp = {
     async () => {
       await request.convert({ entity, id });
     },
+
+  copy:
+    ({ entity, id }) =>
+    async (dispatch) => {
+      dispatch({
+        type: actionTypes.REQUEST_LOADING,
+        keyState: 'copy',
+        payload: null,
+      });
+
+      const data = await request.copy({ entity, id });
+
+      if (data.success === true) {
+        dispatch({
+          type: actionTypes.REQUEST_SUCCESS,
+          keyState: 'copy',
+          payload: data.result,
+        });
+      } else {
+        dispatch({
+          type: actionTypes.REQUEST_FAILED,
+          keyState: 'copy',
+          payload: null,
+        });
+      }
+    },
 };

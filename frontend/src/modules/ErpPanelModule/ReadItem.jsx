@@ -10,6 +10,7 @@ import {
   RetweetOutlined,
   MailOutlined,
   FileExcelOutlined,
+  CopyOutlined,
 } from '@ant-design/icons';
 
 import { useSelector, useDispatch } from 'react-redux';
@@ -25,6 +26,7 @@ import { useMoney, useDate } from '@/settings';
 import useMail from '@/hooks/useMail';
 import { useNavigate } from 'react-router-dom';
 import { tagColor } from '@/utils/statusTagColor';
+import { notification } from 'antd';
 
 const Item = ({ item, currentErp, entity }) => {
   const { moneyFormatter } = useMoney();
@@ -159,6 +161,20 @@ export default function ReadItem({ config, selectedItem }) {
             icon={<CloseCircleOutlined />}
           >
             {translate('Close')}
+          </Button>,
+          <Button
+            key={`${uniqueId()}`}
+            onClick={() => {
+              dispatch(erp.copy({ entity, id: currentErp._id }));
+              notification.success({
+                message: translate('Copied successfully'),
+                description: translate('A new draft has been created based on this document'),
+              });
+              navigate(`/${entity.toLowerCase()}`);
+            }}
+            icon={<CopyOutlined />}
+          >
+            {translate('Copy')}
           </Button>,
           <Button
             key={`${uniqueId()}`}

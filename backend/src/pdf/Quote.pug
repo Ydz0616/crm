@@ -368,12 +368,12 @@ html
         table.table-invoice
           thead
             tr.tableHeader
-              th.num No
-              th.service Item
+              th.num S/N
+              th.service Ref.Number
               th Description
-              th Quantity
+              th Q'TY
               th Unit
-              th Price
+              th Unit Price
               th Total
           tbody
             each item, index in model.items
@@ -387,19 +387,23 @@ html
                 td.total= moneyFormatter({amount:item.total})
             tr
               td(colspan='4')
-              td(colspan='2', style="text-align: right;") SUB TOTAL
+              td(style="text-align: left;") SUB TOTAL
+              td
               td.total #{moneyFormatter({amount:model.subTotal})}
             tr
               td(colspan='4')
-              td(colspan='2', style="text-align: right;") FREIGHT
+              td(style="text-align: left;") FREIGHT
+              td
               td.total #{moneyFormatter({amount:model.freight})}
             tr
               td(colspan='4')
-              td(colspan='2', style="text-align: right;") DISCOUNT
+              td(style="text-align: left;") DISCOUNT
+              td
               td.total #{moneyFormatter({amount:model.discount || 0})}
             tr
               td(colspan='4')
-              td.grand.total(colspan='2', style="text-align: right;") <strong>TOTAL DUE</strong>
+              td.grand.total(style="text-align: left;") <strong>TOTAL DUE</strong>
+              td.grand.total
               td.grand.total <strong>#{moneyFormatter({amount:model.total})}</strong>
         
       .col.col-24
