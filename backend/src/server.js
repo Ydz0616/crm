@@ -50,12 +50,12 @@ const setupIndexes = require('./setup/indexSetup');
 mongoose.connection.once('open', async () => {
   console.log('✅ MongoDB database connection established successfully');
   
-  // // 设置数据库索引
-  // try {
-  //   await setupIndexes();
-  // } catch (error) {
-  //   console.error('设置索引时出错:', error);
-  // }
+  // 设置数据库索引
+  try {
+    await setupIndexes();
+  } catch (error) {
+    console.error('设置索引时出错:', error);
+  }
 });
 
 // Start our app!

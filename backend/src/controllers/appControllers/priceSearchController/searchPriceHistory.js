@@ -7,10 +7,11 @@ const Merch = mongoose.model('Merch');
  * 搜索商品价格历史
  * 根据客户ID、商品序列号列表和日期范围搜索发票中的商品价格
  * 同时查找关联的采购订单中的买入价
+ * 计算美金成本和毛利率
  */
 const searchPriceHistory = async (req, res) => {
   try {
-    const { clientId, itemNames, startDate, endDate } = req.body;
+    const { clientId, itemNames, startDate, endDate, exchangeRate = 7, useCny = false } = req.body;
 
     // 验证请求参数
     if (!clientId || !itemNames || !Array.isArray(itemNames) || itemNames.length === 0) {
@@ -155,13 +156,19 @@ const searchPriceHistory = async (req, res) => {
     // 执行聚合查询
     const aggregateResults = await Invoice.aggregate(pipeline);
 
-    // 检查每个商品是否存在于Merch集合中
-    const merchResults = await Merch.find({
+    // 获取所有商品的详细信息，包括VAT和ETR
+    const merchDetails = await Merch.find({
       serialNumber: { $in: itemNames },
       removed: false
-    }).select('serialNumber').lean();
+    }).select('serialNumber VAT ETR').lean();
 
-    const existingMerchItems = merchResults.map(item => item.serialNumber);
+    // 创建商品详情的映射，方便后续查找
+    const merchMap = {};
+    merchDetails.forEach(merch => {
+      merchMap[merch.serialNumber] = merch;
+    });
+
+    const existingMerchItems = merchDetails.map(item => item.serialNumber);
     const nonExistingItems = itemNames.filter(item => !existingMerchItems.includes(item));
 
     // 初始化结果对象和日志
@@ -177,7 +184,9 @@ const searchPriceHistory = async (req, res) => {
         invoiceDate: null,
         currency: null,
         purchasePrice: null,
-        purchaseOrderNumber: null
+        purchaseOrderNumber: null,
+        usdCost: null,
+        profitMargin: null
       };
     });
 
@@ -188,6 +197,34 @@ const searchPriceHistory = async (req, res) => {
 
     // 处理聚合结果
     aggregateResults.forEach(item => {
+      // 获取商品的VAT和ETR
+      const merchInfo = merchMap[item.itemName];
+      let usdCost = null;
+      let profitMargin = null;
+      
+      if (merchInfo) {
+        const { VAT, ETR } = merchInfo;
+        
+        if (useCny) {
+          // 使用CNY计算，毛利率 = (卖出价格 - 买入价格/增值税) / 卖出价格
+          if (item.sellPrice && item.purchasePrice) {
+            const adjustedPurchasePrice = item.purchasePrice / VAT;
+            profitMargin = (item.sellPrice - adjustedPurchasePrice) / item.sellPrice;
+          }
+        } else {
+          // 美金成本计算公式: 买入价格 * (增值税 - 退税率) / 增值税 / 汇率
+          if (item.purchasePrice) {
+            usdCost = item.purchasePrice * (VAT - ETR) / VAT / exchangeRate;
+            
+            // 如果有卖出价格，计算毛利率
+            if (item.sellPrice) {
+              // 毛利率计算公式: (卖出价格 - 美金成本) / 卖出价格
+              profitMargin = (item.sellPrice - usdCost) / item.sellPrice;
+            }
+          }
+        }
+      }
+      
       results[item.itemName] = {
         found: true,
         latestPrice: item.sellPrice,
@@ -195,7 +232,10 @@ const searchPriceHistory = async (req, res) => {
         invoiceDate: item.invoiceDate,
         currency: item.currency,
         purchasePrice: item.purchasePrice,
-        purchaseOrderNumber: item.purchaseOrderNumber
+        purchaseOrderNumber: item.purchaseOrderNumber,
+        usdCost: !useCny && usdCost ? parseFloat(usdCost.toFixed(2)) : null,
+        profitMargin: profitMargin ? parseFloat(profitMargin.toFixed(4)) : null,
+        useCny: useCny
       };
       
       // 生成日志
@@ -217,7 +257,8 @@ const searchPriceHistory = async (req, res) => {
       success: true,
       result: {
         items: results,
-        logs: logs
+        logs: logs,
+        useCny: useCny
       },
       message: '价格历史搜索完成'
     });

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, DatePicker, Row, Col, message } from 'antd';
+import { Form, Input, Button, DatePicker, Row, Col, message, InputNumber, Switch } from 'antd';
 import { SearchOutlined, PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import useLanguage from '@/locale/useLanguage';
 import { request } from '@/request';
@@ -44,6 +44,7 @@ const ItemRow = ({ field, remove }) => {
 const PriceSearchForm = ({ onSearchResults, setLoading }) => {
   const translate = useLanguage();
   const [form] = Form.useForm();
+  const [useCny, setUseCny] = useState(false);
 
   const handleSearch = async (values) => {
     try {
@@ -74,7 +75,9 @@ const PriceSearchForm = ({ onSearchResults, setLoading }) => {
           clientId: values.clientId,
           itemNames: itemNames,
           startDate: startDate,
-          endDate: endDate
+          endDate: endDate,
+          exchangeRate: values.exchangeRate,
+          useCny: values.useCny
         }
       });
       
@@ -99,11 +102,13 @@ const PriceSearchForm = ({ onSearchResults, setLoading }) => {
       onFinish={handleSearch}
       style={{ marginBottom: 24 }}
       initialValues={{
-        items: [{}] // 初始化一个空行
+        items: [{}], // 初始化一个空行
+        exchangeRate: 7, // 默认汇率为7
+        useCny: false // 默认不使用CNY
       }}
     >
       <Row gutter={16}>
-        <Col xs={24} sm={24} md={12}>
+        <Col xs={24} sm={24} md={8}>
           <Form.Item
             name="clientId"
             label={translate('select_client')}
@@ -118,12 +123,48 @@ const PriceSearchForm = ({ onSearchResults, setLoading }) => {
           </Form.Item>
         </Col>
         
-        <Col xs={24} sm={24} md={12}>
+        <Col xs={24} sm={12} md={8}>
           <Form.Item
             name="dateRange"
             label={translate('date_range')}
           >
             <RangePicker style={{ width: '100%' }} />
+          </Form.Item>
+        </Col>
+        
+        <Col xs={24} sm={12} md={8}>
+          <Form.Item
+            name="useCny"
+            label={translate('use_cny')}
+            valuePropName="checked"
+          >
+            <Switch 
+              onChange={(checked) => {
+                setUseCny(checked);
+                form.setFieldsValue({ useCny: checked });
+              }}
+            />
+          </Form.Item>
+        </Col>
+      </Row>
+      
+      <Row gutter={16}>
+        <Col xs={24} sm={24} md={8}>
+          <Form.Item
+            name="exchangeRate"
+            label={translate('exchange_rate_usd_cny')}
+            rules={[{ required: !useCny, message: translate('Please enter exchange rate') }]}
+            tooltip={translate('exchange_rate_tooltip')}
+            hidden={useCny}
+          >
+            <InputNumber
+              min={0.01}
+              step={0.01}
+              precision={2}
+              style={{ width: '100%' }}
+              placeholder={translate('Enter USD to CNY rate')}
+              disabled={useCny}
+            />
           </Form.Item>
         </Col>
       </Row>

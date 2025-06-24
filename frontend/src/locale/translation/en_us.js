@@ -477,6 +477,13 @@ const lang = {
   'Please enter item serial number': 'Please enter item serial number',
   purchase_price: 'Purchase Price',
   purchase_order: 'Purchase Order',
+  usd_cost: 'USD Cost',
+  profit_margin: 'Profit Margin',
+  item_serial_number: 'Serial Number',
+  exchange_rate_usd_cny: 'Exchange Rate (USD to CNY)',
+  exchange_rate_tooltip: 'Enter the exchange rate from USD to CNY (e.g., 7 means 1 USD = 7 CNY)',
+  use_cny: 'Use CNY',
+  using_cny_calculation: 'Using CNY for calculation',
 };
 
 export default lang;
