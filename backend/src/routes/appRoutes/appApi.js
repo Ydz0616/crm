@@ -47,4 +47,10 @@ router.route('/comparison/search').get(comparisonController.search);
 router.route('/comparison/list').get(comparisonController.list);
 router.route('/comparison/summary').get(comparisonController.summary);
 
+// 添加价格搜索控制器
+const priceSearchController = require('@/controllers/appControllers/priceSearchController');
+
+// 添加价格搜索路由
+router.route('/priceSearch/history').post(priceSearchController.searchPriceHistory);
+
 module.exports = router;

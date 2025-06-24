@@ -45,6 +45,9 @@ const Merchandise = lazy(() => import('@/pages/Merchandise'));
 
 const About = lazy(() => import('@/pages/About'));
 
+// 添加价格搜索页面导入
+import PriceSearch from '@/pages/PriceSearch';
+
 let routes = {
   expense: [],
   default: [
@@ -191,6 +194,10 @@ let routes = {
     {
       path: '/comparison/update/:id',
       element: <ComparisonUpdate />,
+    },
+    {
+      path: '/pricesearch',
+      element: <PriceSearch />,
     },
     {
       path: '*',

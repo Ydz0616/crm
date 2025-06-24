@@ -31,7 +31,8 @@ import {
   ReconciliationOutlined,
   GiftOutlined,
   DollarOutlined,
-  BarChartOutlined
+  BarChartOutlined,
+  SearchOutlined
 } from '@ant-design/icons';
 
 const { Sider } = Layout;
@@ -81,9 +82,9 @@ function Sidebar({ collapsible, isMobile = false }) {
       label: <Link to={'/quote'}>{translate('quote')}</Link>,
     },
     {
-      key: 'comparison',
-      icon: <BarChartOutlined />,
-      label: <Link to={'/comparison'}>{translate('comparison')}</Link>,
+      key: 'pricesearch',
+      icon: <SearchOutlined />,
+      label: <Link to={'/pricesearch'}>{translate('price_search')}</Link>,
     },
     {
       key: 'purchaseorder',
@@ -105,11 +106,6 @@ function Sidebar({ collapsible, isMobile = false }) {
       key: 'paymentMode',
       label: <Link to={'/payment/mode'}>{translate('payments_mode')}</Link>,
       icon: <WalletOutlined />,
-    },
-    {
-      key: 'taxes',
-      label: <Link to={'/taxes'}>{translate('taxes')}</Link>,
-      icon: <ShopOutlined />,
     },
     {
       key: 'currencies',

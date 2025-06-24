@@ -11,6 +11,7 @@ async function setupApp() {
   try {
     const Admin = require('../models/coreModels/Admin');
     const AdminPassword = require('../models/coreModels/AdminPassword');
+
     const newAdminPassword = new AdminPassword();
 
     const salt = uniqueId();
@@ -65,6 +66,12 @@ async function setupApp() {
       },
     ]);
     console.log('👍 PaymentMode created : Done!');
+    const setupIndexes = require('./setup/indexSetup');
+    try {
+      await setupIndexes();
+    } catch (error) {
+      console.error('设置索引时出错:', error);
+    }
 
     console.log('🥳 Setup completed :Success!');
     process.exit();

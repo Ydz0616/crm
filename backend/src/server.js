@@ -36,15 +36,27 @@ mongoose.connection.on('error', (error) => {
   console.error(`2. 🚫 Error → : ${error.message}`);
 });
 
-mongoose.connection.once('open', () => {
-  console.log('✅ MongoDB database connection established successfully');
-});
-
+// 导入所有模型文件
 const modelsFiles = globSync('./src/models/**/*.js');
 
 for (const filePath of modelsFiles) {
   require(path.resolve(filePath));
 }
+
+// 导入索引设置函数
+
+const setupIndexes = require('./setup/indexSetup');
+
+mongoose.connection.once('open', async () => {
+  console.log('✅ MongoDB database connection established successfully');
+  
+  // // 设置数据库索引
+  // try {
+  //   await setupIndexes();
+  // } catch (error) {
+  //   console.error('设置索引时出错:', error);
+  // }
+});
 
 // Start our app!
 const app = require('./app');
