@@ -42,7 +42,14 @@ const Item = ({ item, currentErp, entity }) => {
       </Col>
       {isPurchaseOrder && (
         <Col className="gutter-row" span={2}>
-          <p>{item.laser}</p>
+          <p style={{ 
+            whiteSpace: 'pre-wrap',       /* 保留空格和换行符 */
+            wordWrap: 'break-word',       /* 允许单词内换行 */
+            wordBreak: 'break-all',       /* 允许在任何字符间换行 */
+            overflowWrap: 'break-word',   /* 确保长单词也能换行 */
+          }}>
+            {item.laser}
+          </p>
         </Col>
       )}
       <Col className="gutter-row" span={4}>

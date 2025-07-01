@@ -221,9 +221,9 @@ export default function ItemRow({ field, remove, current, formType = 'default' }
         position: 'relative',
         padding: '6px 0', 
         borderBottom: '1px dashed #f0f0f0',
-        alignItems: 'center',
-        whiteSpace: 'nowrap', 
-        overflow: 'hidden' 
+        alignItems: 'flex-start',  /* 改为顶部对齐，以便在内容换行时保持良好的视觉效果 */
+        minHeight: '40px',         /* 设置最小高度 */
+        overflow: 'visible'        /* 允许内容溢出，不截断 */
       }}
     >
       <Col className="gutter-row" span={columnWidths.itemName}>
@@ -251,8 +251,14 @@ export default function ItemRow({ field, remove, current, formType = 'default' }
           name={[field.name, 'description']}
           style={{ marginBottom: 0 }}
         >
-          <Input
-            style={{ minHeight: '32px' }}
+          <Input.TextArea
+            autoSize={{ minRows: 1, maxRows: 4 }}
+            style={{
+              whiteSpace: 'pre-wrap',
+              wordWrap: 'break-word',
+              wordBreak: 'break-all',
+              overflowWrap: 'break-word',
+            }}
             placeholder={isPurchaseOrder ? "中文描述" : "Description"}
           />
         </Form.Item>
@@ -266,8 +272,15 @@ export default function ItemRow({ field, remove, current, formType = 'default' }
             name={[field.name, 'laser']}
             style={{ marginBottom: 0 }}
           >
-            <Input 
+            <Input.TextArea 
               placeholder="激光标记"
+              autoSize={{ minRows: 1, maxRows: 4 }}
+              style={{
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                wordBreak: 'break-all',
+                overflowWrap: 'break-word',
+              }}
             />
           </Form.Item>
         </Col>
