@@ -46,6 +46,7 @@ router.route('/comparison/delete/:id').delete(comparisonController.delete);
 router.route('/comparison/search').get(comparisonController.search);
 router.route('/comparison/list').get(comparisonController.list);
 router.route('/comparison/summary').get(comparisonController.summary);
+router.route('/comparison/fullComparison').post(comparisonController.fullComparison);
 
 // 添加价格搜索控制器
 const priceSearchController = require('@/controllers/appControllers/priceSearchController');

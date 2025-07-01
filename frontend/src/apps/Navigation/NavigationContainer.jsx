@@ -82,14 +82,19 @@ function Sidebar({ collapsible, isMobile = false }) {
       label: <Link to={'/quote'}>{translate('quote')}</Link>,
     },
     {
+      key: 'purchaseorder',
+      icon: <FileOutlined />,
+      label: <Link to={'/purchaseorder'}>{translate('purchase_order')}</Link>,
+    },
+    {
       key: 'pricesearch',
       icon: <SearchOutlined />,
       label: <Link to={'/pricesearch'}>{translate('price_search')}</Link>,
     },
     {
-      key: 'purchaseorder',
-      icon: <FileOutlined />,
-      label: <Link to={'/purchaseorder'}>{translate('purchase_order')}</Link>,
+      key: 'fullcomparison',
+      icon: <BarChartOutlined />,
+      label: <Link to={'/comparison/full'}>{translate('full_comparison')}</Link>,
     },
     {
       key: 'factory',
@@ -101,7 +106,6 @@ function Sidebar({ collapsible, isMobile = false }) {
       icon: <CreditCardOutlined />,
       label: <Link to={'/payment'}>{translate('payments')}</Link>,
     },
-
     {
       key: 'paymentMode',
       label: <Link to={'/payment/mode'}>{translate('payments_mode')}</Link>,
@@ -122,7 +126,6 @@ function Sidebar({ collapsible, isMobile = false }) {
       label: <Link to={'/about'}>{translate('about')}</Link>,
       icon: <ReconciliationOutlined />,
     },
-
   ];
 
   useEffect(() => {

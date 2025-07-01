@@ -32,6 +32,7 @@ const Comparison = lazy(() => import('@/pages/Comparison'));
 const ComparisonCreate = lazy(() => import('@/pages/Comparison/ComparisonCreate'));
 const ComparisonRead = lazy(() => import('@/pages/Comparison/ComparisonRead'));
 const ComparisonUpdate = lazy(() => import('@/pages/Comparison/ComparisonUpdate'));
+const FullComparison = lazy(() => import('@/pages/Comparison/FullComparison'));
 
 const Settings = lazy(() => import('@/pages/Settings/Settings'));
 const PaymentMode = lazy(() => import('@/pages/PaymentMode'));
@@ -194,6 +195,10 @@ let routes = {
     {
       path: '/comparison/update/:id',
       element: <ComparisonUpdate />,
+    },
+    {
+      path: '/comparison/full',
+      element: <FullComparison />,
     },
     {
       path: '/pricesearch',

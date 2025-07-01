@@ -17,50 +17,82 @@ const SelectAsync = ({
   placeholder = 'select',
   value,
   onChange,
+  filters = {},
+  searchFields,
+  disabled = false,
+  notFoundContent,
 }) => {
   const translate = useLanguage();
   const [selectOptions, setOptions] = useState([]);
   const [currentValue, setCurrentValue] = useState(undefined);
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
-  const asyncList = () => {
-    return request.list({ entity });
-  };
-  const { result, isLoading: fetchIsLoading, isSuccess } = useFetch(asyncList);
   useEffect(() => {
-    isSuccess && setOptions(result);
-  }, [isSuccess]);
+    const loadData = async () => {
+      if (entity) {
+        setLoading(true);
+        try {
+          let options = {};
+          
+          // 处理filters对象，转换为后端API期望的格式
+          if (filters && Object.keys(filters).length > 0) {
+            const filterKey = Object.keys(filters)[0];
+            const filterValue = filters[filterKey];
+            
+            if (filterKey && filterValue) {
+              options.filter = filterKey;
+              options.equal = filterValue;
+            }
+          }
+          
+          // 如果提供了searchFields，添加到options中
+          if (searchFields) {
+            options.searchFields = searchFields;
+          }
+          
+          const response = await request.list({ entity, options });
+          
+          if (response.success) {
+            setOptions(response.result);
+          }
+        } catch (error) {
+          console.error(`Error loading ${entity} data:`, error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadData();
+  }, [entity, JSON.stringify(filters)]);
 
   const labels = (optionField) => {
     return displayLabels.map((x) => optionField[x]).join(' ');
   };
+  
   useEffect(() => {
     if (value !== undefined) {
       const val = value[outputValue] ?? value;
       setCurrentValue(val);
-      onChange(val);
+      onChange && onChange(val);
     }
   }, [value]);
 
-  const handleSelectChange = (newValue) => {
+  const handleSelectChange = (newValue, option) => {
     if (newValue === 'redirectURL') {
       navigate(urlToRedirect);
     } else {
       const val = newValue[outputValue] ?? newValue;
       setCurrentValue(newValue);
-      onChange(val);
+      onChange && onChange(val, option);
     }
   };
 
   const optionsList = () => {
     const list = [];
 
-    // if (selectOptions.length === 0 && withRedirect) {
-    //   const value = 'redirectURL';
-    //   const label = `+ ${translate(redirectLabel)}`;
-    //   list.push({ value, label });
-    // }
     selectOptions.map((optionField) => {
       const value = optionField[outputValue] ?? optionField;
       const label = labels(optionField);
@@ -74,15 +106,20 @@ const SelectAsync = ({
 
   return (
     <Select
-      loading={fetchIsLoading}
-      disabled={fetchIsLoading}
+      loading={loading}
+      disabled={disabled || loading}
       value={currentValue}
       onChange={handleSelectChange}
       placeholder={placeholder}
+      notFoundContent={notFoundContent}
+      showSearch
+      filterOption={(input, option) => 
+        option.children.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+      }
     >
       {optionsList()?.map((option) => {
         return (
-          <Select.Option key={`${uniqueId()}`} value={option.value}>
+          <Select.Option key={`${uniqueId()}`} value={option.value} label={option.label}>
             <Tag bordered={false} color={option.color}>
               {option.label}
             </Tag>
