@@ -84,8 +84,8 @@ const FullComparisonResults = ({ results, loading }) => {
       key: 'profitMargin',
       render: (text) => {
         if (text !== null) {
-          // 将小数转换为百分比
-          const percentage = (text * 100).toFixed(2);
+          // 将小数转换为百分比，只保留两位小数
+          const percentage = Number(text * 100).toFixed(2);
           
           // 根据毛利率高低设置不同颜色
           let color = 'black';
@@ -258,6 +258,7 @@ const FullComparisonResults = ({ results, loading }) => {
               percent={profitMarginPercentage > 0 ? Math.min(profitMarginPercentage, 100) : 0} 
               status={summary.profitMargin < 0 ? 'exception' : 'normal'}
               strokeColor={progressColor}
+              showInfo={false}
             />
           </Col>
         </Row>

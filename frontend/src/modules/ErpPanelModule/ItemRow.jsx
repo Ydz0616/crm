@@ -192,6 +192,7 @@ export default function ItemRow({ field, remove, current, formType = 'default' }
   const getColumnWidths = () => {
     if (showLaser) {
       return {
+        index: 1, // 新增序号列
         itemName: 5, 
         description: 5, 
         laser: 3,
@@ -202,6 +203,7 @@ export default function ItemRow({ field, remove, current, formType = 'default' }
       };
     } else {
       return {
+        index: 1, // 新增序号列
         itemName: 6, 
         description: 8, 
         quantity: 2,    // 减小数量列的宽度
@@ -226,6 +228,10 @@ export default function ItemRow({ field, remove, current, formType = 'default' }
         overflow: 'visible'        /* 允许内容溢出，不截断 */
       }}
     >
+      {/* 序号列 */}
+      <Col className="gutter-row" span={columnWidths.index} style={{ textAlign: 'center', color: '#888', fontWeight: 500 }}>
+        {field.name + 1}
+      </Col>
       <Col className="gutter-row" span={columnWidths.itemName}>
         <Form.Item
           {...field}

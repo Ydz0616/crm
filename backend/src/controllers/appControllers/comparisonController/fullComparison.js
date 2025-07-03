@@ -70,6 +70,7 @@ const fullComparison = async (req, res) => {
         currency: invoice.currency,
         purchasePrice: null,
         purchaseOrderNumber: null,
+        purchaseQuantity: null,
         usdCost: null,
         profitMargin: null,
         taxRefund: null
@@ -80,15 +81,65 @@ const fullComparison = async (req, res) => {
       
       // 遍历关联的采购订单
       for (const po of invoice.relatedPurchaseOrders || []) {
-        // 查找采购订单中匹配的商品
-        const poItem = po.items.find(poItem => poItem.itemName === itemName);
-        
-        if (poItem) {
-          purchaseInfo = {
-            price: poItem.price,
-            poNumber: po.number,
-            poId: po._id
-          };
+        // 查找采购订单中所有匹配的商品（可能有多行）
+        const poItems = po.items.filter(poItem => poItem.itemName === itemName);
+        if (poItems.length > 0) {
+          for (const poItem of poItems) {
+            // 每个匹配行都要统计
+            const purchaseInfo = {
+              price: poItem.price,
+              quantity: poItem.quantity,
+              poNumber: po.number,
+              poId: po._id
+            };
+            // 只有有商品VAT/ETR信息才统计
+            if (merchInfo) {
+              const { VAT, ETR } = merchInfo;
+              // 计算退税
+              const taxRefund = purchaseInfo.price * purchaseInfo.quantity * ETR / VAT;
+              itemResult.purchasePrice = purchaseInfo.price;
+              itemResult.purchaseOrderNumber = purchaseInfo.poNumber;
+              itemResult.purchaseQuantity = purchaseInfo.quantity;
+              itemResult.taxRefund = parseFloat(taxRefund.toFixed(2));
+              
+              // 根据是否使用人民币计算不同的成本和利润率
+              if (useCny) {
+                // 使用人民币计算，毛利率 = (卖出价格 - 买入价格/增值税) / 卖出价格
+                const adjustedPurchasePrice = purchaseInfo.price / VAT;
+                itemResult.profitMargin = (item.price - adjustedPurchasePrice) / item.price;
+              } else {
+                // 美金成本计算公式: 买入价格 * (增值税 - 退税率) / 增值税 / 汇率
+                const usdCost = purchaseInfo.price * (VAT - ETR) / VAT / exchangeRate;
+                itemResult.usdCost = parseFloat(usdCost.toFixed(2));
+                
+                // 毛利率计算公式: (卖出价格 - 美金成本) / 卖出价格
+                itemResult.profitMargin = (item.price - usdCost) / item.price;
+              }
+              
+              // 格式化毛利率
+              itemResult.profitMargin = parseFloat(itemResult.profitMargin.toFixed(4));
+              
+              // 更新采购订单摘要
+              if (!poSummary[purchaseInfo.poNumber]) {
+                poSummary[purchaseInfo.poNumber] = {
+                  poNumber: purchaseInfo.poNumber,
+                  poId: purchaseInfo.poId,
+                  totalAmount: 0,
+                  totalTaxRefund: 0,
+                  items: []
+                };
+              }
+              poSummary[purchaseInfo.poNumber].totalAmount += purchaseInfo.price * purchaseInfo.quantity;
+              poSummary[purchaseInfo.poNumber].totalTaxRefund += taxRefund;
+              poSummary[purchaseInfo.poNumber].items.push({
+                itemName,
+                price: purchaseInfo.price,
+                quantity: purchaseInfo.quantity,
+                taxRefund: parseFloat(taxRefund.toFixed(2))
+              });
+            }
+          }
+          // 只要找到至少一行就跳出采购单循环
           break;
         }
       }
@@ -98,9 +149,10 @@ const fullComparison = async (req, res) => {
         const { VAT, ETR } = merchInfo;
         itemResult.purchasePrice = purchaseInfo.price;
         itemResult.purchaseOrderNumber = purchaseInfo.poNumber;
+        itemResult.purchaseQuantity = purchaseInfo.quantity;
         
         // 计算退税
-        const taxRefund = purchaseInfo.price * ETR / VAT;
+        const taxRefund = purchaseInfo.price * purchaseInfo.quantity * ETR / VAT;
         itemResult.taxRefund = parseFloat(taxRefund.toFixed(2));
         
         // 根据是否使用人民币计算不同的成本和利润率
@@ -131,11 +183,12 @@ const fullComparison = async (req, res) => {
           };
         }
         
-        poSummary[purchaseInfo.poNumber].totalAmount += purchaseInfo.price;
+        poSummary[purchaseInfo.poNumber].totalAmount += purchaseInfo.price * purchaseInfo.quantity;
         poSummary[purchaseInfo.poNumber].totalTaxRefund += taxRefund;
         poSummary[purchaseInfo.poNumber].items.push({
           itemName,
           price: purchaseInfo.price,
+          quantity: purchaseInfo.quantity,
           taxRefund: parseFloat(taxRefund.toFixed(2))
         });
       } else {
