@@ -302,23 +302,54 @@ html
       
       .signature-area {
         display: flex;
-        justify-content: space-between;
-        margin-top: 40px;
+        justify-content: center;
+        margin-top: 180px;
         width: 100%;
+        page-break-inside: avoid;
+        break-inside: avoid;
       }
       
       .signature-box {
         width: 45%;
+        min-width: 220px;
+        max-width: 340px;
+        margin: 0 30px;
+        position: relative;
+        page-break-inside: avoid;
+        break-inside: avoid;
       }
       
       .signature-line {
         border-top: 1px solid #000;
-        padding-top: 5px;
-        margin-top: 40px;
+        margin-top: 110px;
+        margin-bottom: 0px;
+        width: 100%;
+        height: 18px;
+        position: relative;
       }
       
       .signature-title {
-        font-weight: bold;
+        font-style: italic;
+        font-weight: normal;
+        font-size: 10px;
+        position: absolute;
+        right: 0;
+        top: 22px;
+        margin: 0;
+        text-align: right;
+        width: auto;
+        background: #fff;
+        padding: 0 2px;
+      }
+      
+      .signature-for, .signature-company, .signature-auth, .signature-buyer {
+        color: #52008c;
+      }
+      
+      .signature-buyer {
+        font-size: 10px;
+        font-style: italic;
+        margin-top: 2px;
       }
       
       .thank-you {
@@ -506,10 +537,10 @@ html
       .signature-area
         .signature-box
           .signature-line
-          p.signature-title Seller's Signature:
+            p.signature-title Seller's Signature
         .signature-box
           .signature-line
-          p.signature-title Buyer's Signature:
+            p.signature-title Buyer's Signature
       
       .thank-you
         p <strong>THANK YOU FOR YOUR BUSINESS!</strong>
