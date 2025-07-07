@@ -92,6 +92,6 @@ metadata:
 data:
   NODE_ENV: "production"
   VITE_APP_API_URL: "http://47.76.240.140:30888/api/"
-  VITE_BACKEND_SERVER: 'http://crm-backend:3000/'
+  VITE_BACKEND_SERVER: "http://47.76.240.140:30888/"
   VITE_FILE_BASE_URL: "http://47.76.240.140:30888/"
   VITE_WEBSITE_URL: "http://47.76.240.140:30080/" 
