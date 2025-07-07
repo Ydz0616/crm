@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
       - name: crm-frontend
-        image: yz743/easycrm:frontend-v1.2.0a
+        image: yz743/easycrm:frontend-v1.2.0
         imagePullPolicy: IfNotPresent
         command: ["npm"]
         args: ["run", "dev", "--", "--host", "0.0.0.0", "--port", "3000"]
@@ -92,6 +92,6 @@ metadata:
 data:
   NODE_ENV: "production"
   VITE_APP_API_URL: "http://47.76.240.140:30888/api/"
-  VITE_BACKEND_SERVER: "http://crm-backend:3000/"
+  VITE_BACKEND_SERVER: "http://47.76.240.140:30888/"
   VITE_FILE_BASE_URL: "http://47.76.240.140:30888/"
   VITE_WEBSITE_URL: "http://47.76.240.140:30080/" 
