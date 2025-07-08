@@ -28,6 +28,12 @@ export const DOWNLOAD_BASE_URL =
   import.meta.env.PROD || import.meta.env.VITE_DEV_REMOTE
     ? (import.meta.env.VITE_BACKEND_SERVER || 'http://localhost:8888/') + 'download/'
     : 'http://localhost:8888/download/';
+
+// Excel导出URL配置
+export const EXCEL_EXPORT_BASE_URL =
+  import.meta.env.PROD || import.meta.env.VITE_DEV_REMOTE
+    ? (import.meta.env.VITE_BACKEND_SERVER || 'http://localhost:8888/') + 'export/excel/'
+    : 'http://localhost:8888/export/excel/';
     
 export const ACCESS_TOKEN_NAME = 'x-auth-token';
 
@@ -37,6 +43,7 @@ export const FILE_BASE_URL = import.meta.env.VITE_FILE_BASE_URL || 'http://local
 console.log('API_BASE_URL:', API_BASE_URL);
 console.log('BASE_URL:', BASE_URL);
 console.log('FILE_BASE_URL:', FILE_BASE_URL);
+console.log('EXCEL_EXPORT_BASE_URL:', EXCEL_EXPORT_BASE_URL);
 
 //  console.log(
 //    '🚀 Welcome to IDURAR ERP CRM! Did you know that we also offer commercial customization services? Contact us at hello@idurarapp.com for more information.'

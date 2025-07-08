@@ -21,7 +21,7 @@ import { generate as uniqueId } from 'shortid';
 
 import { selectCurrentItem } from '@/redux/erp/selectors';
 
-import { DOWNLOAD_BASE_URL } from '@/config/serverApiConfig';
+import { DOWNLOAD_BASE_URL, EXCEL_EXPORT_BASE_URL } from '@/config/serverApiConfig';
 import { useMoney, useDate } from '@/settings';
 import useMail from '@/hooks/useMail';
 import { useNavigate } from 'react-router-dom';
@@ -199,7 +199,7 @@ export default function ReadItem({ config, selectedItem }) {
             key={`${uniqueId()}`}
             onClick={() => {
               window.open(
-                `/export/excel/${entity.toLowerCase()}/${currentErp._id}`,
+                `${EXCEL_EXPORT_BASE_URL}${entity.toLowerCase()}/${currentErp._id}`,
                 '_blank'
               );
             }}
