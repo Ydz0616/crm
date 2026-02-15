@@ -24,5 +24,5 @@ RUN if [ "$NODE_ENV" = "production" ]; then rm -f .env .env.local; fi
 
 EXPOSE 8888
 
-# 使用环境变量运行应用（这些环境变量将由Kubernetes注入）
-CMD ["npm", "run", "dev"]
+# 生产环境用 node 直接运行，环境变量由 docker-compose 或运行时注入
+CMD ["npm", "run", "start"]

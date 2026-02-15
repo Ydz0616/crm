@@ -25,7 +25,7 @@ const SelfHostedPlan = () => {
           size="large"
           block
           onClick={() => {
-            window.open('https://cloud.idurarapp.com/pricing');
+            window.open('#');
           }}
         >
           Purchase Now
@@ -47,7 +47,7 @@ export default function UpgradeButton() {
       //   <Button
       //     type="primary"
       //     onClick={() => {
-      //       window.open(`https://www.idurarapp.com/contact-us/`);
+      //       window.open(`https://yourapp.com/contact`);
       //     }}
       //   >
       //     {translate('Contact us')}
@@ -68,7 +68,7 @@ export default function UpgradeButton() {
       }}
       icon={<RocketOutlined />}
       onClick={() => {
-        window.open(`https://cloud.idurarapp.com/`);
+        window.open('#');
       }}
     >
       {translate('Try Premium Version')}
@@ -76,6 +76,4 @@ export default function UpgradeButton() {
   );
 }
 
-console.log(
-  '🚀 Welcome to IDURAR ERP CRM! Did you know that we also offer commercial customization services? Contact us at hello@idurarapp.com for more information.'
-);
+console.log('🚀 Welcome to Ola ERP CRM!');

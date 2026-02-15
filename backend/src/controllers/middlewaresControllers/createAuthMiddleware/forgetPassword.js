@@ -71,7 +71,7 @@ const forgetPassword = async (req, res, { userModel }) => {
     email,
     name: user.name,
     link,
-    subject: 'Reset your password | idurar',
+    subject: 'Reset your password | Ola',
     idurar_app_email,
     type: 'passwordVerfication',
   });

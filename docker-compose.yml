@@ -1,0 +1,44 @@
+# Ola ERP CRM - 部署到服务器后由网关反代 erp.olajob.cn -> 3000/8888
+# 使用: 在服务器上 cd 到项目目录，配置 backend/.env 后执行 docker compose up -d --build
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8888:8888"
+    env_file:
+      - ./backend/.env
+    environment:
+      NODE_ENV: production
+      PORT: "8888"
+      ALLOWED_ORIGINS: "https://erp.olajob.cn"
+      GOTENBERG_URL: "http://gotenberg:3000"
+    volumes:
+      - crm-uploads:/usr/src/app/src/public/uploads
+    depends_on:
+      - gotenberg
+    restart: unless-stopped
+
+  gotenberg:
+    image: gotenberg/gotenberg:8
+    ports:
+      - "3001:3000"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+      args:
+        VITE_BACKEND_SERVER: "https://erp.olajob.cn/"
+        VITE_APP_API_URL: "https://erp.olajob.cn/api/"
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  crm-uploads:

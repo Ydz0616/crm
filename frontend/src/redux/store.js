@@ -25,7 +25,7 @@ const store = configureStore({
 });
 
 console.log(
-  '🚀 Welcome to IDURAR ERP CRM! Did you know that we also offer commercial customization services? Contact us at hello@idurarapp.com for more information.'
+  '🚀 Welcome to Ola ERP CRM!'
 );
 
 export default store;
