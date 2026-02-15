@@ -1,4 +1,4 @@
-FROM dockerpull.cn/node:20.9.0-alpine
+FROM node:20-alpine
 
 WORKDIR /usr/src/app
 
