@@ -1,121 +1,181 @@
-# EasyCRM
+# OlaCrm
 
-EasyCRM 是一个基于 Node.js 和 React.js 的开源 CRM 系统，使用 Ant Design 和 Redux 构建。
+**OlaCrm** (Ola ERP CRM) is an open-source CRM/ERP system built with Node.js and React. It provides customer relationship management, quotes, invoices, purchase orders, payments, and reporting—with a modern UI and RESTful API.
 
-## 功能特点
+## Features
 
-- 📊 客户关系管理
-- 💼 销售管理
-- 📝 文档管理
-- 📈 报表统计
-- 👥 用户权限管理
-- 📱 响应式设计
-- 🌐 多语言支持
+- **Customer management** — Clients and contacts
+- **Sales** — Quotes, conversion to invoices, copy/duplicate
+- **Invoicing** — Invoices with mail and PDF (Gotenberg)
+- **Purchase orders** — Create and manage POs
+- **Payments** — Payment tracking and modes
+- **Products & factories** — Merchandise and factory data
+- **Comparisons** — Quote/invoice comparisons
+- **Settings** — Currencies, taxes, and system config
+- **User & auth** — JWT-based auth and admin setup
+- **Export** — Excel and other export routes
+- **Responsive UI** — Ant Design, works on desktop and mobile
 
-## 技术栈
+## Tech stack
 
-### 后端
-- Node.js
-- Express.js
-- MongoDB
-- JWT 认证
-- RESTful API
+| Layer   | Stack |
+|--------|--------|
+| **Backend** | Node.js 20, Express, MongoDB (Mongoose), JWT, Gotenberg (PDF) |
+| **Frontend** | React 18, Ant Design, Redux Toolkit, Vite, Axios |
+| **Deploy** | Docker Compose (optional: Kubernetes) |
 
-### 前端
-- React.js
-- Ant Design
-- Redux
-- Vite
-- Axios
+## Project structure
 
-## 快速开始
+```
+crm/
+├── backend/                 # Node.js API
+│   ├── src/
+│   │   ├── routes/          # API routes (core + app entities)
+│   │   ├── controllers/
+│   │   ├── models/
+│   │   └── server.js
+│   ├── .env.example
+│   ├── .env.production.example
+│   ├── Dockerfile
+│   └── package.json
+├── frontend/                # React SPA
+│   ├── src/
+│   ├── public/
+│   ├── Dockerfile.prod
+│   └── package.json
+├── kubernetes/              # K8s manifests (optional)
+├── docker-compose.yml       # Backend + frontend + Gotenberg
+├── deploy.sh                # Production deploy script (rsync + docker compose)
+└── README.md
+```
 
-### 本地开发
+## Quick start
 
-1. 克隆仓库
+### Prerequisites
+
+- Node.js 20.x
+- npm 10.x
+- MongoDB (local or Atlas)
+
+### Local development
+
+1. **Clone the repo**
+
+   ```bash
+   git clone https://github.com/your-org/crm.git
+   cd crm
+   ```
+
+2. **Backend**
+
+   ```bash
+   cd backend
+   cp .env.example .env
+   # Edit .env: set DATABASE, JWT_SECRET, PORT=8888
+   npm install
+   npm run dev
+   ```
+
+3. **Frontend** (in another terminal)
+
+   ```bash
+   cd frontend
+   npm install
+   # Optional: create .env with VITE_APP_API_URL, VITE_BACKEND_SERVER, VITE_FILE_BASE_URL
+   npm run dev
+   ```
+
+4. Open the app at the URL Vite prints (e.g. `http://localhost:5173`). API base: `http://localhost:8888`.
+
+### Environment variables
+
+**Backend** (see `backend/.env.example` and `backend/.env.production.example`):
+
+| Variable | Description |
+|----------|-------------|
+| `DATABASE` | MongoDB connection string (required) |
+| `JWT_SECRET` | Secret for JWT signing (required) |
+| `PORT` | Server port (default `8888`) |
+| `NODE_ENV` | `development` or `production` |
+| `ALLOWED_ORIGINS` | Comma-separated CORS origins (e.g. `https://erp.olajob.cn`) |
+| `PUBLIC_SERVER_FILE` | Base URL for file links (e.g. `https://erp.olajob.cn/`) |
+| `GOTENBERG_URL` | Gotenberg service URL (e.g. `http://gotenberg:3000`) |
+| `RESEND_API` | Optional: Resend API key for email |
+| `OPENAI_API_KEY` | Optional: OpenAI API key |
+
+**Frontend** (build-time for production):
+
+- `VITE_BACKEND_SERVER` — Backend base URL
+- `VITE_APP_API_URL` — API base URL (e.g. `https://erp.olajob.cn/api/`)
+
+## Production deployment
+
+### Docker Compose
+
+1. On the server, clone or copy the repo and go to project root.
+2. Configure backend env:
+   ```bash
+   cp backend/.env.production.example backend/.env
+   # Edit backend/.env: DATABASE, JWT_SECRET, ALLOWED_ORIGINS, PUBLIC_SERVER_FILE
+   ```
+3. Build and start:
+   ```bash
+   docker compose up -d --build
+   ```
+4. Frontend is on port **3000**, backend on **8888**. Use a reverse proxy (e.g. Nginx) to expose them (e.g. `https://erp.olajob.cn` → 3000/8888).
+
+### Deploy script (`deploy.sh`)
+
+The script syncs code to a remote server and runs Docker Compose there.
+
+- **Requires:** `backend/.env.production` or `backend/.env` (used to generate `.env` on the server).
+- **Config:** `DEPLOY_SERVER_IP`, `DEPLOY_REMOTE_DIR` (defaults: `43.99.57.106`, `/app/crm`).
+
 ```bash
-git clone https://github.com/yourusername/easycrm.git
-cd easycrm
+./deploy.sh
+# Prompts for confirmation, then: preflight → rsync → ssh "docker compose up -d --build" → health checks
 ```
 
-2. 安装依赖
-```bash
-# 安装后端依赖
-cd backend
-npm install
+After deploy, the script runs basic health checks (containers up, frontend 3000, backend `GET /health`). Production URL used in comments: **https://erp.olajob.cn**.
 
-# 安装前端依赖
-cd ../frontend
-npm install
-```
+### Kubernetes
 
-3. 配置环境变量
-```bash
-# 后端 (.env)
-DATABASE=mongodb://localhost:27017/easycrm
-JWT_SECRET=your_jwt_secret
-PORT=8888
+See **`kubernetes/README.md`** for K8s deployment (ArgoCD, secrets, backend/frontend deployments, ingress).
 
-# 前端 (.env)
-VITE_APP_API_URL=http://localhost:8888/api
-VITE_BACKEND_SERVER=http://localhost:8888
-VITE_FILE_BASE_URL=http://localhost:8888
-```
+## Backend API overview
 
-4. 启动服务
-```bash
-# 启动后端
-cd backend
-npm run dev
+- **Auth:** `/api` — login, token refresh (see `coreAuth`, `adminAuth`).
+- **Core:** `/api` — settings, users, etc. (see `coreApi`).
+- **App entities:** `/api/<entity>/create|read|update|delete|search|list|listAll|filter|summary` for clients, quotes, invoices, purchase orders, payments, etc.
+- **Special:** quote convert/copy, invoice/quote/purchaseorder copy, invoice/quote/payment mail.
+- **Health:** `GET /health` (used by deploy script).
+- **Export:** routes under `exportRoutes`.
 
-# 启动前端
-cd frontend
-npm run dev
-```
+## Scripts
 
-### 生产环境部署
+**Backend**
 
-详细的部署指南请参考 [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)
+- `npm run dev` — development with nodemon
+- `npm run start` — production start
+- `npm run setup` — setup
+- `npm run add-admin` — add admin user
+- `npm run upgrade` — run upgrade script
+- `npm run reset` — reset script
 
-## 项目结构
+**Frontend**
 
-```
-easycrm/
-├── backend/                # 后端代码
-│   ├── src/               # 源代码
-│   ├── tests/             # 测试文件
-│   └── package.json       # 后端依赖
-├── frontend/              # 前端代码
-│   ├── src/              # 源代码
-│   ├── public/           # 静态资源
-│   └── package.json      # 前端依赖
-├── kubernetes/           # Kubernetes 配置
-│   ├── backend-deployment.yaml
-│   └── frontend-deployment.yaml
-├── DEPLOYMENT_GUIDE.md   # 部署指南
-└── README.md            # 项目说明
-```
+- `npm run dev` — Vite dev server
+- `npm run build` — production build
+- `npm run preview` — preview production build
 
-## 贡献指南
+## License
 
-1. Fork 项目
-2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 创建 Pull Request
+See [LICENSE](LICENSE) in the repository.
 
-## 许可证
-
-本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情
-
-## 联系方式
-
-- 项目维护者：[Your Name](mailto:your.email@example.com)
-- 项目链接：[https://github.com/yourusername/easycrm](https://github.com/yourusername/easycrm)
-
-## 致谢
+## Acknowledgments
 
 - [Ant Design](https://ant.design/)
 - [React](https://reactjs.org/)
 - [Node.js](https://nodejs.org/)
-- [MongoDB](https://www.mongodb.com/) 
+- [MongoDB](https://www.mongodb.com/)
+- [Gotenberg](https://gotenberg.dev/) (PDF)
