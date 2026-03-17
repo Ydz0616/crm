@@ -145,17 +145,6 @@ function Sidebar({ collapsible, isMobile = false }) {
         },
       ],
     },
-    {
-      type: 'group',
-      label: '',
-      children: [
-        {
-          key: 'generalSettings',
-          label: <Link to={'/settings'}>{translate('settings')}</Link>,
-          icon: <SettingOutlined />,
-        },
-      ],
-    },
   ];
 
   useEffect(() => {
@@ -298,9 +287,15 @@ function Sidebar({ collapsible, isMobile = false }) {
               <SmileOutlined className="profile-popup-item-icon" />
               <span>Personalization</span>
             </div>
-            <div className="profile-popup-item">
+            <div
+              className="profile-popup-item"
+              onClick={() => {
+                navigate('/settings');
+                setIsProfileMenuOpen(false);
+              }}
+            >
               <SettingOutlined className="profile-popup-item-icon" />
-              <span>Settings</span>
+              <span>{translate('settings')}</span>
             </div>
             <div className="profile-popup-divider" />
             <div className="profile-popup-item profile-popup-item-with-arrow">
