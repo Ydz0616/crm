@@ -44,8 +44,6 @@ const Merchandise = lazy(() => import('@/pages/Merchandise'));
 // const People = lazy(() => import('@/pages/People'));
 // const Company = lazy(() => import('@/pages/Company'));
 
-const About = lazy(() => import('@/pages/About'));
-
 // 添加价格搜索页面导入
 import PriceSearch from '@/pages/PriceSearch';
 
@@ -59,10 +57,6 @@ let routes = {
     {
       path: '/logout',
       element: <Logout />,
-    },
-    {
-      path: '/about',
-      element: <About />,
     },
     {
       path: '/',
