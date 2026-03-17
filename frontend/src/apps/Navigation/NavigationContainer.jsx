@@ -7,7 +7,8 @@ import { Button, Drawer, Layout, Menu } from 'antd';
 import { useAppContext } from '@/context/appContext';
 
 import useLanguage from '@/locale/useLanguage';
-import logo from '@/style/images/logo.png';
+import logo from '@/style/images/aola.png';
+import collapsedLogo from '@/style/images/collapsed-logo.svg';
 
 import useResponsive from '@/hooks/useResponsive';
 
@@ -31,7 +32,9 @@ import {
   GiftOutlined,
   DollarOutlined,
   BarChartOutlined,
-  SearchOutlined
+  SearchOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined
 } from '@ant-design/icons';
 
 const { Sider } = Layout;
@@ -39,7 +42,7 @@ const { Sider } = Layout;
 export default function Navigation() {
   const { isMobile } = useResponsive();
 
-  return isMobile ? <MobileSidebar /> : <Sidebar collapsible={false} />;
+  return isMobile ? <MobileSidebar /> : <Sidebar collapsible={true} />;
 }
 
 function Sidebar({ collapsible, isMobile = false }) {
@@ -49,6 +52,7 @@ function Sidebar({ collapsible, isMobile = false }) {
   const { isNavMenuClose } = stateApp;
   const { navMenu } = appContextAction;
   const [showLogoApp, setLogoApp] = useState(isNavMenuClose);
+  const [isLogoHovered, setIsLogoHovered] = useState(false);
   const [currentPath, setCurrentPath] = useState(location.pathname.slice(1));
 
   const translate = useLanguage();
@@ -56,74 +60,98 @@ function Sidebar({ collapsible, isMobile = false }) {
 
   const items = [
     {
-      key: 'dashboard',
-      icon: <DashboardOutlined />,
-      label: <Link to={'/'}>{translate('dashboard')}</Link>,
+      type: 'group',
+      label: '',
+      children: [
+        {
+          key: 'dashboard',
+          icon: <DashboardOutlined />,
+          label: <Link to={'/'}>{translate('dashboard')}</Link>,
+        },
+        {
+          key: 'customer',
+          icon: <CustomerServiceOutlined />,
+          label: <Link to={'/customer'}>{translate('customers')}</Link>,
+        },
+        {
+          key: 'Merchandise',
+          label: <Link to={'/merchandise'}>{translate('Merchandise')}</Link>,
+          icon: <GiftOutlined />,
+        },
+        {
+          key: 'factory',
+          icon: <BuildOutlined />,
+          label: <Link to={'/factory'}>{translate('factory')}</Link>,
+        },
+      ],
     },
     {
-      key: 'Merchandise',
-      label: <Link to={'/merchandise'}>{translate('Merchandise')}</Link>,
-      icon: <GiftOutlined />,
+      type: 'group',
+      label: translate('Finance'),
+      children: [
+        {
+          key: 'invoice',
+          icon: <ContainerOutlined />,
+          label: <Link to={'/invoice'}>{translate('invoices')}</Link>,
+        },
+        {
+          key: 'quote',
+          icon: <FileSyncOutlined />,
+          label: <Link to={'/quote'}>{translate('quote')}</Link>,
+        },
+        {
+          key: 'purchaseorder',
+          icon: <FileOutlined />,
+          label: <Link to={'/purchaseorder'}>{translate('purchase_order')}</Link>,
+        },
+        {
+          key: 'payment',
+          icon: <CreditCardOutlined />,
+          label: <Link to={'/payment'}>{translate('payments')}</Link>,
+        },
+        {
+          key: 'paymentMode',
+          label: <Link to={'/payment/mode'}>{translate('payments_mode')}</Link>,
+          icon: <WalletOutlined />,
+        },
+        {
+          key: 'currencies',
+          label: <Link to={'/currencies'}>{translate('currencies')}</Link>,
+          icon: <DollarOutlined />,
+        },
+      ],
     },
     {
-      key: 'customer',
-      icon: <CustomerServiceOutlined />,
-      label: <Link to={'/customer'}>{translate('customers')}</Link>,
+      type: 'group',
+      label: translate('Tools'),
+      children: [
+        {
+          key: 'pricesearch',
+          icon: <SearchOutlined />,
+          label: <Link to={'/pricesearch'}>{translate('price_search')}</Link>,
+        },
+        {
+          key: 'fullcomparison',
+          icon: <BarChartOutlined />,
+          label: <Link to={'/comparison/full'}>{translate('full_comparison')}</Link>,
+        },
+      ],
     },
     {
-      key: 'invoice',
-      icon: <ContainerOutlined />,
-      label: <Link to={'/invoice'}>{translate('invoices')}</Link>,
-    },
-    {
-      key: 'quote',
-      icon: <FileSyncOutlined />,
-      label: <Link to={'/quote'}>{translate('quote')}</Link>,
-    },
-    {
-      key: 'purchaseorder',
-      icon: <FileOutlined />,
-      label: <Link to={'/purchaseorder'}>{translate('purchase_order')}</Link>,
-    },
-    {
-      key: 'pricesearch',
-      icon: <SearchOutlined />,
-      label: <Link to={'/pricesearch'}>{translate('price_search')}</Link>,
-    },
-    {
-      key: 'fullcomparison',
-      icon: <BarChartOutlined />,
-      label: <Link to={'/comparison/full'}>{translate('full_comparison')}</Link>,
-    },
-    {
-      key: 'factory',
-      icon: <BuildOutlined />,
-      label: <Link to={'/factory'}>{translate('factory')}</Link>,
-    },
-    {
-      key: 'payment',
-      icon: <CreditCardOutlined />,
-      label: <Link to={'/payment'}>{translate('payments')}</Link>,
-    },
-    {
-      key: 'paymentMode',
-      label: <Link to={'/payment/mode'}>{translate('payments_mode')}</Link>,
-      icon: <WalletOutlined />,
-    },
-    {
-      key: 'currencies',
-      label: <Link to={'/currencies'}>{translate('currencies')}</Link>,
-      icon: <DollarOutlined />,
-    },
-    {
-      key: 'generalSettings',
-      label: <Link to={'/settings'}>{translate('settings')}</Link>,
-      icon: <SettingOutlined />,
-    },
-    {
-      key: 'about',
-      label: <Link to={'/about'}>{translate('about')}</Link>,
-      icon: <ReconciliationOutlined />,
+      type: 'group',
+      label: '',
+      children: [
+        {
+          key: 'generalSettings',
+          label: <Link to={'/settings'}>{translate('settings')}</Link>,
+          icon: <SettingOutlined />,
+        },
+        {
+          key: 'about',
+          label: <Link to={'/about'}>{translate('about')}</Link>,
+          icon: <ReconciliationOutlined />,
+        },
+      ],
     },
   ];
 
@@ -153,43 +181,72 @@ function Sidebar({ collapsible, isMobile = false }) {
 
   return (
     <Sider
+      trigger={null}
       collapsible={collapsible}
-      collapsed={collapsible ? isNavMenuClose : collapsible}
+      collapsed={collapsible ? isNavMenuClose : false}
+      collapsedWidth={60}
       onCollapse={onCollapse}
       className="navigation"
-      width={256}
+      width={220}
       style={{
         overflow: 'auto',
         height: '100vh',
-
         position: isMobile ? 'absolute' : 'relative',
-        bottom: '20px',
-        ...(!isMobile && {
-          // border: 'none',
-          ['left']: '20px',
-          top: '20px',
-          // borderRadius: '8px',
-        }),
+        bottom: 0,
+        left: 0,
+        top: 0,
       }}
       theme={'light'}
     >
       <div
         className="logo"
-        onClick={() => navigate('/')}
+        onMouseEnter={() => setIsLogoHovered(true)}
+        onMouseLeave={() => setIsLogoHovered(false)}
+        onClick={() => {
+          if (showLogoApp) {
+            onCollapse();
+          }
+        }}
         style={{
-          cursor: 'pointer',
+          display: 'flex',
+          justifyContent: showLogoApp ? 'center' : 'space-between',
+          alignItems: 'center',
+          paddingRight: showLogoApp ? '0px' : '16px',
         }}
       >
-        <img
-          src={logo}
-          alt="Logo"
-          style={{
-            marginLeft: '-5px',
-            height: '40px',
-            objectFit: 'contain',
-            ...(showLogoApp && { width: '40px', marginLeft: 0 }),
+        <div
+          onClick={(e) => {
+            if (!showLogoApp) {
+              navigate('/');
+            }
           }}
-        />
+          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+        >
+          {showLogoApp && isLogoHovered ? (
+            <MenuUnfoldOutlined style={{ fontSize: '18px', color: '#1a1a1a' }} />
+          ) : (
+            <img
+              src={showLogoApp ? collapsedLogo : logo}
+              alt="Logo"
+              style={{
+                height: '18px',
+                objectFit: 'contain',
+                ...(showLogoApp && { width: '18px', marginLeft: 0 }),
+              }}
+            />
+          )}
+        </div>
+        {!showLogoApp && (
+          <Button
+            type="text"
+            icon={<MenuFoldOutlined />}
+            onClick={(e) => {
+              e.stopPropagation();
+              onCollapse();
+            }}
+            style={{ fontSize: '16px', color: '#999' }}
+          />
+        )}
       </div>
       <Menu
         items={items}
@@ -197,7 +254,9 @@ function Sidebar({ collapsible, isMobile = false }) {
         theme={'light'}
         selectedKeys={[currentPath]}
         style={{
-          width: 256,
+          width: '100%',
+          background: 'transparent',
+          border: 'none',
         }}
       />
     </Sider>

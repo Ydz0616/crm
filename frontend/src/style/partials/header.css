@@ -3,7 +3,7 @@
   height: 60px;
 }
 .notification::-webkit-scrollbar-thumb {
-  background: #1b98f5;
+  background: #999;
   border-radius: 4px;
 }
 .headerIcon {
@@ -14,22 +14,18 @@
   float: right;
   margin-left: 10px;
   margin-top: 15px;
-  color: #4f5d75;
+  color: #666;
   background: transparent;
 }
-.headerIcon.ant-avatar :hover {
-  background: #fff;
-  box-shadow: 0px 0px 10px 4px rgba(150, 190, 238, 0.3);
+.headerIcon.ant-avatar:hover {
+  background: #f5f5f5;
   cursor: pointer;
-}
-
-.headerIcon .last {
-  margin-right: 30px;
 }
 
 .profileDropdown {
   display: flex;
   min-width: 200px;
+  align-items: center;
 }
 .profileDropdownInfo {
   float: left;
@@ -39,4 +35,27 @@
 
 .profileDropdownInfo p {
   margin: 0;
+  font-size: 13px;
+  color: #555;
+}
+
+/* Global search input in header */
+.header-search .ant-input-affix-wrapper {
+  border-radius: 8px !important;
+  border: 1px solid #e8e8e8 !important;
+  background: #fafafa !important;
+  box-shadow: none !important;
+  height: 36px;
+  font-size: 13px;
+}
+
+.header-search .ant-input-affix-wrapper:hover,
+.header-search .ant-input-affix-wrapper:focus-within {
+  border-color: #d0d0d0 !important;
+  background: #fff !important;
+}
+
+.header-search .ant-input-prefix {
+  color: #bbb;
+  margin-right: 8px;
 }

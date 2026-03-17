@@ -1,18 +1,14 @@
 import { useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
-import { Avatar, Dropdown, Layout, Badge, Button } from 'antd';
+import { Avatar, Dropdown, Layout, Input } from 'antd';
 
-// import Notifications from '@/components/Notification';
-
-import { LogoutOutlined, ToolOutlined, UserOutlined } from '@ant-design/icons';
+import { LogoutOutlined, ToolOutlined, UserOutlined, SearchOutlined } from '@ant-design/icons';
 
 import { selectCurrentAdmin } from '@/redux/auth/selectors';
 
 import { FILE_BASE_URL } from '@/config/serverApiConfig';
 
 import useLanguage from '@/locale/useLanguage';
-
-import UpgradeButton from './UpgradeButton';
 
 export default function HeaderContent() {
   const currentAdmin = useSelector(selectCurrentAdmin);
@@ -31,7 +27,6 @@ export default function HeaderContent() {
           style={{
             color: '#f56a00',
             backgroundColor: currentAdmin?.photo ? 'none' : '#fde3cf',
-            boxShadow: 'rgba(150, 190, 238, 0.35) 0px 0px 6px 1px',
           }}
         >
           {currentAdmin?.name?.charAt(0)?.toUpperCase()}
@@ -44,10 +39,6 @@ export default function HeaderContent() {
         </div>
       </div>
     );
-  };
-
-  const DropdownMenu = ({ text }) => {
-    return <span style={{}}>{text}</span>;
   };
 
   const items = [
@@ -63,7 +54,7 @@ export default function HeaderContent() {
       key: 'settingProfile',
       label: (
         <Link to={'/profile'}>
-          <DropdownMenu text={translate('profile_settings')} />
+          {translate('profile_settings')}
         </Link>
       ),
     },
@@ -87,48 +78,47 @@ export default function HeaderContent() {
   return (
     <Header
       style={{
-        padding: '20px',
+        padding: '0 24px',
         background: '#ffffff',
         display: 'flex',
-        flexDirection: 'row-reverse',
-        justifyContent: 'flex-start',
-        gap: ' 15px',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        height: '56px',
+        lineHeight: '56px',
+        borderBottom: '1px solid #f0f0f0',
       }}
     >
+      <div className="header-search" style={{ flex: 1, maxWidth: 400 }}>
+        <Input
+          prefix={<SearchOutlined />}
+          placeholder={translate('search') || 'Search...'}
+          style={{
+            width: '100%',
+          }}
+        />
+      </div>
+
       <Dropdown
         menu={{
           items,
         }}
         trigger={['click']}
         placement="bottomRight"
-        stye={{ width: '280px', float: 'right' }}
       >
-        {/* <Badge dot> */}
         <Avatar
           className="last"
           src={currentAdmin?.photo ? FILE_BASE_URL + currentAdmin?.photo : undefined}
           style={{
             color: '#f56a00',
             backgroundColor: currentAdmin?.photo ? 'none' : '#fde3cf',
-            boxShadow: 'rgba(150, 190, 238, 0.35) 0px 0px 10px 2px',
-            float: 'right',
             cursor: 'pointer',
           }}
-          size="large"
+          size="default"
         >
           {currentAdmin?.name?.charAt(0)?.toUpperCase()}
         </Avatar>
-        {/* </Badge> */}
       </Dropdown>
-
-      {/* <AppsButton /> */}
-
-      {/* <UpgradeButton /> */}
-
     </Header>
   );
-
-
-  
 }
 

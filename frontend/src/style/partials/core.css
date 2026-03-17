@@ -17,15 +17,18 @@
   min-height: 100px;
   overflow: hidden;
   transition: all 0.3s ease-in-out;
+  border-radius: 12px;
 }
 .shadow {
-  border: 1px solid #e0e0e0;
+  border: 1px solid #eee;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 .shadow:hover {
-  border: 1px solid #bdbdbd;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
 }
 .line {
-  border-top: 1px solid #edf0f5;
+  border-top: 1px solid #f0f0f0;
   width: 100%;
   margin: 5px auto;
 }
@@ -94,7 +97,7 @@
 }
 
 .strong {
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .space5 {
@@ -152,12 +155,12 @@
 
 .layoutPadding {
   position: relative;
-  padding: 50px 40px;
+  padding: 40px 32px;
 }
 
 .dashboardSpacing {
-  padding: 30px 40px;
-  margin: 70px auto;
+  padding: 24px 32px;
+  margin: 40px auto;
 }
 
 @media only screen and (min-width: 1100px) {
@@ -180,11 +183,11 @@
 
 @media only screen and (max-width: 600px) {
   .layoutPadding {
-    padding: 50px 20px;
+    padding: 30px 16px;
   }
 
   .dashboardSpacing {
-    padding: 30px 20px;
-    margin: 70px auto;
+    padding: 20px 16px;
+    margin: 40px auto;
   }
 }

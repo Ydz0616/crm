@@ -8,21 +8,20 @@
   background: #141414;
 }
 .ant-layout .ant-layout-sider-light .ant-layout-sider-trigger {
-  /* background: none !important; */
   border-radius: 6px !important;
   border: none !important;
   margin-top: -10px !important;
 }
 .ant-layout-sider-trigger {
-  background: #fff;
-  border-top: 1px solid #edf0f5;
-  border-right: 1px solid #edf0f5;
-  color: #4f5d75;
+  background: #fafafa;
+  border-top: 1px solid #f0f0f0;
+  border-right: 1px solid #f0f0f0;
+  color: #666;
 }
 .ant-layout-sider-zero-width-trigger {
   top: 5px;
   right: 10px;
-  color: #001529;
+  color: #333;
   background: none;
   font-size: 20px;
 }
@@ -34,7 +33,7 @@
 }
 
 .headerIcon .ant-dropdown-menu {
-  border-radius: 6px;
+  border-radius: 8px;
   background: none;
   padding: 0;
   box-shadow: none;
@@ -64,11 +63,29 @@
   width: 100%;
 }
 
+/* Table header styling */
 .ant-table-thead > tr > th {
-  font-weight: 700;
+  font-weight: 500;
+  font-size: 13px;
+  color: #888;
+  background: #fafafa !important;
+  border-bottom: 1px solid #f0f0f0;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
+
+.ant-table-tbody > tr > td {
+  font-size: 13px;
+  color: #333;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.ant-table-tbody > tr:hover > td {
+  background: #fafafa !important;
+}
+
 .ant-typography strong {
-  font-weight: 700;
+  font-weight: 600;
 }
 h1,
 h2,
@@ -76,7 +93,8 @@ h3,
 h4,
 h5,
 h6 {
-  font-weight: 700 !important;
+  font-weight: 600 !important;
+  color: #222;
 }
 
 .ant-menu-inline {
@@ -99,9 +117,38 @@ h6 {
   cursor: pointer;
 }
 
+/* Menu item size */
 .ant-menu-item {
   height: 36px !important;
 }
+
+/* Button styling */
+.ant-btn-primary {
+  border-radius: 6px;
+  font-weight: 500;
+  box-shadow: none;
+}
+
+/* Input styling */
+.ant-input,
+.ant-input-affix-wrapper {
+  border-radius: 6px;
+}
+
+/* Card styling */
+.ant-card {
+  border-radius: 12px;
+  border: 1px solid #eee;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+/* Tag styling */
+.ant-tag {
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
 @media (max-width: 768px) {
   .tabContent .ant-tabs-right > .ant-tabs-content-holder > .ant-tabs-content > .ant-tabs-tabpane {
     padding-right: 0;
