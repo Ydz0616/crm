@@ -1,8 +1,8 @@
 // Note: Yuandong, you will use this page to add navigation
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Button, Drawer, Layout, Menu } from 'antd';
+import { Button, Drawer, Layout, Menu, Avatar } from 'antd';
 
 import { useAppContext } from '@/context/appContext';
 
@@ -34,7 +34,12 @@ import {
   BarChartOutlined,
   SearchOutlined,
   MenuFoldOutlined,
-  MenuUnfoldOutlined
+  MenuUnfoldOutlined,
+  StarOutlined,
+  SmileOutlined,
+  QuestionCircleOutlined,
+  LogoutOutlined,
+  RightOutlined,
 } from '@ant-design/icons';
 
 const { Sider } = Layout;
@@ -55,6 +60,8 @@ function Sidebar({ collapsible, isMobile = false }) {
   const [isLogoHovered, setIsLogoHovered] = useState(false);
   const [isExpandTriggerHovered, setIsExpandTriggerHovered] = useState(false);
   const [currentPath, setCurrentPath] = useState(location.pathname.slice(1));
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const profileWrapperRef = useRef(null);
 
   const translate = useLanguage();
   const navigate = useNavigate();
@@ -181,6 +188,21 @@ function Sidebar({ collapsible, isMobile = false }) {
     navMenu.collapse();
   };
 
+  // Close profile popup when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (
+        isProfileMenuOpen &&
+        profileWrapperRef.current &&
+        !profileWrapperRef.current.contains(e.target)
+      ) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isProfileMenuOpen]);
+
   return (
     <Sider
       trigger={null}
@@ -193,10 +215,6 @@ function Sidebar({ collapsible, isMobile = false }) {
       style={{
         overflow: 'auto',
         height: '100vh',
-        position: isMobile ? 'absolute' : 'relative',
-        bottom: 0,
-        left: 0,
-        top: 0,
         display: 'flex',
         flexDirection: 'column',
       }}
@@ -262,8 +280,73 @@ function Sidebar({ collapsible, isMobile = false }) {
           width: '100%',
           background: 'transparent',
           border: 'none',
+          paddingBottom: '80px', // Give space for absolute footer
         }}
       />
+      <div className="sidebar-user-profile-wrapper" ref={profileWrapperRef}>
+        {/* Profile Popup Menu */}
+        {isProfileMenuOpen && !showLogoApp && (
+          <div className="profile-popup-menu">
+            <div className="profile-popup-header">
+              <Avatar size={28} src="https://api.dicebear.com/7.x/miniavs/svg?seed=8" />
+              <div className="profile-popup-header-text">
+                <span className="profile-popup-name">Will</span>
+                <span className="profile-popup-handle">@ziheng.will</span>
+              </div>
+            </div>
+            <div className="profile-popup-divider" />
+            <div className="profile-popup-item">
+              <StarOutlined className="profile-popup-item-icon" />
+              <span>Upgrade plan</span>
+            </div>
+            <div className="profile-popup-item">
+              <SmileOutlined className="profile-popup-item-icon" />
+              <span>Personalization</span>
+            </div>
+            <div className="profile-popup-item">
+              <SettingOutlined className="profile-popup-item-icon" />
+              <span>Settings</span>
+            </div>
+            <div className="profile-popup-divider" />
+            <div className="profile-popup-item profile-popup-item-with-arrow">
+              <QuestionCircleOutlined className="profile-popup-item-icon" />
+              <span>Help</span>
+              <RightOutlined className="profile-popup-item-arrow" />
+            </div>
+            <div className="profile-popup-item">
+              <LogoutOutlined className="profile-popup-item-icon" />
+              <span>Log out</span>
+            </div>
+          </div>
+        )}
+        <div
+          className="sidebar-user-profile"
+          onClick={(e) => {
+            // Don't toggle if clicking Upgrade button
+            if (e.target.closest('.user-profile-upgrade-btn')) return;
+            setIsProfileMenuOpen((prev) => !prev);
+          }}
+        >
+          <div className="user-profile-info">
+            <Avatar size={28} src="https://api.dicebear.com/7.x/miniavs/svg?seed=8" />
+            {!showLogoApp && (
+              <div className="user-profile-text">
+                <span className="user-profile-name">Will</span>
+                <span className="user-profile-plan">Free</span>
+              </div>
+            )}
+          </div>
+          {!showLogoApp && (
+            <Button
+              className="user-profile-upgrade-btn"
+              size="small"
+              onClick={(e) => e.stopPropagation()}
+            >
+              Upgrade
+            </Button>
+          )}
+        </div>
+      </div>
       {showLogoApp && (
         <div
           className="expand-trigger-zone"

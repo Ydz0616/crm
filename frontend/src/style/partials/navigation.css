@@ -1,5 +1,5 @@
 .navigation {
-  position: sticky;
+  position: fixed !important;
   height: 100vh;
   overflow-y: auto;
   overflow-x: hidden;
@@ -139,6 +139,173 @@
 /* Collapse/expand toggle button cursor */
 .collapse-toggle-btn {
   cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='10' viewBox='0 0 24 16'><polygon points='8,0 0,8 8,16' fill='%23000000'/><polygon points='16,0 24,8 16,16' fill='%23ffffff' stroke='%23000000' stroke-width='1.5'/></svg>") 8 5, pointer !important;
+}
+
+/* User Profile Section at bottom */
+.sidebar-user-profile-wrapper {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #fafafa;
+  border-top: 1px solid #f0f0f0;
+  padding: 12px 0;
+  z-index: 10;
+}
+
+.sidebar-user-profile {
+  margin: 0 16px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.sidebar-user-profile:hover {
+  background: #f0f0f0;
+}
+
+.user-profile-info {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Closer together */
+}
+
+.user-profile-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-profile-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #111;
+  line-height: 1.2;
+  margin-bottom: 2px;
+}
+
+.user-profile-plan {
+  font-size: 11px;
+  color: #888;
+  line-height: 1.2;
+}
+
+.user-profile-upgrade-btn {
+  border-radius: 20px !important;
+  font-size: 12px !important;
+  height: 24px !important;
+  padding: 0 10px !important;
+  color: #111 !important;
+  border-color: #d9d9d9 !important;
+  background: white !important;
+}
+
+/* Profile Popup Menu */
+.profile-popup-menu {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 12px;
+  right: 12px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  padding: 6px 0;
+  z-index: 100;
+  animation: profilePopupIn 0.18s ease-out;
+}
+
+@keyframes profilePopupIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.profile-popup-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px 6px;
+}
+
+.profile-popup-header-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-popup-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #111;
+  line-height: 1.3;
+}
+
+.profile-popup-handle {
+  font-size: 11px;
+  color: #888;
+  line-height: 1.3;
+}
+
+.profile-popup-divider {
+  height: 1px;
+  background: #f0f0f0;
+  margin: 4px 0;
+}
+
+.profile-popup-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  height: 36px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #555;
+  transition: background 0.15s;
+  position: relative;
+}
+
+.profile-popup-item:hover {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.profile-popup-item-icon {
+  font-size: 15px !important;
+  color: inherit !important;
+}
+
+.profile-popup-item-with-arrow {
+  padding-right: 36px;
+}
+
+.profile-popup-item-arrow {
+  position: absolute;
+  right: 12px;
+  font-size: 11px !important;
+  color: #999 !important;
+}
+
+/* Collapsed state user profile overrides */
+.ant-layout-sider-collapsed .sidebar-user-profile-wrapper {
+  padding: 8px 0;
+}
+
+.ant-layout-sider-collapsed .sidebar-user-profile {
+  margin: 0 8px;
+  padding: 8px 0;
+  justify-content: center;
+}
+
+.ant-layout-sider-collapsed .user-profile-info {
+  justify-content: center;
 }
 
 @media only screen and (max-width: 768px) {

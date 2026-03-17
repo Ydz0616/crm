@@ -71,7 +71,12 @@ export default function ErpCrmApp() {
             </Content>
           </Layout>
         ) : (
-          <Layout>
+          <Layout
+            style={{
+              marginLeft: isNavMenuClose ? 60 : 220,
+              transition: 'margin-left 0.2s',
+            }}
+          >
             <HeaderContent />
             <Content
               style={{
