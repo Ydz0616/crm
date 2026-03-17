@@ -60,6 +60,7 @@
   height: 36px !important;
   line-height: 36px !important;
   margin: 2px 8px !important;
+  width: calc(100% - 16px) !important;
   padding-left: 12px !important;
   border-radius: 6px !important;
   color: #555 !important;
@@ -154,7 +155,7 @@
 }
 
 .sidebar-user-profile {
-  margin: 0 16px;
+  margin: 0 8px;
   padding: 8px 12px;
   display: flex;
   align-items: center;
