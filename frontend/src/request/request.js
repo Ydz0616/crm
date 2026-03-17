@@ -3,9 +3,13 @@ import { API_BASE_URL } from '@/config/serverApiConfig';
 import {notification} from 'antd';
 import errorHandler from './errorHandler';
 import successHandler from './successHandler';
+import { setupDevMockInterceptor } from './devMockInterceptor';
 
 axios.defaults.baseURL = API_BASE_URL;
 axios.defaults.withCredentials = true;
+
+// DEV ONLY: intercept all requests and return mock data
+setupDevMockInterceptor(axios);
 
 const request = {
   create: async ({ entity, jsonData }) => {

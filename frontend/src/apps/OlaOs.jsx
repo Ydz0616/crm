@@ -23,43 +23,12 @@ const DefaultApp = () => (
 export default function OlaOs() {
   const { isLoggedIn } = useSelector(selectAuth);
 
+  // DEV ONLY: bypass login wall for UI development
+  const bypassAuth = import.meta.env.VITE_DEV_BYPASS_AUTH === 'true';
+
   console.log('🚀 Welcome to Ola ERP CRM!');
 
-  // // Online state
-  // const [isOnline, setIsOnline] = useState(navigator.onLine);
-
-  // useEffect(() => {
-  //   // Update network status
-  //   const handleStatusChange = () => {
-  //     setIsOnline(navigator.onLine);
-  //     if (!isOnline) {
-  //       console.log('🚀 ~ useEffect ~ navigator.onLine:', navigator.onLine);
-  //       notification.config({
-  //         duration: 20,
-  //         maxCount: 1,
-  //       });
-  //       // Code to execute when there is internet connection
-  //       notification.error({
-  //         message: 'No internet connection',
-  //         description: 'Cannot connect to the Internet, Check your internet network',
-  //       });
-  //     }
-  //   };
-
-  //   // Listen to the online status
-  //   window.addEventListener('online', handleStatusChange);
-
-  //   // Listen to the offline status
-  //   window.addEventListener('offline', handleStatusChange);
-
-  //   // Specify how to clean up after this effect for performance improvment
-  //   return () => {
-  //     window.removeEventListener('online', handleStatusChange);
-  //     window.removeEventListener('offline', handleStatusChange);
-  //   };
-  // }, [navigator.onLine]);
-
-  if (!isLoggedIn)
+  if (!isLoggedIn && !bypassAuth)
     return (
       <Localization>
         <AuthRouter />

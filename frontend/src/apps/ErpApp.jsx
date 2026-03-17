@@ -48,7 +48,9 @@ export default function ErpCrmApp() {
     }
   }, [appSettings]);
 
-  if (settingIsloaded)
+  const bypassAuth = import.meta.env.VITE_DEV_BYPASS_AUTH === 'true';
+
+  if (settingIsloaded || bypassAuth)
     return (
       <Layout hasSider>
         <Navigation />
