@@ -53,6 +53,7 @@ function Sidebar({ collapsible, isMobile = false }) {
   const { navMenu } = appContextAction;
   const [showLogoApp, setLogoApp] = useState(isNavMenuClose);
   const [isLogoHovered, setIsLogoHovered] = useState(false);
+  const [isExpandTriggerHovered, setIsExpandTriggerHovered] = useState(false);
   const [currentPath, setCurrentPath] = useState(location.pathname.slice(1));
 
   const translate = useLanguage();
@@ -167,6 +168,7 @@ function Sidebar({ collapsible, isMobile = false }) {
   useEffect(() => {
     if (isNavMenuClose) {
       setLogoApp(isNavMenuClose);
+      setIsLogoHovered(false);
     }
     const timer = setTimeout(() => {
       if (!isNavMenuClose) {
@@ -195,6 +197,8 @@ function Sidebar({ collapsible, isMobile = false }) {
         bottom: 0,
         left: 0,
         top: 0,
+        display: 'flex',
+        flexDirection: 'column',
       }}
       theme={'light'}
     >
@@ -220,7 +224,7 @@ function Sidebar({ collapsible, isMobile = false }) {
               navigate('/');
             }
           }}
-          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+          style={{ display: 'flex', alignItems: 'center' }}
         >
           {showLogoApp && isLogoHovered ? (
             <MenuUnfoldOutlined style={{ fontSize: '18px', color: '#1a1a1a' }} />
@@ -239,12 +243,13 @@ function Sidebar({ collapsible, isMobile = false }) {
         {!showLogoApp && (
           <Button
             type="text"
+            className="collapse-toggle-btn"
             icon={<MenuFoldOutlined />}
             onClick={(e) => {
               e.stopPropagation();
               onCollapse();
             }}
-            style={{ fontSize: '16px', color: '#999' }}
+            style={{ fontSize: '16px', color: '#999', cursor: 'pointer' }}
           />
         )}
       </div>
@@ -259,6 +264,12 @@ function Sidebar({ collapsible, isMobile = false }) {
           border: 'none',
         }}
       />
+      {showLogoApp && (
+        <div
+          className="expand-trigger-zone"
+          onClick={onCollapse}
+        />
+      )}
     </Sider>
   );
 }

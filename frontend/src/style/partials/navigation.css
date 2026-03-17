@@ -87,6 +87,60 @@
   color: inherit !important;
 }
 
+/* Collapsed state: logo centering with symmetric margins */
+.ant-layout-sider-collapsed .logo {
+  margin: 16px 8px 12px 8px;
+  justify-content: center;
+  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='10' viewBox='0 0 24 16'><polygon points='8,0 0,8 8,16' fill='%23ffffff' stroke='%23000000' stroke-width='1.5'/><polygon points='16,0 24,8 16,16' fill='%23000000'/></svg>") 8 5, pointer !important;
+}
+
+/* Make Sider inner wrapper a flex column so expand-trigger-zone can fill remaining space */
+.ant-layout-sider-collapsed .ant-layout-sider-children {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+}
+
+/* Collapsed state: center menu item icons */
+.ant-layout-sider-collapsed .ant-menu-item {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  padding: 0 !important;
+  padding-inline: 0 !important;
+  margin: 2px 4px !important;
+  position: relative !important;
+}
+
+.ant-layout-sider-collapsed .ant-menu-item .anticon {
+  margin: 0 !important;
+  margin-inline-end: 0 !important;
+}
+
+.ant-layout-sider-collapsed .ant-menu-title-content {
+  position: absolute !important;
+  width: 100% !important;
+  height: 100% !important;
+  top: 0 !important;
+  left: 0 !important;
+  opacity: 0 !important;
+  overflow: hidden !important;
+}
+
+/* Expand trigger zone in collapsed sidebar */
+.expand-trigger-zone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='10' viewBox='0 0 24 16'><polygon points='8,0 0,8 8,16' fill='%23ffffff' stroke='%23000000' stroke-width='1.5'/><polygon points='16,0 24,8 16,16' fill='%23000000'/></svg>") 8 5, pointer;
+  flex: 1;
+}
+
+/* Collapse/expand toggle button cursor */
+.collapse-toggle-btn {
+  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='10' viewBox='0 0 24 16'><polygon points='8,0 0,8 8,16' fill='%23000000'/><polygon points='16,0 24,8 16,16' fill='%23ffffff' stroke='%23000000' stroke-width='1.5'/></svg>") 8 5, pointer !important;
+}
+
 @media only screen and (max-width: 768px) {
   .sidebar-wraper {
     display: none;
