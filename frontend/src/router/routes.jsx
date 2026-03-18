@@ -6,6 +6,7 @@ const Logout = lazy(() => import('@/pages/Logout.jsx'));
 const NotFound = lazy(() => import('@/pages/NotFound.jsx'));
 
 const Dashboard = lazy(() => import('@/pages/Dashboard'));
+const Notifications = lazy(() => import('@/pages/Notifications'));
 const Customer = lazy(() => import('@/pages/Customer'));
 const Factory = lazy(() => import('@/pages/Factory'));  
 const Invoice = lazy(() => import('@/pages/Invoice'));
@@ -61,6 +62,10 @@ let routes = {
     {
       path: '/',
       element: <Dashboard />,
+    },
+    {
+      path: '/notifications',
+      element: <Notifications />,
     },
     {
       path: '/customer',

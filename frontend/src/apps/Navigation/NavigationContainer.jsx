@@ -40,6 +40,7 @@ import {
   QuestionCircleOutlined,
   LogoutOutlined,
   RightOutlined,
+  BellOutlined,
 } from '@ant-design/icons';
 
 const { Sider } = Layout;
@@ -75,6 +76,11 @@ function Sidebar({ collapsible, isMobile = false }) {
           key: 'dashboard',
           icon: <DashboardOutlined />,
           label: <Link to={'/'}>{translate('dashboard')}</Link>,
+        },
+        {
+          key: 'notifications',
+          icon: <BellOutlined />,
+          label: <Link to={'/notifications'}>Notifications</Link>,
         },
       ],
     },
