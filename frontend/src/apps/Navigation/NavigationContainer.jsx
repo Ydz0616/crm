@@ -41,6 +41,7 @@ import {
   LogoutOutlined,
   RightOutlined,
   BellOutlined,
+  MessageOutlined,
 } from '@ant-design/icons';
 
 const { Sider } = Layout;
@@ -81,6 +82,11 @@ function Sidebar({ collapsible, isMobile = false }) {
           key: 'notifications',
           icon: <BellOutlined />,
           label: <Link to={'/notifications'}>Notifications</Link>,
+        },
+        {
+          key: 'messages',
+          icon: <MessageOutlined />,
+          label: <Link to={'/messages'}>Messages</Link>,
         },
       ],
     },

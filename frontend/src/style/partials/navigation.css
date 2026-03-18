@@ -12,10 +12,22 @@
 
 .logo {
   height: 40px;
-  margin: 16px 16px 12px 20px;
+  margin: 16px 16px 0 20px;
+  padding-bottom: 12px;
   display: flex;
   align-items: center;
   width: auto;
+  position: relative;
+}
+
+.logo::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: -20px;
+  right: -16px;
+  height: 1px;
+  background: #f0f0f0;
 }
 
 .sidebar-wraper {
@@ -90,9 +102,15 @@
 
 /* Collapsed state: logo centering with symmetric margins */
 .ant-layout-sider-collapsed .logo {
-  margin: 16px 0 12px 0;
+  margin: 16px 0 0 0;
+  padding-bottom: 12px;
   justify-content: center;
   cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='10' viewBox='0 0 24 16'><polygon points='8,0 0,8 8,16' fill='%23ffffff' stroke='%23000000' stroke-width='1.5'/><polygon points='16,0 24,8 16,16' fill='%23000000'/></svg>") 8 5, pointer !important;
+}
+
+.ant-layout-sider-collapsed .logo::after {
+  left: 0;
+  right: 0;
 }
 
 /* Make Sider inner wrapper a flex column so expand-trigger-zone can fill remaining space */
