@@ -76,6 +76,12 @@ function Sidebar({ collapsible, isMobile = false }) {
           icon: <DashboardOutlined />,
           label: <Link to={'/'}>{translate('dashboard')}</Link>,
         },
+      ],
+    },
+    {
+      type: 'group',
+      label: translate('Business'),
+      children: [
         {
           key: 'customer',
           icon: <CustomerServiceOutlined />,
