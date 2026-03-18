@@ -96,6 +96,11 @@ function Sidebar({ collapsible, isMobile = false }) {
           icon: <MessageOutlined />,
           label: <Link to={'/messages'}>Messages</Link>,
         },
+        {
+          key: 'file',
+          icon: <FileOutlined />,
+          label: <Link to={'/file'}>File</Link>,
+        },
       ],
     },
     {
@@ -244,10 +249,8 @@ function Sidebar({ collapsible, isMobile = false }) {
       className="navigation"
       width={220}
       style={{
-        overflow: 'auto',
+        overflow: 'hidden',
         height: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
       }}
       theme={'light'}
     >
@@ -302,18 +305,19 @@ function Sidebar({ collapsible, isMobile = false }) {
           />
         )}
       </div>
-      <Menu
-        items={items}
-        mode="inline"
-        theme={'light'}
-        selectedKeys={[currentPath]}
-        style={{
-          width: '100%',
-          background: 'transparent',
-          border: 'none',
-          paddingBottom: '80px', // Give space for absolute footer
-        }}
-      />
+      <div className="sidebar-menu-scroll">
+        <Menu
+          items={items}
+          mode="inline"
+          theme={'light'}
+          selectedKeys={[currentPath]}
+          style={{
+            width: '100%',
+            background: 'transparent',
+            border: 'none',
+          }}
+        />
+      </div>
       <div className="sidebar-user-profile-wrapper" ref={profileWrapperRef}>
         {/* Profile Popup Menu */}
         {isProfileMenuOpen && !showLogoApp && (

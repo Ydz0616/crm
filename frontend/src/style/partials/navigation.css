@@ -1,13 +1,43 @@
 .navigation {
   position: fixed !important;
   height: 100vh;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
   top: 0;
   left: 0;
   z-index: 1000;
   background: #fafafa;
   border-right: 1px solid #f0f0f0;
+}
+
+.navigation .ant-layout-sider-children {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+}
+
+/* Scrollable menu area */
+.sidebar-menu-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Thin gray scrollbar */
+.sidebar-menu-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-menu-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-menu-scroll::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
+
+.sidebar-menu-scroll::-webkit-scrollbar-thumb:hover {
+  background: #aaa;
 }
 
 .logo {
@@ -18,6 +48,7 @@
   align-items: center;
   width: auto;
   position: relative;
+  flex-shrink: 0;
 }
 
 .logo::after {
@@ -169,14 +200,12 @@
 
 /* User Profile Section at bottom */
 .sidebar-user-profile-wrapper {
-  position: absolute;
-  bottom: 0;
-  left: 0;
+  position: relative;
   width: 100%;
   background: #fafafa;
   border-top: 1px solid #f0f0f0;
   padding: 12px 0;
-  z-index: 10;
+  flex-shrink: 0;
 }
 
 .sidebar-user-profile {

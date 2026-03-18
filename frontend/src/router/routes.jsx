@@ -11,6 +11,7 @@ const AskOla = lazy(() => import('@/pages/AskOla'));
 const Agents = lazy(() => import('@/pages/Agents'));
 const Sequences = lazy(() => import('@/pages/Sequences'));
 const Workflows = lazy(() => import('@/pages/Workflows'));
+const File = lazy(() => import('@/pages/File'));
 const Messages = lazy(() => import('@/pages/Messages'));
 const Customer = lazy(() => import('@/pages/Customer'));
 const Factory = lazy(() => import('@/pages/Factory'));  
@@ -87,6 +88,10 @@ let routes = {
     {
       path: '/workflows',
       element: <Workflows />,
+    },
+    {
+      path: '/file',
+      element: <File />,
     },
     {
       path: '/messages',
