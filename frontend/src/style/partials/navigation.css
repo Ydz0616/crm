@@ -90,7 +90,7 @@
 
 /* Collapsed state: logo centering with symmetric margins */
 .ant-layout-sider-collapsed .logo {
-  margin: 16px 8px 12px 8px;
+  margin: 16px 0 12px 0;
   justify-content: center;
   cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='10' viewBox='0 0 24 16'><polygon points='8,0 0,8 8,16' fill='%23ffffff' stroke='%23000000' stroke-width='1.5'/><polygon points='16,0 24,8 16,16' fill='%23000000'/></svg>") 8 5, pointer !important;
 }
@@ -100,6 +100,7 @@
   display: flex !important;
   flex-direction: column !important;
   height: 100% !important;
+  padding: 0 !important;
 }
 
 /* Collapsed state: center menu item icons */
@@ -110,6 +111,7 @@
   padding: 0 !important;
   padding-inline: 0 !important;
   margin: 2px 4px !important;
+  width: calc(100% - 8px) !important;
   position: relative !important;
 }
 
@@ -126,6 +128,11 @@
   left: 0 !important;
   opacity: 0 !important;
   overflow: hidden !important;
+}
+
+/* Collapsed state: remove menu bottom padding so expand-trigger-zone fills all remaining space */
+.ant-layout-sider-collapsed .ant-menu {
+  padding-bottom: 0 !important;
 }
 
 /* Expand trigger zone in collapsed sidebar */
