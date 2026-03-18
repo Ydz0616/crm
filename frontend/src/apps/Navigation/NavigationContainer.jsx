@@ -79,6 +79,11 @@ function Sidebar({ collapsible, isMobile = false }) {
           label: <Link to={'/'}>{translate('dashboard')}</Link>,
         },
         {
+          key: 'askola',
+          icon: <SmileOutlined />,
+          label: <Link to={'/askola'}>Ask Ola</Link>,
+        },
+        {
           key: 'notifications',
           icon: <BellOutlined />,
           label: <Link to={'/notifications'}>Notifications</Link>,
