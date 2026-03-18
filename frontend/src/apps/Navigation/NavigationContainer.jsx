@@ -42,6 +42,9 @@ import {
   RightOutlined,
   BellOutlined,
   MessageOutlined,
+  RobotOutlined,
+  ThunderboltOutlined,
+  ApartmentOutlined,
 } from '@ant-design/icons';
 
 const { Sider } = Layout;
@@ -92,6 +95,27 @@ function Sidebar({ collapsible, isMobile = false }) {
           key: 'messages',
           icon: <MessageOutlined />,
           label: <Link to={'/messages'}>Messages</Link>,
+        },
+      ],
+    },
+    {
+      type: 'group',
+      label: 'Automations',
+      children: [
+        {
+          key: 'agents',
+          icon: <RobotOutlined />,
+          label: <Link to={'/agents'}>Agents</Link>,
+        },
+        {
+          key: 'sequences',
+          icon: <ThunderboltOutlined />,
+          label: <Link to={'/sequences'}>Sequences</Link>,
+        },
+        {
+          key: 'workflows',
+          icon: <ApartmentOutlined />,
+          label: <Link to={'/workflows'}>Workflows</Link>,
         },
       ],
     },
