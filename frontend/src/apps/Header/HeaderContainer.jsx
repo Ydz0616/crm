@@ -1,13 +1,68 @@
-import { Layout, Input } from 'antd';
+import { Layout } from 'antd';
+import { useLocation } from 'react-router-dom';
 
-import { SearchOutlined } from '@ant-design/icons';
+import {
+  QuestionCircleOutlined,
+  SmileOutlined,
+  DashboardOutlined,
+  BellOutlined,
+  RobotOutlined,
+  ThunderboltOutlined,
+  ApartmentOutlined,
+  FileOutlined,
+  MessageOutlined,
+  CustomerServiceOutlined,
+  GiftOutlined,
+  BuildOutlined,
+  ContainerOutlined,
+  FileSyncOutlined,
+  CreditCardOutlined,
+  WalletOutlined,
+  DollarOutlined,
+  SettingOutlined,
+  SearchOutlined,
+  BarChartOutlined,
+  UserOutlined,
+  CheckSquareOutlined,
+} from '@ant-design/icons';
 
-import useLanguage from '@/locale/useLanguage';
+const PAGE_MAP = {
+  '/': { icon: <DashboardOutlined />, label: 'Dashboard' },
+  '/askola': { icon: <SmileOutlined />, label: 'Ask Ola' },
+  '/notifications': { icon: <BellOutlined />, label: 'Notifications' },
+  '/messages': { icon: <MessageOutlined />, label: 'Messages' },
+  '/file': { icon: <FileOutlined />, label: 'File' },
+  '/agents': { icon: <RobotOutlined />, label: 'Agents' },
+  '/sequences': { icon: <ThunderboltOutlined />, label: 'Sequences' },
+  '/workflows': { icon: <ApartmentOutlined />, label: 'Workflows' },
+  '/customer': { icon: <CustomerServiceOutlined />, label: 'Customers' },
+  '/merchandise': { icon: <GiftOutlined />, label: 'Merchandise' },
+  '/factory': { icon: <BuildOutlined />, label: 'Factory' },
+  '/invoice': { icon: <ContainerOutlined />, label: 'Invoice' },
+  '/quote': { icon: <FileSyncOutlined />, label: 'Quote' },
+  '/purchaseorder': { icon: <FileOutlined />, label: 'Purchase Orders' },
+  '/payment': { icon: <CreditCardOutlined />, label: 'Payment' },
+  '/payment/mode': { icon: <WalletOutlined />, label: 'Payment Mode' },
+  '/currencies': { icon: <DollarOutlined />, label: 'Currencies' },
+  '/pricesearch': { icon: <SearchOutlined />, label: 'Price Search' },
+  '/comparison': { icon: <BarChartOutlined />, label: 'Comparison' },
+  '/settings': { icon: <SettingOutlined />, label: 'Settings' },
+  '/profile': { icon: <UserOutlined />, label: 'Profile' },
+};
+
+function getPageInfo(pathname) {
+  // Try exact match first
+  if (PAGE_MAP[pathname]) return PAGE_MAP[pathname];
+  // Try matching prefix (for sub-routes like /invoice/create)
+  const base = '/' + pathname.split('/').filter(Boolean)[0];
+  if (PAGE_MAP[base]) return PAGE_MAP[base];
+  return { icon: <CheckSquareOutlined />, label: 'Tasks' };
+}
 
 export default function HeaderContent() {
   const { Header } = Layout;
-
-  const translate = useLanguage();
+  const location = useLocation();
+  const pageInfo = getPageInfo(location.pathname);
 
   return (
     <Header
@@ -22,16 +77,21 @@ export default function HeaderContent() {
         borderBottom: '1px solid #f0f0f0',
       }}
     >
-      <div className="header-search" style={{ flex: 1, maxWidth: 400 }}>
-        <Input
-          prefix={<SearchOutlined />}
-          placeholder={translate('search') || 'Search...'}
-          style={{
-            width: '100%',
-          }}
-        />
+      <div className="header-page-title">
+        <span className="header-page-icon">{pageInfo.icon}</span>
+        <span className="header-page-label">{pageInfo.label}</span>
+      </div>
+
+      <div className="header-right-actions">
+        <button className="header-action-btn">
+          <QuestionCircleOutlined />
+          <span>Help</span>
+        </button>
+        <button className="header-action-btn header-action-btn--ola">
+          <SmileOutlined />
+          <span>Ask Ola</span>
+        </button>
       </div>
     </Header>
   );
 }
-

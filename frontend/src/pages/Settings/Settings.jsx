@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 
 import {
   SettingOutlined,
-  CreditCardOutlined,
   DollarOutlined,
   TeamOutlined,
   RocketOutlined,
@@ -33,7 +32,6 @@ import SettingsAskOlaUsage from './SettingsAskOlaUsage';
 import SettingsPlans from './SettingsPlans';
 import SettingsBilling from './SettingsBilling';
 import MoneyFormatSettings from './MoneyFormatSettings';
-import FinanceSettings from './FinanceSettings';
 
 export default function Settings() {
   const translate = useLanguage();
@@ -62,7 +60,6 @@ export default function Settings() {
         { key: 'plans', icon: <CrownOutlined />, label: 'Plans' },
         { key: 'billing', icon: <DollarOutlined />, label: 'Billing' },
         { key: 'currency_settings', icon: <DollarOutlined />, label: translate('Currency Settings') },
-        { key: 'finance_settings', icon: <CreditCardOutlined />, label: translate('Finance Settings') },
       ],
     },
   ];
@@ -81,7 +78,6 @@ export default function Settings() {
     plans: { icon: <CrownOutlined />, label: 'Plans' },
     billing: { icon: <DollarOutlined />, label: 'Billing' },
     currency_settings: { icon: <DollarOutlined />, label: translate('Currency Settings') },
-    finance_settings: { icon: <CreditCardOutlined />, label: translate('Finance Settings') },
   };
 
   // Render content based on activeKey
@@ -113,12 +109,6 @@ export default function Settings() {
         return (
           <div className="settings-existing-panel">
             <MoneyFormatSettings />
-          </div>
-        );
-      case 'finance_settings':
-        return (
-          <div className="settings-existing-panel">
-            <FinanceSettings />
           </div>
         );
       default:
