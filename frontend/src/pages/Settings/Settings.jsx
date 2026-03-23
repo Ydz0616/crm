@@ -10,6 +10,7 @@ import {
   UserOutlined,
   BgColorsOutlined,
   MailOutlined,
+  CloudServerOutlined,
   LeftOutlined,
   SearchOutlined,
 } from '@ant-design/icons';
@@ -20,6 +21,7 @@ import useLanguage from '@/locale/useLanguage';
 import SettingsProfile from './SettingsProfile';
 import SettingsAppearance from './SettingsAppearance';
 import SettingsEmailAccounts from './SettingsEmailAccounts';
+import SettingsStorageAccounts from './SettingsStorageAccounts';
 import GeneralSettings from './GeneralSettings';
 import CompanySettings from './CompanySettings';
 import CompanyLogoSettings from './CompanyLogoSettings';
@@ -39,6 +41,7 @@ export default function Settings() {
         { key: 'profile', icon: <UserOutlined />, label: 'Profile' },
         { key: 'appearance', icon: <BgColorsOutlined />, label: 'Appearance' },
         { key: 'email_accounts', icon: <MailOutlined />, label: 'Email Accounts' },
+        { key: 'storage_accounts', icon: <CloudServerOutlined />, label: 'Storage Accounts' },
       ],
     },
     {
@@ -58,6 +61,7 @@ export default function Settings() {
     profile: { icon: <UserOutlined />, label: 'Profile' },
     appearance: { icon: <BgColorsOutlined />, label: 'Appearance' },
     email_accounts: { icon: <MailOutlined />, label: 'Email Accounts' },
+    storage_accounts: { icon: <CloudServerOutlined />, label: 'Storage Accounts' },
     general_settings: { icon: <SettingOutlined />, label: translate('General Settings') },
     company_settings: { icon: <TrophyOutlined />, label: translate('Company Settings') },
     company_logo: { icon: <FileImageOutlined />, label: translate('Company Logo') },
@@ -74,6 +78,8 @@ export default function Settings() {
         return <SettingsAppearance />;
       case 'email_accounts':
         return <SettingsEmailAccounts />;
+      case 'storage_accounts':
+        return <SettingsStorageAccounts />;
       case 'general_settings':
         return (
           <div className="settings-existing-panel">
