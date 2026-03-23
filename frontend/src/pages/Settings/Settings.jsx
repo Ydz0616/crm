@@ -8,6 +8,7 @@ import {
   FileImageOutlined,
   TrophyOutlined,
   UserOutlined,
+  BgColorsOutlined,
   LeftOutlined,
   SearchOutlined,
 } from '@ant-design/icons';
@@ -16,6 +17,7 @@ import { Input } from 'antd';
 import useLanguage from '@/locale/useLanguage';
 
 import SettingsProfile from './SettingsProfile';
+import SettingsAppearance from './SettingsAppearance';
 import GeneralSettings from './GeneralSettings';
 import CompanySettings from './CompanySettings';
 import CompanyLogoSettings from './CompanyLogoSettings';
@@ -33,6 +35,7 @@ export default function Settings() {
       label: 'Personal',
       items: [
         { key: 'profile', icon: <UserOutlined />, label: 'Profile' },
+        { key: 'appearance', icon: <BgColorsOutlined />, label: 'Appearance' },
       ],
     },
     {
@@ -50,6 +53,7 @@ export default function Settings() {
   // Content panel header info
   const panelHeaders = {
     profile: { icon: <UserOutlined />, label: 'Profile' },
+    appearance: { icon: <BgColorsOutlined />, label: 'Appearance' },
     general_settings: { icon: <SettingOutlined />, label: translate('General Settings') },
     company_settings: { icon: <TrophyOutlined />, label: translate('Company Settings') },
     company_logo: { icon: <FileImageOutlined />, label: translate('Company Logo') },
@@ -62,6 +66,8 @@ export default function Settings() {
     switch (activeKey) {
       case 'profile':
         return <SettingsProfile />;
+      case 'appearance':
+        return <SettingsAppearance />;
       case 'general_settings':
         return (
           <div className="settings-existing-panel">
