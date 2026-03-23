@@ -11,6 +11,7 @@ import {
   BgColorsOutlined,
   MailOutlined,
   CloudServerOutlined,
+  BellOutlined,
   LeftOutlined,
   SearchOutlined,
 } from '@ant-design/icons';
@@ -22,6 +23,7 @@ import SettingsProfile from './SettingsProfile';
 import SettingsAppearance from './SettingsAppearance';
 import SettingsEmailAccounts from './SettingsEmailAccounts';
 import SettingsStorageAccounts from './SettingsStorageAccounts';
+import SettingsNotifications from './SettingsNotifications';
 import GeneralSettings from './GeneralSettings';
 import CompanySettings from './CompanySettings';
 import CompanyLogoSettings from './CompanyLogoSettings';
@@ -42,6 +44,7 @@ export default function Settings() {
         { key: 'appearance', icon: <BgColorsOutlined />, label: 'Appearance' },
         { key: 'email_accounts', icon: <MailOutlined />, label: 'Email Accounts' },
         { key: 'storage_accounts', icon: <CloudServerOutlined />, label: 'Storage Accounts' },
+        { key: 'notifications_settings', icon: <BellOutlined />, label: 'Notifications' },
       ],
     },
     {
@@ -62,6 +65,7 @@ export default function Settings() {
     appearance: { icon: <BgColorsOutlined />, label: 'Appearance' },
     email_accounts: { icon: <MailOutlined />, label: 'Email Accounts' },
     storage_accounts: { icon: <CloudServerOutlined />, label: 'Storage Accounts' },
+    notifications_settings: { icon: <BellOutlined />, label: 'Notifications' },
     general_settings: { icon: <SettingOutlined />, label: translate('General Settings') },
     company_settings: { icon: <TrophyOutlined />, label: translate('Company Settings') },
     company_logo: { icon: <FileImageOutlined />, label: translate('Company Logo') },
@@ -80,6 +84,8 @@ export default function Settings() {
         return <SettingsEmailAccounts />;
       case 'storage_accounts':
         return <SettingsStorageAccounts />;
+      case 'notifications_settings':
+        return <SettingsNotifications />;
       case 'general_settings':
         return (
           <div className="settings-existing-panel">

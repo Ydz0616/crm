@@ -1228,3 +1228,155 @@
 .storage-accounts-btn .anticon {
   font-size: 15px;
 }
+
+/* ===== Notifications Settings Page ===== */
+
+.notif-settings-section {
+  margin-bottom: 0;
+}
+
+.notif-settings-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 4px 0;
+}
+
+.notif-settings-subtitle {
+  font-size: 14px;
+  color: #666;
+  margin: 0 0 24px 0;
+}
+
+.notif-settings-divider {
+  border: none;
+  border-top: 1px solid #f0f0f0;
+  margin: 0 0 32px 0;
+}
+
+.notif-settings-block {
+  margin-bottom: 32px;
+}
+
+.notif-settings-block-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 12px 0;
+}
+
+/* Daily digest row */
+.notif-settings-digest-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: #fafafa;
+  border: 1px solid #f0f0f0;
+  border-radius: 10px;
+}
+
+.notif-settings-digest-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-right: 24px;
+}
+
+.notif-settings-digest-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #1a1a1a;
+}
+
+.notif-settings-digest-desc {
+  font-size: 12px;
+  color: #888;
+}
+
+/* Collaboration notifications table */
+.notif-settings-table {
+  border: 1px solid #f0f0f0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.notif-settings-table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.notif-settings-table-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #666;
+}
+
+.notif-settings-table-label .anticon {
+  font-size: 14px;
+}
+
+.notif-settings-table-cols {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-shrink: 0;
+}
+
+.notif-settings-table-col {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 64px;
+  font-size: 12px;
+  color: #666;
+}
+
+.notif-settings-table-col .anticon {
+  font-size: 13px;
+}
+
+/* Table rows */
+.notif-settings-table-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.notif-settings-table-row:last-child {
+  border-bottom: none;
+}
+
+.notif-settings-table-row-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-right: 24px;
+  flex: 1;
+}
+
+.notif-settings-row-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: #1a1a1a;
+}
+
+.notif-settings-row-desc {
+  font-size: 12px;
+  color: #888;
+}
+
+/* Checkbox style override for blue checkboxes */
+.notif-settings-table-row .ant-checkbox-checked .ant-checkbox-inner {
+  background-color: #4A7BF7;
+  border-color: #4A7BF7;
+}
