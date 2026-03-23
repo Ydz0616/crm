@@ -1,0 +1,195 @@
+/* ===== Ask Ola Chat Page ===== */
+
+.askola-chat-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 160px);
+  position: relative;
+  padding: 0 24px 200px;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* Center greeting */
+.askola-chat-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 32px;
+}
+
+.askola-chat-greeting {
+  font-size: 28px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+  text-align: center;
+  letter-spacing: -0.5px;
+}
+
+/* Input bar */
+.askola-chat-input-wrapper {
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+.askola-chat-input-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 8px 8px 14px;
+  border: 1px solid #e0e0e0;
+  border-radius: 28px;
+  background: #ffffff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.askola-chat-input-bar:focus-within {
+  border-color: #c0c0c0;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.04);
+}
+
+/* Plus button */
+.askola-chat-plus-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid #e0e0e0;
+  background: none;
+  font-size: 14px;
+  color: #555;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.askola-chat-plus-btn:hover {
+  background: #f5f5f5;
+}
+
+/* Input */
+.askola-chat-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 15px;
+  color: #1a1a1a;
+  background: transparent;
+  padding: 6px 0;
+}
+
+.askola-chat-input::placeholder {
+  color: #bbb;
+}
+
+/* Mic button */
+.askola-chat-mic-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: none;
+  font-size: 16px;
+  color: #555;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.askola-chat-mic-btn:hover {
+  background: #f5f5f5;
+}
+
+/* Send / audio button */
+.askola-chat-send-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: #1a1a1a;
+  color: #ffffff;
+  font-size: 16px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.askola-chat-send-btn:hover {
+  background: #333;
+}
+
+/* Plus button container */
+.askola-plus-container {
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* Popup menu */
+.askola-plus-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  min-width: 220px;
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
+  border-radius: 14px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+  padding: 6px 0;
+  z-index: 100;
+  animation: askola-menu-in 0.15s ease-out;
+}
+
+@keyframes askola-menu-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.askola-plus-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 16px;
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: #1a1a1a;
+  cursor: pointer;
+  transition: background 0.12s;
+  text-align: left;
+}
+
+.askola-plus-menu-item:hover {
+  background: #f5f5f5;
+}
+
+.askola-plus-menu-icon {
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  color: #555;
+  width: 20px;
+  justify-content: center;
+}
+
+.askola-plus-menu-label {
+  flex: 1;
+}
+
+.askola-plus-menu-arrow {
+  font-size: 11px;
+  color: #999;
+}
