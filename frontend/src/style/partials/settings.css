@@ -2065,3 +2065,328 @@
   opacity: 0.7;
 }
 
+/* ===== General Settings Page (Redesigned) ===== */
+
+.general-settings-section {
+  margin-bottom: 0;
+}
+
+.general-settings-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 4px 0;
+}
+
+.general-settings-subtitle {
+  font-size: 14px;
+  color: #666;
+  margin: 0 0 24px 0;
+}
+
+.general-settings-divider {
+  border: none;
+  border-top: 1px solid #f0f0f0;
+  margin: 0 0 28px 0;
+}
+
+/* Workspace logo */
+.general-logo-block {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.general-logo-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #ff6b9d, #ff4081);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: 600;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.general-logo-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 4px;
+}
+
+.general-logo-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.general-logo-hint {
+  font-size: 12px;
+  color: #888;
+}
+
+.general-logo-upload-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  background: #1a73e8;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+  width: fit-content;
+  margin-top: 4px;
+}
+
+.general-logo-upload-btn:hover {
+  background: #1557b0;
+}
+
+/* Name / Slug fields */
+.general-fields-row {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 16px;
+}
+
+/* Company details block */
+.general-company-block {
+  margin-bottom: 32px;
+  padding-top: 16px;
+}
+
+.general-field-group {
+  flex: 1;
+}
+
+.general-field-label {
+  display: block;
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 6px;
+}
+
+.general-field-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #1a1a1a;
+  background: #ffffff;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.general-field-input:focus {
+  border-color: #1a73e8;
+}
+
+.general-field-input:read-only {
+  color: #555;
+  cursor: default;
+}
+
+.general-slug-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.general-slug-wrapper .general-field-input {
+  padding-right: 36px;
+}
+
+.general-copy-btn {
+  position: absolute;
+  right: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: #999;
+  padding: 4px;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+
+.general-copy-btn:hover {
+  color: #333;
+}
+
+/* Export workspace data */
+.general-export-block {
+  margin-bottom: 32px;
+}
+
+.general-export-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.general-block-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 4px 0;
+}
+
+.general-block-desc {
+  font-size: 13px;
+  color: #666;
+  margin: 0;
+}
+
+.general-export-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: none;
+  border: 1px solid #d0d0d0;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.general-export-btn:hover {
+  background: #fafafa;
+  border-color: #aaa;
+}
+
+/* Export table */
+.general-export-table {
+  border: 1px solid #f0f0f0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.general-export-table-header {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  background: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 12px;
+  color: #888;
+}
+
+.general-export-table-header .anticon {
+  margin-right: 4px;
+  font-size: 12px;
+}
+
+.general-export-table-row {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+}
+
+.general-export-col--type {
+  flex: 1;
+  font-size: 13px;
+  color: #1a1a1a;
+}
+
+.general-export-col--date {
+  flex: 1;
+  font-size: 13px;
+  color: #555;
+}
+
+.general-export-col--status {
+  flex: 1;
+  font-size: 13px;
+  color: #555;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+.general-export-col--action {
+  width: 40px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.general-download-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+  color: #999;
+  padding: 4px;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+
+.general-download-btn:hover {
+  color: #333;
+}
+
+/* Danger zone */
+.general-danger-block {
+  margin-bottom: 0;
+}
+
+.general-danger-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: #fafafa;
+  border: 1px solid #f0f0f0;
+  border-radius: 10px;
+}
+
+.general-danger-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.general-danger-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #1a1a1a;
+}
+
+.general-danger-desc {
+  font-size: 12px;
+  color: #888;
+}
+
+.general-delete-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: #ffffff;
+  border: 1px solid #ff4d4f;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #ff4d4f;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.general-delete-btn:hover {
+  background: #fff1f0;
+}

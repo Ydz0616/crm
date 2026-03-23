@@ -5,8 +5,6 @@ import {
   SettingOutlined,
   CreditCardOutlined,
   DollarOutlined,
-  FileImageOutlined,
-  TrophyOutlined,
   UserOutlined,
   BgColorsOutlined,
   MailOutlined,
@@ -26,9 +24,7 @@ import SettingsEmailAccounts from './SettingsEmailAccounts';
 import SettingsStorageAccounts from './SettingsStorageAccounts';
 import SettingsNotifications from './SettingsNotifications';
 import SettingsAskOla from './SettingsAskOla';
-import GeneralSettings from './GeneralSettings';
-import CompanySettings from './CompanySettings';
-import CompanyLogoSettings from './CompanyLogoSettings';
+import SettingsGeneralNew from './SettingsGeneralNew';
 import MoneyFormatSettings from './MoneyFormatSettings';
 import FinanceSettings from './FinanceSettings';
 
@@ -53,9 +49,7 @@ export default function Settings() {
     {
       label: 'Workspace',
       items: [
-        { key: 'general_settings', icon: <SettingOutlined />, label: translate('General Settings') },
-        { key: 'company_settings', icon: <TrophyOutlined />, label: translate('Company Settings') },
-        { key: 'company_logo', icon: <FileImageOutlined />, label: translate('Company Logo') },
+        { key: 'general_settings', icon: <SettingOutlined />, label: 'General' },
         { key: 'currency_settings', icon: <DollarOutlined />, label: translate('Currency Settings') },
         { key: 'finance_settings', icon: <CreditCardOutlined />, label: translate('Finance Settings') },
       ],
@@ -70,9 +64,7 @@ export default function Settings() {
     storage_accounts: { icon: <CloudServerOutlined />, label: 'Storage Accounts' },
     notifications_settings: { icon: <BellOutlined />, label: 'Notifications' },
     ask_ola: { icon: <SmileOutlined />, label: 'Ask Ola' },
-    general_settings: { icon: <SettingOutlined />, label: translate('General Settings') },
-    company_settings: { icon: <TrophyOutlined />, label: translate('Company Settings') },
-    company_logo: { icon: <FileImageOutlined />, label: translate('Company Logo') },
+    general_settings: { icon: <SettingOutlined />, label: 'General' },
     currency_settings: { icon: <DollarOutlined />, label: translate('Currency Settings') },
     finance_settings: { icon: <CreditCardOutlined />, label: translate('Finance Settings') },
   };
@@ -93,23 +85,7 @@ export default function Settings() {
       case 'ask_ola':
         return <SettingsAskOla />;
       case 'general_settings':
-        return (
-          <div className="settings-existing-panel">
-            <GeneralSettings />
-          </div>
-        );
-      case 'company_settings':
-        return (
-          <div className="settings-existing-panel">
-            <CompanySettings />
-          </div>
-        );
-      case 'company_logo':
-        return (
-          <div className="settings-existing-panel">
-            <CompanyLogoSettings />
-          </div>
-        );
+        return <SettingsGeneralNew />;
       case 'currency_settings':
         return (
           <div className="settings-existing-panel">
