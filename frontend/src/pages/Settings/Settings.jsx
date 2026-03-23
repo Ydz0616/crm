@@ -12,6 +12,7 @@ import {
   MailOutlined,
   CloudServerOutlined,
   BellOutlined,
+  SmileOutlined,
   LeftOutlined,
   SearchOutlined,
 } from '@ant-design/icons';
@@ -24,6 +25,7 @@ import SettingsAppearance from './SettingsAppearance';
 import SettingsEmailAccounts from './SettingsEmailAccounts';
 import SettingsStorageAccounts from './SettingsStorageAccounts';
 import SettingsNotifications from './SettingsNotifications';
+import SettingsAskOla from './SettingsAskOla';
 import GeneralSettings from './GeneralSettings';
 import CompanySettings from './CompanySettings';
 import CompanyLogoSettings from './CompanyLogoSettings';
@@ -45,6 +47,7 @@ export default function Settings() {
         { key: 'email_accounts', icon: <MailOutlined />, label: 'Email Accounts' },
         { key: 'storage_accounts', icon: <CloudServerOutlined />, label: 'Storage Accounts' },
         { key: 'notifications_settings', icon: <BellOutlined />, label: 'Notifications' },
+        { key: 'ask_ola', icon: <SmileOutlined />, label: 'Ask Ola' },
       ],
     },
     {
@@ -66,6 +69,7 @@ export default function Settings() {
     email_accounts: { icon: <MailOutlined />, label: 'Email Accounts' },
     storage_accounts: { icon: <CloudServerOutlined />, label: 'Storage Accounts' },
     notifications_settings: { icon: <BellOutlined />, label: 'Notifications' },
+    ask_ola: { icon: <SmileOutlined />, label: 'Ask Ola' },
     general_settings: { icon: <SettingOutlined />, label: translate('General Settings') },
     company_settings: { icon: <TrophyOutlined />, label: translate('Company Settings') },
     company_logo: { icon: <FileImageOutlined />, label: translate('Company Logo') },
@@ -86,6 +90,8 @@ export default function Settings() {
         return <SettingsStorageAccounts />;
       case 'notifications_settings':
         return <SettingsNotifications />;
+      case 'ask_ola':
+        return <SettingsAskOla />;
       case 'general_settings':
         return (
           <div className="settings-existing-panel">
