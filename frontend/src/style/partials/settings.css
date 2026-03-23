@@ -940,3 +940,197 @@
   font-weight: 700;
   line-height: 1;
 }
+
+/* ===== Email and Calendar Accounts Page ===== */
+
+.email-accounts-section {
+  margin-bottom: 0;
+}
+
+.email-accounts-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 4px 0;
+}
+
+.email-accounts-subtitle {
+  font-size: 14px;
+  color: #666;
+  margin: 0 0 24px 0;
+}
+
+.email-accounts-divider {
+  border: none;
+  border-top: 1px solid #f0f0f0;
+  margin: 0 0 32px 0;
+}
+
+.email-accounts-block {
+  margin-bottom: 32px;
+}
+
+.email-accounts-block-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 4px 0;
+}
+
+.email-accounts-block-desc {
+  font-size: 13px;
+  color: #666;
+  margin: 0 0 16px 0;
+}
+
+.email-accounts-link {
+  color: #1a73e8;
+  text-decoration: none;
+}
+
+.email-accounts-link:hover {
+  text-decoration: underline;
+}
+
+/* Connect buttons */
+.email-accounts-connect-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.email-accounts-connect-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #ffffff;
+  border: 1px solid #d0d0d0;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.email-accounts-connect-btn:hover {
+  background: #fafafa;
+  border-color: #aaa;
+}
+
+.email-accounts-connect-btn .anticon {
+  font-size: 16px;
+}
+
+/* Forwarding address item */
+.email-accounts-forwarding-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #fafafa;
+  border: 1px solid #f0f0f0;
+  border-radius: 10px;
+}
+
+.email-accounts-forwarding-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.email-accounts-forwarding-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: #1a1a1a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 16px;
+}
+
+.email-accounts-forwarding-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.email-accounts-forwarding-email {
+  font-size: 13px;
+  font-weight: 500;
+  color: #1a1a1a;
+}
+
+.email-accounts-forwarding-type {
+  font-size: 12px;
+  color: #999;
+}
+
+.email-accounts-forwarding-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.email-accounts-sync-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #52c41a;
+  font-weight: 500;
+}
+
+.email-accounts-sync-badge .anticon {
+  font-size: 12px;
+}
+
+.email-accounts-more-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: #999;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.email-accounts-more-btn:hover {
+  background: #e8e8e8;
+  color: #333;
+}
+
+/* Watermark row */
+.email-accounts-watermark-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: #fafafa;
+  border: 1px solid #f0f0f0;
+  border-radius: 10px;
+}
+
+.email-accounts-watermark-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.email-accounts-watermark-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #1a1a1a;
+}
+
+.email-accounts-watermark-desc {
+  font-size: 12px;
+  color: #888;
+}
