@@ -7,6 +7,7 @@ import {
   DollarOutlined,
   TeamOutlined,
   RocketOutlined,
+  CrownOutlined,
   UserOutlined,
   BgColorsOutlined,
   MailOutlined,
@@ -29,6 +30,7 @@ import SettingsAskOla from './SettingsAskOla';
 import SettingsGeneralNew from './SettingsGeneralNew';
 import SettingsMembers from './SettingsMembers';
 import SettingsAskOlaUsage from './SettingsAskOlaUsage';
+import SettingsPlans from './SettingsPlans';
 import MoneyFormatSettings from './MoneyFormatSettings';
 import FinanceSettings from './FinanceSettings';
 
@@ -56,6 +58,7 @@ export default function Settings() {
         { key: 'general_settings', icon: <SettingOutlined />, label: 'General' },
         { key: 'members_teams', icon: <TeamOutlined />, label: 'Members and teams' },
         { key: 'ask_ola_usage', icon: <RocketOutlined />, label: 'Ask Ola usage' },
+        { key: 'plans', icon: <CrownOutlined />, label: 'Plans' },
         { key: 'currency_settings', icon: <DollarOutlined />, label: translate('Currency Settings') },
         { key: 'finance_settings', icon: <CreditCardOutlined />, label: translate('Finance Settings') },
       ],
@@ -73,6 +76,7 @@ export default function Settings() {
     general_settings: { icon: <SettingOutlined />, label: 'General' },
     members_teams: { icon: <TeamOutlined />, label: 'Members and teams' },
     ask_ola_usage: { icon: <RocketOutlined />, label: 'Ask Ola usage' },
+    plans: { icon: <CrownOutlined />, label: 'Plans' },
     currency_settings: { icon: <DollarOutlined />, label: translate('Currency Settings') },
     finance_settings: { icon: <CreditCardOutlined />, label: translate('Finance Settings') },
   };
@@ -98,6 +102,8 @@ export default function Settings() {
         return <SettingsMembers />;
       case 'ask_ola_usage':
         return <SettingsAskOlaUsage />;
+      case 'plans':
+        return <SettingsPlans />;
       case 'currency_settings':
         return (
           <div className="settings-existing-panel">
