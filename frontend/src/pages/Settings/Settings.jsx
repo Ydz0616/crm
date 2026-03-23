@@ -5,6 +5,8 @@ import {
   SettingOutlined,
   CreditCardOutlined,
   DollarOutlined,
+  TeamOutlined,
+  RocketOutlined,
   UserOutlined,
   BgColorsOutlined,
   MailOutlined,
@@ -25,6 +27,8 @@ import SettingsStorageAccounts from './SettingsStorageAccounts';
 import SettingsNotifications from './SettingsNotifications';
 import SettingsAskOla from './SettingsAskOla';
 import SettingsGeneralNew from './SettingsGeneralNew';
+import SettingsMembers from './SettingsMembers';
+import SettingsAskOlaUsage from './SettingsAskOlaUsage';
 import MoneyFormatSettings from './MoneyFormatSettings';
 import FinanceSettings from './FinanceSettings';
 
@@ -50,6 +54,8 @@ export default function Settings() {
       label: 'Workspace',
       items: [
         { key: 'general_settings', icon: <SettingOutlined />, label: 'General' },
+        { key: 'members_teams', icon: <TeamOutlined />, label: 'Members and teams' },
+        { key: 'ask_ola_usage', icon: <RocketOutlined />, label: 'Ask Ola usage' },
         { key: 'currency_settings', icon: <DollarOutlined />, label: translate('Currency Settings') },
         { key: 'finance_settings', icon: <CreditCardOutlined />, label: translate('Finance Settings') },
       ],
@@ -65,6 +71,8 @@ export default function Settings() {
     notifications_settings: { icon: <BellOutlined />, label: 'Notifications' },
     ask_ola: { icon: <SmileOutlined />, label: 'Ask Ola' },
     general_settings: { icon: <SettingOutlined />, label: 'General' },
+    members_teams: { icon: <TeamOutlined />, label: 'Members and teams' },
+    ask_ola_usage: { icon: <RocketOutlined />, label: 'Ask Ola usage' },
     currency_settings: { icon: <DollarOutlined />, label: translate('Currency Settings') },
     finance_settings: { icon: <CreditCardOutlined />, label: translate('Finance Settings') },
   };
@@ -86,6 +94,10 @@ export default function Settings() {
         return <SettingsAskOla />;
       case 'general_settings':
         return <SettingsGeneralNew />;
+      case 'members_teams':
+        return <SettingsMembers />;
+      case 'ask_ola_usage':
+        return <SettingsAskOlaUsage />;
       case 'currency_settings':
         return (
           <div className="settings-existing-panel">

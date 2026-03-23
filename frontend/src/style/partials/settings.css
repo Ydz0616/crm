@@ -2390,3 +2390,680 @@
 .general-delete-btn:hover {
   background: #fff1f0;
 }
+
+/* ===== Members and Teams Settings Page ===== */
+
+.members-settings-section {
+  margin-bottom: 0;
+}
+
+.members-settings-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 4px 0;
+}
+
+.members-settings-subtitle {
+  font-size: 14px;
+  color: #666;
+  margin: 0 0 24px 0;
+}
+
+/* Tabs */
+.members-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 24px;
+}
+
+.members-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-size: 13px;
+  font-weight: 500;
+  color: #888;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.members-tab:hover {
+  color: #333;
+}
+
+.members-tab.active {
+  color: #1a1a1a;
+  border-bottom-color: #1a1a1a;
+}
+
+.members-tab .anticon {
+  font-size: 13px;
+}
+
+/* Toolbar */
+.members-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.members-search {
+  flex: 1;
+  border-radius: 6px !important;
+}
+
+.members-filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: none;
+  border: 1px solid #d0d0d0;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.members-filter-btn:hover {
+  background: #fafafa;
+  border-color: #aaa;
+}
+
+.members-invite-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  background: #4A7BF7;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+
+.members-invite-btn:hover {
+  background: #3a66d4;
+}
+
+/* Table */
+.members-table {
+  border: 1px solid #f0f0f0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.members-table-header {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  background: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 12px;
+  color: #888;
+}
+
+.members-table-header .anticon {
+  margin-right: 4px;
+  font-size: 12px;
+}
+
+.members-table-row {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.members-table-row:last-child {
+  border-bottom: none;
+}
+
+.members-col--user {
+  flex: 2;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: #1a1a1a;
+}
+
+.members-col--role {
+  flex: 1;
+  font-size: 13px;
+  color: #555;
+}
+
+.members-col--teams {
+  flex: 1;
+  font-size: 13px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.members-col--action {
+  width: 36px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Avatar */
+.members-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.members-user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.members-user-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #1a1a1a;
+}
+
+.members-you-badge {
+  color: #888;
+  font-weight: 400;
+}
+
+.members-user-email {
+  font-size: 13px;
+  color: #555;
+}
+
+/* Badges */
+.members-role-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  background: #f0f0ff;
+  border: 1px solid #d0d0f0;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #4A7BF7;
+}
+
+.members-role-text {
+  font-size: 13px;
+  color: #555;
+}
+
+.members-invite-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  background: #f0f0ff;
+  border: 1px solid #d0d0f0;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #666;
+}
+
+.members-more-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: #999;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+
+.members-more-btn:hover {
+  color: #333;
+}
+
+/* Empty state */
+.members-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 0;
+  gap: 12px;
+  color: #999;
+  font-size: 14px;
+}
+
+/* ===== Teams Empty State ===== */
+
+.teams-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 0 40px;
+  gap: 4px;
+}
+
+.teams-empty-illustration {
+  margin-bottom: 16px;
+}
+
+.teams-empty-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.teams-empty-desc {
+  font-size: 13px;
+  color: #888;
+  margin: 0 0 16px 0;
+}
+
+.teams-create-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 20px;
+  background: #4A7BF7;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.teams-create-btn:hover {
+  background: #3a66d4;
+}
+
+/* ===== New Team Modal ===== */
+
+.new-team-modal .ant-modal-content {
+  border-radius: 14px;
+  padding: 0;
+  overflow: hidden;
+}
+
+.nt-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.nt-modal-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.nt-modal-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: #999;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+
+.nt-modal-close:hover {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.nt-modal-body {
+  padding: 24px;
+}
+
+.nt-fields-row {
+  display: flex;
+  gap: 20px;
+}
+
+.nt-field-group {
+  flex: 1;
+}
+
+.nt-field-label {
+  display: block;
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 8px;
+}
+
+.nt-name-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nt-icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  background: #fff0f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: #e84393;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.nt-icon-btn:hover {
+  background: #fce4ec;
+}
+
+.nt-field-input {
+  flex: 1;
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #1a1a1a;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.nt-field-input::placeholder {
+  color: #ccc;
+}
+
+.nt-field-input:focus {
+  border-color: #4A7BF7;
+}
+
+.nt-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.nt-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nt-cancel-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: none;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.nt-cancel-btn:hover {
+  background: #fafafa;
+  border-color: #ccc;
+}
+
+.nt-shortcut {
+  font-size: 11px;
+  color: #999;
+  background: #f0f0f0;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-weight: 500;
+}
+
+.nt-confirm-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  background: #4A7BF7;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.nt-confirm-btn:hover {
+  background: #3a66d4;
+}
+
+.nt-shortcut-light {
+  font-size: 13px;
+  opacity: 0.7;
+}
+
+/* ===== Ask Ola Usage Page ===== */
+
+.olausage-section {
+  margin-bottom: 0;
+}
+
+.olausage-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 4px 0;
+}
+
+.olausage-subtitle {
+  font-size: 14px;
+  color: #666;
+  margin: 0 0 28px 0;
+}
+
+/* Stats cards */
+.olausage-stats {
+  display: flex;
+  gap: 0;
+  border: 1px solid #f0f0f0;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.olausage-stat-card {
+  flex: 1;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-right: 1px solid #f0f0f0;
+}
+
+.olausage-stat-card:last-child {
+  border-right: none;
+}
+
+.olausage-stat-label {
+  font-size: 12px;
+  color: #888;
+}
+
+.olausage-stat-value-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.olausage-stat-value {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.olausage-stat-frac {
+  font-size: 18px;
+  font-weight: 400;
+  color: #999;
+}
+
+.olausage-stat-hint {
+  font-size: 12px;
+  color: #999;
+}
+
+/* Progress bar */
+.olausage-progress-block {
+  margin-bottom: 16px;
+  padding: 16px 20px;
+  border: 1px solid #f0f0f0;
+  border-radius: 10px;
+}
+
+.olausage-progress-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1a1a1a;
+  margin-bottom: 10px;
+}
+
+.olausage-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: #f0f0f0;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.olausage-progress-fill {
+  height: 100%;
+  background: #4A7BF7;
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+
+.olausage-progress-text {
+  font-size: 12px;
+  color: #888;
+}
+
+/* Set a limit */
+.olausage-limit-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border: 1px solid #f0f0f0;
+  border-radius: 10px;
+  margin-bottom: 24px;
+}
+
+.olausage-limit-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #1a1a1a;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Member usage table */
+.olausage-table {
+  border: 1px solid #f0f0f0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.olausage-table-header {
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;
+  background: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 12px;
+  color: #888;
+}
+
+.olausage-table-header .anticon {
+  margin-right: 4px;
+  font-size: 12px;
+}
+
+.olausage-table-row {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+}
+
+.olausage-col--member {
+  flex: 2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #1a1a1a;
+}
+
+.olausage-col--usage {
+  flex: 1;
+  font-size: 13px;
+  color: #555;
+}
+
+.olausage-member-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.olausage-member-name {
+  font-weight: 500;
+}
+
+.olausage-member-you {
+  color: #888;
+  font-weight: 400;
+}
+
+.olausage-member-email {
+  color: #888;
+  margin-left: 4px;
+}
