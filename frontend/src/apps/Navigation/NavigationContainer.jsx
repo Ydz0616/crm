@@ -19,20 +19,27 @@ import {
   ContainerOutlined,
   FileSyncOutlined,
   DashboardOutlined,
-  TagOutlined,
-  TagsOutlined,
+  // === MVP-HIDDEN: 以下 icon 当前无菜单项使用 ===
+  // TagOutlined,
+  // TagsOutlined,
+  // ShopOutlined,
+  // FilterOutlined,
+  // ReconciliationOutlined,
+  // BellOutlined,
+  // MessageOutlined,
+  // RobotOutlined,
+  // ThunderboltOutlined,
+  // ApartmentOutlined,
+  // WalletOutlined,
+  // DollarOutlined,
+  // BarChartOutlined,
+  // SearchOutlined,
+  // === END MVP-HIDDEN ===
   UserOutlined,
   CreditCardOutlined,
   MenuOutlined,
   FileOutlined,
-  ShopOutlined,
-  FilterOutlined,
-  WalletOutlined,
-  ReconciliationOutlined,
   GiftOutlined,
-  DollarOutlined,
-  BarChartOutlined,
-  SearchOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   StarOutlined,
@@ -40,11 +47,6 @@ import {
   QuestionCircleOutlined,
   LogoutOutlined,
   RightOutlined,
-  BellOutlined,
-  MessageOutlined,
-  RobotOutlined,
-  ThunderboltOutlined,
-  ApartmentOutlined,
 } from '@ant-design/icons';
 
 const { Sider } = Layout;
@@ -86,57 +88,61 @@ function Sidebar({ collapsible, isMobile = false }) {
           icon: <SmileOutlined />,
           label: <Link to={'/askola'}>Ask Ola</Link>,
         },
-        {
-          key: 'notifications',
-          icon: <BellOutlined />,
-          label: <Link to={'/notifications'}>Notifications</Link>,
-        },
-        {
-          key: 'messages',
-          icon: <MessageOutlined />,
-          label: <Link to={'/messages'}>Messages</Link>,
-        },
-        {
-          key: 'file',
-          icon: <FileOutlined />,
-          label: <Link to={'/file'}>File</Link>,
-        },
+        // === MVP-HIDDEN: 空壳页面，尚未实现 ===
+        // {
+        //   key: 'notifications',
+        //   icon: <BellOutlined />,
+        //   label: <Link to={'/notifications'}>Notifications</Link>,
+        // },
+        // {
+        //   key: 'messages',
+        //   icon: <MessageOutlined />,
+        //   label: <Link to={'/messages'}>Messages</Link>,
+        // },
+        // {
+        //   key: 'file',
+        //   icon: <FileOutlined />,
+        //   label: <Link to={'/file'}>File</Link>,
+        // },
+        // === END MVP-HIDDEN ===
       ],
     },
-    {
-      type: 'group',
-      label: 'Automations',
-      children: [
-        {
-          key: 'agents',
-          icon: <RobotOutlined />,
-          label: <Link to={'/agents'}>Agents</Link>,
-        },
-        {
-          key: 'sequences',
-          icon: <ThunderboltOutlined />,
-          label: <Link to={'/sequences'}>Sequences</Link>,
-        },
-        {
-          key: 'workflows',
-          icon: <ApartmentOutlined />,
-          label: <Link to={'/workflows'}>Workflows</Link>,
-        },
-      ],
-    },
+    // === MVP-HIDDEN: Automations 整组空壳，尚未实现 ===
+    // {
+    //   type: 'group',
+    //   label: 'Automations',
+    //   children: [
+    //     {
+    //       key: 'agents',
+    //       icon: <RobotOutlined />,
+    //       label: <Link to={'/agents'}>Agents</Link>,
+    //     },
+    //     {
+    //       key: 'sequences',
+    //       icon: <ThunderboltOutlined />,
+    //       label: <Link to={'/sequences'}>Sequences</Link>,
+    //     },
+    //     {
+    //       key: 'workflows',
+    //       icon: <ApartmentOutlined />,
+    //       label: <Link to={'/workflows'}>Workflows</Link>,
+    //     },
+    //   ],
+    // },
+    // === END MVP-HIDDEN ===
     {
       type: 'group',
       label: translate('Business'),
       children: [
         {
-          key: 'customer',
-          icon: <CustomerServiceOutlined />,
-          label: <Link to={'/customer'}>{translate('customers')}</Link>,
-        },
-        {
           key: 'Merchandise',
           label: <Link to={'/merchandise'}>{translate('Merchandise')}</Link>,
           icon: <GiftOutlined />,
+        },
+        {
+          key: 'customer',
+          icon: <CustomerServiceOutlined />,
+          label: <Link to={'/customer'}>{translate('customers')}</Link>,
         },
         {
           key: 'factory',
@@ -169,34 +175,38 @@ function Sidebar({ collapsible, isMobile = false }) {
           icon: <CreditCardOutlined />,
           label: <Link to={'/payment'}>{translate('payments')}</Link>,
         },
-        {
-          key: 'paymentMode',
-          label: <Link to={'/payment/mode'}>{translate('payments_mode')}</Link>,
-          icon: <WalletOutlined />,
-        },
-        {
-          key: 'currencies',
-          label: <Link to={'/currencies'}>{translate('currencies')}</Link>,
-          icon: <DollarOutlined />,
-        },
+        // === MVP-HIDDEN: 配置页，不需要独立菜单项。可通过 Settings 页面访问 ===
+        // {
+        //   key: 'paymentMode',
+        //   label: <Link to={'/payment/mode'}>{translate('payments_mode')}</Link>,
+        //   icon: <WalletOutlined />,
+        // },
+        // {
+        //   key: 'currencies',
+        //   label: <Link to={'/currencies'}>{translate('currencies')}</Link>,
+        //   icon: <DollarOutlined />,
+        // },
+        // === END MVP-HIDDEN ===
       ],
     },
-    {
-      type: 'group',
-      label: translate('Tools'),
-      children: [
-        {
-          key: 'pricesearch',
-          icon: <SearchOutlined />,
-          label: <Link to={'/pricesearch'}>{translate('price_search')}</Link>,
-        },
-        {
-          key: 'fullcomparison',
-          icon: <BarChartOutlined />,
-          label: <Link to={'/comparison/full'}>{translate('full_comparison')}</Link>,
-        },
-      ],
-    },
+    // === MVP-HIDDEN: Price Search 和 Full Comparison 为高度定制功能，有 bug，非 MVP 范围 ===
+    // {
+    //   type: 'group',
+    //   label: translate('Tools'),
+    //   children: [
+    //     {
+    //       key: 'pricesearch',
+    //       icon: <SearchOutlined />,
+    //       label: <Link to={'/pricesearch'}>{translate('price_search')}</Link>,
+    //     },
+    //     {
+    //       key: 'fullcomparison',
+    //       icon: <BarChartOutlined />,
+    //       label: <Link to={'/comparison/full'}>{translate('full_comparison')}</Link>,
+    //     },
+    //   ],
+    // },
+    // === END MVP-HIDDEN ===
   ];
 
   useEffect(() => {

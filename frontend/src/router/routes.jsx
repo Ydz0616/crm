@@ -6,13 +6,17 @@ const Logout = lazy(() => import('@/pages/Logout.jsx'));
 const NotFound = lazy(() => import('@/pages/NotFound.jsx'));
 
 const Dashboard = lazy(() => import('@/pages/Dashboard'));
-const Notifications = lazy(() => import('@/pages/Notifications'));
+// === MVP-HIDDEN: 空壳页面，尚未实现 ===
+// const Notifications = lazy(() => import('@/pages/Notifications'));
+// === END MVP-HIDDEN ===
 const AskOla = lazy(() => import('@/pages/AskOla'));
-const Agents = lazy(() => import('@/pages/Agents'));
-const Sequences = lazy(() => import('@/pages/Sequences'));
-const Workflows = lazy(() => import('@/pages/Workflows'));
-const File = lazy(() => import('@/pages/File'));
-const Messages = lazy(() => import('@/pages/Messages'));
+// === MVP-HIDDEN: 空壳页面，尚未实现 ===
+// const Agents = lazy(() => import('@/pages/Agents'));
+// const Sequences = lazy(() => import('@/pages/Sequences'));
+// const Workflows = lazy(() => import('@/pages/Workflows'));
+// const File = lazy(() => import('@/pages/File'));
+// const Messages = lazy(() => import('@/pages/Messages'));
+// === END MVP-HIDDEN ===
 const Customer = lazy(() => import('@/pages/Customer'));
 const Factory = lazy(() => import('@/pages/Factory'));  
 const Invoice = lazy(() => import('@/pages/Invoice'));
@@ -35,24 +39,31 @@ const PurchaseOrderRead = lazy(() => import('@/pages/PurchaseOrder/OrderRead'));
 const PurchaseOrderUpdate = lazy(() => import('@/pages/PurchaseOrder/OrderUpdate'));
 
 // Comparison Module
-const Comparison = lazy(() => import('@/pages/Comparison'));
-const ComparisonCreate = lazy(() => import('@/pages/Comparison/ComparisonCreate'));
-const ComparisonRead = lazy(() => import('@/pages/Comparison/ComparisonRead'));
-const ComparisonUpdate = lazy(() => import('@/pages/Comparison/ComparisonUpdate'));
-const FullComparison = lazy(() => import('@/pages/Comparison/FullComparison'));
+// === MVP-HIDDEN: 高度定制功能，非 MVP 范围 ===
+// const Comparison = lazy(() => import('@/pages/Comparison'));
+// const ComparisonCreate = lazy(() => import('@/pages/Comparison/ComparisonCreate'));
+// const ComparisonRead = lazy(() => import('@/pages/Comparison/ComparisonRead'));
+// const ComparisonUpdate = lazy(() => import('@/pages/Comparison/ComparisonUpdate'));
+// const FullComparison = lazy(() => import('@/pages/Comparison/FullComparison'));
+// === END MVP-HIDDEN ===
 
 const Settings = lazy(() => import('@/pages/Settings/Settings'));
-const PaymentMode = lazy(() => import('@/pages/PaymentMode'));
+// === MVP-HIDDEN: 配置页，通过 Settings 访问 ===
+// const PaymentMode = lazy(() => import('@/pages/PaymentMode'));
+// === END MVP-HIDDEN ===
 const Taxes = lazy(() => import('@/pages/Taxes'));
-const Currencies = lazy(() => import('@/pages/Currencies'));
+// === MVP-HIDDEN: 配置页，通过 Settings 访问 ===
+// const Currencies = lazy(() => import('@/pages/Currencies'));
+// === END MVP-HIDDEN ===
 const Profile = lazy(() => import('@/pages/Profile'));
 
 const Merchandise = lazy(() => import('@/pages/Merchandise'));  
 // const People = lazy(() => import('@/pages/People'));
 // const Company = lazy(() => import('@/pages/Company'));
 
-// 添加价格搜索页面导入
-import PriceSearch from '@/pages/PriceSearch';
+// === MVP-HIDDEN: 高度定制功能，非 MVP 范围 ===
+// import PriceSearch from '@/pages/PriceSearch';
+// === END MVP-HIDDEN ===
 
 let routes = {
   expense: [],
@@ -73,30 +84,32 @@ let routes = {
       path: '/askola',
       element: <AskOla />,
     },
-    {
-      path: '/notifications',
-      element: <Notifications />,
-    },
-    {
-      path: '/agents',
-      element: <Agents />,
-    },
-    {
-      path: '/sequences',
-      element: <Sequences />,
-    },
-    {
-      path: '/workflows',
-      element: <Workflows />,
-    },
-    {
-      path: '/file',
-      element: <File />,
-    },
-    {
-      path: '/messages',
-      element: <Messages />,
-    },
+    // === MVP-HIDDEN: 空壳页面，尚未实现 ===
+    // {
+    //   path: '/notifications',
+    //   element: <Notifications />,
+    // },
+    // {
+    //   path: '/agents',
+    //   element: <Agents />,
+    // },
+    // {
+    //   path: '/sequences',
+    //   element: <Sequences />,
+    // },
+    // {
+    //   path: '/workflows',
+    //   element: <Workflows />,
+    // },
+    // {
+    //   path: '/file',
+    //   element: <File />,
+    // },
+    // {
+    //   path: '/messages',
+    //   element: <Messages />,
+    // },
+    // === END MVP-HIDDEN ===
     {
       path: '/customer',
       element: <Customer />,
@@ -192,47 +205,53 @@ let routes = {
       path: '/settings/edit/:settingsKey',
       element: <Settings />,
     },
-    {
-      path: '/payment/mode',
-      element: <PaymentMode />,
-    },
+    // === MVP-HIDDEN: 配置页，通过 Settings 访问 ===
+    // {
+    //   path: '/payment/mode',
+    //   element: <PaymentMode />,
+    // },
+    // === END MVP-HIDDEN ===
     {
       path: '/taxes',
       element: <Taxes />,
     },
-    {
-      path: '/currencies',
-      element: <Currencies />,
-    },
+    // === MVP-HIDDEN: 配置页，通过 Settings 访问 ===
+    // {
+    //   path: '/currencies',
+    //   element: <Currencies />,
+    // },
+    // === END MVP-HIDDEN ===
 
     {
       path: '/profile',
       element: <Profile />,
     },
-    {
-      path: '/comparison',
-      element: <Comparison />,
-    },
-    {
-      path: '/comparison/create',
-      element: <ComparisonCreate />,
-    },
-    {
-      path: '/comparison/read/:id',
-      element: <ComparisonRead />,
-    },
-    {
-      path: '/comparison/update/:id',
-      element: <ComparisonUpdate />,
-    },
-    {
-      path: '/comparison/full',
-      element: <FullComparison />,
-    },
-    {
-      path: '/pricesearch',
-      element: <PriceSearch />,
-    },
+    // === MVP-HIDDEN: 高度定制功能，非 MVP 范围 ===
+    // {
+    //   path: '/comparison',
+    //   element: <Comparison />,
+    // },
+    // {
+    //   path: '/comparison/create',
+    //   element: <ComparisonCreate />,
+    // },
+    // {
+    //   path: '/comparison/read/:id',
+    //   element: <ComparisonRead />,
+    // },
+    // {
+    //   path: '/comparison/update/:id',
+    //   element: <ComparisonUpdate />,
+    // },
+    // {
+    //   path: '/comparison/full',
+    //   element: <FullComparison />,
+    // },
+    // {
+    //   path: '/pricesearch',
+    //   element: <PriceSearch />,
+    // },
+    // === END MVP-HIDDEN ===
     {
       path: '*',
       element: <NotFound />,
