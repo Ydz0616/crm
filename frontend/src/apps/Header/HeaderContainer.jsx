@@ -11,7 +11,7 @@ import {
   // ThunderboltOutlined,
   // ApartmentOutlined,
   // MessageOutlined,
-  // WalletOutlined,
+  WalletOutlined,
   // DollarOutlined,
   // SearchOutlined,
   // BarChartOutlined,
@@ -47,7 +47,7 @@ const PAGE_MAP = {
   '/purchaseorder': { icon: <FileOutlined />, label: 'Purchase Orders' },
   '/payment': { icon: <CreditCardOutlined />, label: 'Payment' },
   // === MVP-HIDDEN: 配置页/定制功能，已从导航中隐藏 ===
-  // '/payment/mode': { icon: <WalletOutlined />, label: 'Payment Mode' },
+  '/payment/mode': { icon: <WalletOutlined />, label: 'Payment Mode' },
   // '/currencies': { icon: <DollarOutlined />, label: 'Currencies' },
   // '/pricesearch': { icon: <SearchOutlined />, label: 'Price Search' },
   // '/comparison': { icon: <BarChartOutlined />, label: 'Comparison' },

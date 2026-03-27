@@ -48,9 +48,7 @@ const PurchaseOrderUpdate = lazy(() => import('@/pages/PurchaseOrder/OrderUpdate
 // === END MVP-HIDDEN ===
 
 const Settings = lazy(() => import('@/pages/Settings/Settings'));
-// === MVP-HIDDEN: 配置页，通过 Settings 访问 ===
-// const PaymentMode = lazy(() => import('@/pages/PaymentMode'));
-// === END MVP-HIDDEN ===
+const PaymentMode = lazy(() => import('@/pages/PaymentMode'));
 const Taxes = lazy(() => import('@/pages/Taxes'));
 // === MVP-HIDDEN: 配置页，通过 Settings 访问 ===
 // const Currencies = lazy(() => import('@/pages/Currencies'));
@@ -205,12 +203,10 @@ let routes = {
       path: '/settings/edit/:settingsKey',
       element: <Settings />,
     },
-    // === MVP-HIDDEN: 配置页，通过 Settings 访问 ===
-    // {
-    //   path: '/payment/mode',
-    //   element: <PaymentMode />,
-    // },
-    // === END MVP-HIDDEN ===
+    {
+      path: '/payment/mode',
+      element: <PaymentMode />,
+    },
     {
       path: '/taxes',
       element: <Taxes />,

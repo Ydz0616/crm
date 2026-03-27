@@ -3,8 +3,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button, Drawer, Layout, Menu, Avatar } from 'antd';
+import { useSelector } from 'react-redux';
 
 import { useAppContext } from '@/context/appContext';
+import { selectCurrentAdmin } from '@/redux/auth/selectors';
+import { FILE_BASE_URL } from '@/config/serverApiConfig';
 
 import useLanguage from '@/locale/useLanguage';
 import logo from '@/style/images/aola.png';
@@ -30,7 +33,7 @@ import {
   // RobotOutlined,
   // ThunderboltOutlined,
   // ApartmentOutlined,
-  // WalletOutlined,
+  WalletOutlined,
   // DollarOutlined,
   // BarChartOutlined,
   // SearchOutlined,
@@ -72,6 +75,13 @@ function Sidebar({ collapsible, isMobile = false }) {
 
   const translate = useLanguage();
   const navigate = useNavigate();
+
+  // Read current admin from Redux store — no hardcode
+  const currentAdmin = useSelector(selectCurrentAdmin);
+  const avatarSrc = currentAdmin?.photo
+    ? FILE_BASE_URL + currentAdmin.photo
+    : undefined;
+  const avatarInitial = currentAdmin?.name?.charAt(0)?.toUpperCase() || 'U';
 
   const items = [
     {
@@ -177,16 +187,16 @@ function Sidebar({ collapsible, isMobile = false }) {
         },
         // === MVP-HIDDEN: 配置页，不需要独立菜单项。可通过 Settings 页面访问 ===
         // {
-        //   key: 'paymentMode',
-        //   label: <Link to={'/payment/mode'}>{translate('payments_mode')}</Link>,
-        //   icon: <WalletOutlined />,
-        // },
-        // {
         //   key: 'currencies',
         //   label: <Link to={'/currencies'}>{translate('currencies')}</Link>,
         //   icon: <DollarOutlined />,
         // },
         // === END MVP-HIDDEN ===
+        {
+          key: 'paymentMode',
+          label: <Link to={'/payment/mode'}>{translate('payments_mode')}</Link>,
+          icon: <WalletOutlined />,
+        },
       ],
     },
     // === MVP-HIDDEN: Price Search 和 Full Comparison 为高度定制功能，有 bug，非 MVP 范围 ===
@@ -333,10 +343,19 @@ function Sidebar({ collapsible, isMobile = false }) {
         {isProfileMenuOpen && !showLogoApp && (
           <div className="profile-popup-menu">
             <div className="profile-popup-header">
-              <Avatar size={28} src="https://api.dicebear.com/7.x/miniavs/svg?seed=8" />
+              <Avatar
+                size={28}
+                src={avatarSrc}
+                style={{
+                  color: '#f56a00',
+                  backgroundColor: avatarSrc ? 'transparent' : '#fde3cf',
+                }}
+              >
+                {avatarInitial}
+              </Avatar>
               <div className="profile-popup-header-text">
-                <span className="profile-popup-name">Will</span>
-                <span className="profile-popup-handle">@ziheng.will</span>
+                <span className="profile-popup-name">{currentAdmin?.name || 'User'}</span>
+                <span className="profile-popup-handle">{currentAdmin?.email || ''}</span>
               </div>
             </div>
             <div className="profile-popup-divider" />
@@ -361,12 +380,7 @@ function Sidebar({ collapsible, isMobile = false }) {
               <span>{translate('settings')}</span>
             </div>
             <div className="profile-popup-divider" />
-            <div
-              className="profile-popup-item profile-popup-item-with-arrow"
-              onClick={() => {
-                window.location.href = 'mailto:support@seekmi.cn';
-              }}
-            >
+            <div className="profile-popup-item profile-popup-item-with-arrow">
               <QuestionCircleOutlined className="profile-popup-item-icon" />
               <span>Help</span>
               <RightOutlined className="profile-popup-item-arrow" />
@@ -392,16 +406,26 @@ function Sidebar({ collapsible, isMobile = false }) {
           }}
         >
           <div className="user-profile-info">
-            <Avatar size={28} src="https://api.dicebear.com/7.x/miniavs/svg?seed=8" />
+            <Avatar
+              size={28}
+              src={avatarSrc}
+              style={{
+                color: '#f56a00',
+                backgroundColor: avatarSrc ? 'transparent' : '#fde3cf',
+                fontSize: '14px',
+              }}
+            >
+              {avatarInitial}
+            </Avatar>
             {!showLogoApp && (
               /* === MVP-HIDDEN: 无 plan 系统，注释 Free 标签 ===
               <div className="user-profile-text">
-                <span className="user-profile-name">Will</span>
+                <span className="user-profile-name">{currentAdmin?.name || 'User'}</span>
                 <span className="user-profile-plan">Free</span>
               </div>
               === END MVP-HIDDEN === */
               <div className="user-profile-text">
-                <span className="user-profile-name">Will</span>
+                <span className="user-profile-name">{currentAdmin?.name || 'User'}</span>
               </div>
             )}
           </div>
