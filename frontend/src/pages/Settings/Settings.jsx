@@ -66,7 +66,7 @@ export default function Settings() {
     {
       label: 'Workspace',
       items: [
-        { key: 'general_settings', icon: <SettingOutlined />, label: 'General' },
+        { key: 'general_settings', icon: <SettingOutlined />, label: 'Company' },
         // === MVP-HIDDEN: Members/AskOla Usage/Plans/Billing 本轮不需要 ===
         // { key: 'members_teams', icon: <TeamOutlined />, label: 'Members and teams' },
         // { key: 'ask_ola_usage', icon: <RocketOutlined />, label: 'Ask Ola usage' },
@@ -90,7 +90,7 @@ export default function Settings() {
     // notifications_settings: { icon: <BellOutlined />, label: 'Notifications' },
     // === END MVP-HIDDEN ===
     ask_ola: { icon: <SmileOutlined />, label: 'Ask Ola' },
-    general_settings: { icon: <SettingOutlined />, label: 'General' },
+    general_settings: { icon: <SettingOutlined />, label: 'Company' },
     // === MVP-HIDDEN: 对应已隐藏的 Settings 子页面 ===
     // members_teams: { icon: <TeamOutlined />, label: 'Members and teams' },
     // ask_ola_usage: { icon: <RocketOutlined />, label: 'Ask Ola usage' },
