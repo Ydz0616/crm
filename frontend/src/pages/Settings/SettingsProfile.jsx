@@ -61,10 +61,9 @@ export default function SettingsProfile() {
         </button>
       </div>
 
-      {/* Divider */}
+      {/* === MVP-HIDDEN: Time Preferences 本轮不需要 ===
       <hr className="profile-divider" />
 
-      {/* Time Preferences */}
       <h2 className="profile-time-title">Time preferences</h2>
       <p className="profile-time-subtitle">Manage your time preferences</p>
 
@@ -97,6 +96,7 @@ export default function SettingsProfile() {
           />
         </div>
       </div>
+      === END MVP-HIDDEN === */}
 
       {/* Change Email Modal */}
       <Modal

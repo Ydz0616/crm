@@ -4,14 +4,16 @@ import { useNavigate } from 'react-router-dom';
 import {
   SettingOutlined,
   DollarOutlined,
-  TeamOutlined,
-  RocketOutlined,
-  CrownOutlined,
+  // === MVP-HIDDEN: 以下 icon 对应已隐藏的 Settings 子页面 ===
+  // TeamOutlined,
+  // RocketOutlined,
+  // CrownOutlined,
+  // BgColorsOutlined,
+  // CloudServerOutlined,
+  // BellOutlined,
+  // === END MVP-HIDDEN ===
   UserOutlined,
-  BgColorsOutlined,
   MailOutlined,
-  CloudServerOutlined,
-  BellOutlined,
   SmileOutlined,
   LeftOutlined,
   SearchOutlined,
@@ -21,16 +23,22 @@ import { Input } from 'antd';
 import useLanguage from '@/locale/useLanguage';
 
 import SettingsProfile from './SettingsProfile';
-import SettingsAppearance from './SettingsAppearance';
+// === MVP-HIDDEN: 以下 Settings 子页面本轮不需要 ===
+// import SettingsAppearance from './SettingsAppearance';
+// === END MVP-HIDDEN ===
 import SettingsEmailAccounts from './SettingsEmailAccounts';
-import SettingsStorageAccounts from './SettingsStorageAccounts';
-import SettingsNotifications from './SettingsNotifications';
+// === MVP-HIDDEN: 以下 Settings 子页面本轮不需要 ===
+// import SettingsStorageAccounts from './SettingsStorageAccounts';
+// import SettingsNotifications from './SettingsNotifications';
+// === END MVP-HIDDEN ===
 import SettingsAskOla from './SettingsAskOla';
 import SettingsGeneralNew from './SettingsGeneralNew';
-import SettingsMembers from './SettingsMembers';
-import SettingsAskOlaUsage from './SettingsAskOlaUsage';
-import SettingsPlans from './SettingsPlans';
-import SettingsBilling from './SettingsBilling';
+// === MVP-HIDDEN: 以下 Settings 子页面本轮不需要 ===
+// import SettingsMembers from './SettingsMembers';
+// import SettingsAskOlaUsage from './SettingsAskOlaUsage';
+// import SettingsPlans from './SettingsPlans';
+// import SettingsBilling from './SettingsBilling';
+// === END MVP-HIDDEN ===
 import MoneyFormatSettings from './MoneyFormatSettings';
 
 export default function Settings() {
@@ -44,10 +52,14 @@ export default function Settings() {
       label: 'Personal',
       items: [
         { key: 'profile', icon: <UserOutlined />, label: 'Profile' },
-        { key: 'appearance', icon: <BgColorsOutlined />, label: 'Appearance' },
-        { key: 'email_accounts', icon: <MailOutlined />, label: 'Email Accounts' },
-        { key: 'storage_accounts', icon: <CloudServerOutlined />, label: 'Storage Accounts' },
-        { key: 'notifications_settings', icon: <BellOutlined />, label: 'Notifications' },
+        // === MVP-HIDDEN: Appearance 本轮不需要 ===
+        // { key: 'appearance', icon: <BgColorsOutlined />, label: 'Appearance' },
+        // === END MVP-HIDDEN ===
+        { key: 'email_accounts', icon: <MailOutlined />, label: 'Accounts' },
+        // === MVP-HIDDEN: Storage/Notifications 本轮不需要 ===
+        // { key: 'storage_accounts', icon: <CloudServerOutlined />, label: 'Storage Accounts' },
+        // { key: 'notifications_settings', icon: <BellOutlined />, label: 'Notifications' },
+        // === END MVP-HIDDEN ===
         { key: 'ask_ola', icon: <SmileOutlined />, label: 'Ask Ola' },
       ],
     },
@@ -55,10 +67,12 @@ export default function Settings() {
       label: 'Workspace',
       items: [
         { key: 'general_settings', icon: <SettingOutlined />, label: 'General' },
-        { key: 'members_teams', icon: <TeamOutlined />, label: 'Members and teams' },
-        { key: 'ask_ola_usage', icon: <RocketOutlined />, label: 'Ask Ola usage' },
-        { key: 'plans', icon: <CrownOutlined />, label: 'Plans' },
-        { key: 'billing', icon: <DollarOutlined />, label: 'Billing' },
+        // === MVP-HIDDEN: Members/AskOla Usage/Plans/Billing 本轮不需要 ===
+        // { key: 'members_teams', icon: <TeamOutlined />, label: 'Members and teams' },
+        // { key: 'ask_ola_usage', icon: <RocketOutlined />, label: 'Ask Ola usage' },
+        // { key: 'plans', icon: <CrownOutlined />, label: 'Plans' },
+        // { key: 'billing', icon: <DollarOutlined />, label: 'Billing' },
+        // === END MVP-HIDDEN ===
         { key: 'currency_settings', icon: <DollarOutlined />, label: translate('Currency Settings') },
       ],
     },
@@ -67,16 +81,22 @@ export default function Settings() {
   // Content panel header info
   const panelHeaders = {
     profile: { icon: <UserOutlined />, label: 'Profile' },
-    appearance: { icon: <BgColorsOutlined />, label: 'Appearance' },
-    email_accounts: { icon: <MailOutlined />, label: 'Email Accounts' },
-    storage_accounts: { icon: <CloudServerOutlined />, label: 'Storage Accounts' },
-    notifications_settings: { icon: <BellOutlined />, label: 'Notifications' },
+    // === MVP-HIDDEN: 对应已隐藏的 Settings 子页面 ===
+    // appearance: { icon: <BgColorsOutlined />, label: 'Appearance' },
+    // === END MVP-HIDDEN ===
+    email_accounts: { icon: <MailOutlined />, label: 'Accounts' },
+    // === MVP-HIDDEN: 对应已隐藏的 Settings 子页面 ===
+    // storage_accounts: { icon: <CloudServerOutlined />, label: 'Storage Accounts' },
+    // notifications_settings: { icon: <BellOutlined />, label: 'Notifications' },
+    // === END MVP-HIDDEN ===
     ask_ola: { icon: <SmileOutlined />, label: 'Ask Ola' },
     general_settings: { icon: <SettingOutlined />, label: 'General' },
-    members_teams: { icon: <TeamOutlined />, label: 'Members and teams' },
-    ask_ola_usage: { icon: <RocketOutlined />, label: 'Ask Ola usage' },
-    plans: { icon: <CrownOutlined />, label: 'Plans' },
-    billing: { icon: <DollarOutlined />, label: 'Billing' },
+    // === MVP-HIDDEN: 对应已隐藏的 Settings 子页面 ===
+    // members_teams: { icon: <TeamOutlined />, label: 'Members and teams' },
+    // ask_ola_usage: { icon: <RocketOutlined />, label: 'Ask Ola usage' },
+    // plans: { icon: <CrownOutlined />, label: 'Plans' },
+    // billing: { icon: <DollarOutlined />, label: 'Billing' },
+    // === END MVP-HIDDEN ===
     currency_settings: { icon: <DollarOutlined />, label: translate('Currency Settings') },
   };
 
@@ -85,26 +105,32 @@ export default function Settings() {
     switch (activeKey) {
       case 'profile':
         return <SettingsProfile />;
-      case 'appearance':
-        return <SettingsAppearance />;
+      // === MVP-HIDDEN: 对应已隐藏的 Settings 子页面 ===
+      // case 'appearance':
+      //   return <SettingsAppearance />;
+      // === END MVP-HIDDEN ===
       case 'email_accounts':
         return <SettingsEmailAccounts />;
-      case 'storage_accounts':
-        return <SettingsStorageAccounts />;
-      case 'notifications_settings':
-        return <SettingsNotifications />;
+      // === MVP-HIDDEN: 对应已隐藏的 Settings 子页面 ===
+      // case 'storage_accounts':
+      //   return <SettingsStorageAccounts />;
+      // case 'notifications_settings':
+      //   return <SettingsNotifications />;
+      // === END MVP-HIDDEN ===
       case 'ask_ola':
         return <SettingsAskOla />;
       case 'general_settings':
         return <SettingsGeneralNew />;
-      case 'members_teams':
-        return <SettingsMembers />;
-      case 'ask_ola_usage':
-        return <SettingsAskOlaUsage />;
-      case 'plans':
-        return <SettingsPlans />;
-      case 'billing':
-        return <SettingsBilling />;
+      // === MVP-HIDDEN: 对应已隐藏的 Settings 子页面 ===
+      // case 'members_teams':
+      //   return <SettingsMembers />;
+      // case 'ask_ola_usage':
+      //   return <SettingsAskOlaUsage />;
+      // case 'plans':
+      //   return <SettingsPlans />;
+      // case 'billing':
+      //   return <SettingsBilling />;
+      // === END MVP-HIDDEN ===
       case 'currency_settings':
         return (
           <div className="settings-existing-panel">

@@ -340,6 +340,7 @@ function Sidebar({ collapsible, isMobile = false }) {
               </div>
             </div>
             <div className="profile-popup-divider" />
+            {/* === MVP-HIDDEN: 无 plan 系统，暂不需要 ===
             <div className="profile-popup-item">
               <StarOutlined className="profile-popup-item-icon" />
               <span>Upgrade plan</span>
@@ -348,6 +349,7 @@ function Sidebar({ collapsible, isMobile = false }) {
               <SmileOutlined className="profile-popup-item-icon" />
               <span>Personalization</span>
             </div>
+            === END MVP-HIDDEN === */}
             <div
               className="profile-popup-item"
               onClick={() => {
@@ -359,12 +361,23 @@ function Sidebar({ collapsible, isMobile = false }) {
               <span>{translate('settings')}</span>
             </div>
             <div className="profile-popup-divider" />
-            <div className="profile-popup-item profile-popup-item-with-arrow">
+            <div
+              className="profile-popup-item profile-popup-item-with-arrow"
+              onClick={() => {
+                window.location.href = 'mailto:support@seekmi.cn';
+              }}
+            >
               <QuestionCircleOutlined className="profile-popup-item-icon" />
               <span>Help</span>
               <RightOutlined className="profile-popup-item-arrow" />
             </div>
-            <div className="profile-popup-item">
+            <div
+              className="profile-popup-item"
+              onClick={() => {
+                navigate('/logout');
+                setIsProfileMenuOpen(false);
+              }}
+            >
               <LogoutOutlined className="profile-popup-item-icon" />
               <span>Log out</span>
             </div>
@@ -381,12 +394,18 @@ function Sidebar({ collapsible, isMobile = false }) {
           <div className="user-profile-info">
             <Avatar size={28} src="https://api.dicebear.com/7.x/miniavs/svg?seed=8" />
             {!showLogoApp && (
+              /* === MVP-HIDDEN: 无 plan 系统，注释 Free 标签 ===
               <div className="user-profile-text">
                 <span className="user-profile-name">Will</span>
                 <span className="user-profile-plan">Free</span>
               </div>
+              === END MVP-HIDDEN === */
+              <div className="user-profile-text">
+                <span className="user-profile-name">Will</span>
+              </div>
             )}
           </div>
+          {/* === MVP-HIDDEN: 无 plan 系统，注释 Upgrade 按钮 ===
           {!showLogoApp && (
             <Button
               className="user-profile-upgrade-btn"
@@ -396,6 +415,7 @@ function Sidebar({ collapsible, isMobile = false }) {
               Upgrade
             </Button>
           )}
+          === END MVP-HIDDEN === */}
         </div>
       </div>
       {showLogoApp && (

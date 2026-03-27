@@ -172,7 +172,7 @@ export default function SettingsGeneral() {
         </div>
       </div>
 
-      {/* Export workspace data */}
+      {/* === MVP-HIDDEN: Export workspace data — MVP 不需要 ===
       <div className="general-export-block">
         <div className="general-export-header">
           <div>
@@ -216,8 +216,9 @@ export default function SettingsGeneral() {
           </div>
         </div>
       </div>
+      === END MVP-HIDDEN === */}
 
-      {/* Danger zone */}
+      {/* === MVP-HIDDEN: Danger zone — MVP 不需要删除 workspace ===
       <div className="general-danger-block">
         <h2 className="general-block-title">Danger zone</h2>
 
@@ -234,6 +235,7 @@ export default function SettingsGeneral() {
           </button>
         </div>
       </div>
+      === END MVP-HIDDEN === */}
     </div>
   );
 }
