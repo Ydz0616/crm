@@ -35,12 +35,16 @@
     "dev:remote": "cross-env VITE_DEV_REMOTE=remote npm run dev"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/react": "^18.2.38",
     "@types/react-dom": "^18.2.17",
     "eslint": "^8.56.0",
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.4",
-    "prettier": "3.1.0"
+    "jsdom": "^27.0.1",
+    "prettier": "3.1.0",
+    "vitest": "^3.2.4"
   }
 }
