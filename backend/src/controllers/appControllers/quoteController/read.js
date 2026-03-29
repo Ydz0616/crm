@@ -8,6 +8,7 @@ const read = async (req, res) => {
   const result = await Model.findOne({
     _id: req.params.id,
     removed: false,
+    createdBy: req.admin._id,
   })
     .populate('createdBy', 'name')
     .exec();

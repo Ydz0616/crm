@@ -2,10 +2,12 @@ const summary = async (Model, req, res) => {
   //  Query the database for a list of all results
   const countPromise = Model.countDocuments({
     removed: false,
+    createdBy: req.admin._id,
   });
 
   const resultsPromise = await Model.countDocuments({
     removed: false,
+    createdBy: req.admin._id,
   })
     .where(req.query.filter)
     .equals(req.query.equal)

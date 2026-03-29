@@ -4,15 +4,15 @@ const Model = mongoose.model('Comparison');
 const summary = async (req, res) => {
   try {
     // Calculate counts
-    const totalCount = await Model.countDocuments({ removed: false });
-    const draftCount = await Model.countDocuments({ removed: false, status: 'draft' });
-    const pendingCount = await Model.countDocuments({ removed: false, status: 'pending' });
-    const approvedCount = await Model.countDocuments({ removed: false, status: 'approved' });
-    const rejectedCount = await Model.countDocuments({ removed: false, status: 'rejected' });
+    const totalCount = await Model.countDocuments({ removed: false, createdBy: req.admin._id });
+    const draftCount = await Model.countDocuments({ removed: false, createdBy: req.admin._id, status: 'draft' });
+    const pendingCount = await Model.countDocuments({ removed: false, createdBy: req.admin._id, status: 'pending' });
+    const approvedCount = await Model.countDocuments({ removed: false, createdBy: req.admin._id, status: 'approved' });
+    const rejectedCount = await Model.countDocuments({ removed: false, createdBy: req.admin._id, status: 'rejected' });
 
     // Calculate average gross profit
     const profitPipeline = [
-      { $match: { removed: false } },
+      { $match: { removed: false, createdBy: req.admin._id } },
       { $unwind: '$items' },
       { $match: { 'items.grossProfit': { $gt: 0 } } },
       { $group: {

@@ -33,7 +33,7 @@ const summary = async (req, res) => {
   const response = await Model.aggregate([
     {
       $match: {
-        removed: false,
+        removed: false, createdBy: req.admin._id,
         // date: {
         //   $gte: startDate.toDate(),
         //   $lte: endDate.toDate(),
@@ -165,7 +165,7 @@ const summary = async (req, res) => {
   const unpaid = await Model.aggregate([
     {
       $match: {
-        removed: false,
+        removed: false, createdBy: req.admin._id,
 
         // date: {
         //   $gte: startDate.toDate(),

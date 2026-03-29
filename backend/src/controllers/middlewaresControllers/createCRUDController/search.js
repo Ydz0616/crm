@@ -24,6 +24,7 @@ const search = async (Model, req, res) => {
   })
 
     .where('removed', false)
+    .where('createdBy', req.admin._id)
     .limit(20)
     .exec();
 

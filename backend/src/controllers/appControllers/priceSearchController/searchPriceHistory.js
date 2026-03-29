@@ -38,7 +38,7 @@ const searchPriceHistory = async (req, res) => {
         $match: {
           client: new mongoose.Types.ObjectId(clientId),
           'items.itemName': { $in: itemNames },
-          removed: false,
+          removed: false, createdBy: req.admin._id,
           ...(Object.keys(dateFilter).length > 0 ? { date: dateFilter } : {})
         }
       },
@@ -159,7 +159,7 @@ const searchPriceHistory = async (req, res) => {
     // 获取所有商品的详细信息，包括VAT和ETR
     const merchDetails = await Merch.find({
       serialNumber: { $in: itemNames },
-      removed: false
+      removed: false, createdBy: req.admin._id
     }).select('serialNumber VAT ETR').lean();
 
     // 创建商品详情的映射，方便后续查找

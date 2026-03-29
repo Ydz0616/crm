@@ -7,7 +7,7 @@ const convertQuoteToInvoice = async (req, res) => {
     const { id } = req.params;
     
     // Find quote and populate client
-    const quote = await Quote.findOne({ _id: id, removed: false }).populate('client');
+    const quote = await Quote.findOne({ _id: id, removed: false, createdBy: req.admin._id }).populate('client');
     
     if (!quote) {
       return res.status(404).json({

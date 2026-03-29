@@ -9,14 +9,14 @@ const paginatedList = async (req, res) => {
 
   try {
     // Find documents with pagination
-    const resultsPromise = Model.find({ removed: false })
+    const resultsPromise = Model.find({ removed: false, createdBy: req.admin._id })
       .skip(skip)
       .limit(limit)
       .sort({ created: 'desc' })
       .populate('client', 'name');
 
     // Count all records
-    const countPromise = Model.countDocuments({ removed: false });
+    const countPromise = Model.countDocuments({ removed: false, createdBy: req.admin._id });
 
     // Execute promises concurrently
     const [result, count] = await Promise.all([resultsPromise, countPromise]);

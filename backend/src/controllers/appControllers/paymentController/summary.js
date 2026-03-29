@@ -31,7 +31,7 @@ const summary = async (req, res) => {
   const result = await Model.aggregate([
     {
       $match: {
-        removed: false,
+        removed: false, createdBy: req.admin._id,
 
         // date: {
         //   $gte: startDate.toDate(),

@@ -9,7 +9,7 @@ const update = async (req, res) => {
   try {
     const previousOrder = await Model.findOne({
       _id: req.params.id,
-      removed: false,
+      removed: false, createdBy: req.admin._id,
     });
 
     if (!previousOrder) {
