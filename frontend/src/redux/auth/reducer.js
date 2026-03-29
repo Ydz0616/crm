@@ -18,6 +18,9 @@ const authReducer = (state = INITIAL_STATE, action) => {
     case actionTypes.REQUEST_FAILED:
       return INITIAL_STATE;
 
+    case actionTypes.RESET_STATE:
+      return INITIAL_STATE;
+
     case actionTypes.REQUEST_SUCCESS:
       return {
         current: action.payload,

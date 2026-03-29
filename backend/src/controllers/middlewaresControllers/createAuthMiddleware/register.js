@@ -4,6 +4,7 @@ const { generate: uniqueId } = require('shortid');
 const { globSync } = require('glob');
 const fs = require('fs');
 const mongoose = require('mongoose');
+const path = require('path');
 
 const register = async (req, res, { userModel }) => {
   const UserModel = mongoose.model(userModel);
@@ -63,7 +64,8 @@ const register = async (req, res, { userModel }) => {
 
   // 5. 复制 defaultSettings → 新增 Setting 记录（带 createdBy）
   const Setting = mongoose.model('Setting');
-  const settingsFiles = globSync('./src/setup/defaultSettings/**/*.json');
+  const targetPattern = path.join(__dirname, '../../../setup/defaultSettings/**/*.json').replace(/\\/g, '/');
+  const settingsFiles = globSync(targetPattern);
   const settingDocs = [];
   for (const filePath of settingsFiles) {
     const file = JSON.parse(fs.readFileSync(filePath, 'utf-8'));

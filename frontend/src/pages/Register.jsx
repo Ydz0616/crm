@@ -32,6 +32,7 @@ const RegisterPage = () => {
         message: 'Registration Successful',
         description: 'You can now log in with your new credentials.',
       });
+      dispatch({ type: 'AUTH_RESET_STATE' });
       // 成功后自动跳转到 Login 页面强制用户输入密码以获取包含身份令牌的 Context
       navigate('/login');
     }
