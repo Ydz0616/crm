@@ -8,7 +8,7 @@ const adminSchema = new Schema({
   },
   enabled: {
     type: Boolean,
-    default: false,
+    default: true, // MVP: 注册即启用
   },
 
   email: {
@@ -23,14 +23,27 @@ const adminSchema = new Schema({
     type: String,
     trim: true,
   },
+
+  role: {
+    type: String,
+    default: 'user',
+    enum: ['owner', 'admin', 'user'],
+  },
+
+  // 公司信息（上车时收集）
+  company: {
+    name: { type: String },
+    country: { type: String },
+    phone: { type: String },
+    industry: { type: String },
+  },
+
+  // 上车状态
+  onboarded: { type: Boolean, default: false },
+
   created: {
     type: Date,
     default: Date.now,
-  },
-  role: {
-    type: String,
-    default: 'owner',
-    enum: ['owner'],
   },
 });
 
