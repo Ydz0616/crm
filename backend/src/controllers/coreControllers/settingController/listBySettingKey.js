@@ -26,6 +26,7 @@ const listBySettingKey = async (req, res) => {
 
   let results = await Model.find({
     ...settingsToShow,
+    createdBy: req.admin._id,
   }).where('removed', false);
 
   // If no results found, return document not found

@@ -22,7 +22,7 @@ const updateBySettingKey = async (req, res) => {
     });
   }
   const result = await Model.findOneAndUpdate(
-    { settingKey },
+    { settingKey, createdBy: req.admin._id },
     {
       settingValue,
     },
