@@ -24,6 +24,7 @@ const update = async (req, res) => {
   const previousQuote = await Model.findOne({
     _id: req.params.id,
     removed: false,
+    createdBy: req.admin._id,
   });
 
   const { items = [], freight = 0, discount = 0 } = value;
@@ -92,7 +93,7 @@ const update = async (req, res) => {
   }
   // Find document by id and updates with the required fields
 
-  const result = await Model.findOneAndUpdate({ _id: req.params.id, removed: false }, body, {
+  const result = await Model.findOneAndUpdate({ _id: req.params.id, removed: false, createdBy: req.admin._id }, body, {
     new: true, // return the new result instead of the old one
   }).exec();
 

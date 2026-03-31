@@ -20,6 +20,7 @@ const listAll = async (req, res) => {
     const result = await Model.find({
       removed: false,
       isPrivate: false,
+      createdBy: req.admin._id
     }).sort({ created: sort });
 
     if (result.length > 0) {

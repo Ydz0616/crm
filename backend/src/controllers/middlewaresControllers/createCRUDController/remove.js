@@ -7,6 +7,7 @@ const remove = async (Model, req, res) => {
   const result = await Model.findOneAndUpdate(
     {
       _id: req.params.id,
+      createdBy: req.admin._id,
     },
     { $set: updates },
     {

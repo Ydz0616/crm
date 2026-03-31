@@ -41,7 +41,7 @@ methods.update = async (req, res) => {
   const { id } = req.params;
   const tax = await Model.findOne({
     _id: req.params.id,
-    removed: false,
+    removed: false, createdBy: req.admin._id,
   }).exec();
   const { isDefault = tax.isDefault, enabled = tax.enabled } = req.body;
 

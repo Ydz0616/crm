@@ -27,7 +27,7 @@ const summary = async (Model, req, res) => {
         totalClients: [
           {
             $match: {
-              removed: false,
+              removed: false, createdBy: req.admin._id,
               enabled: true,
             },
           },
@@ -38,7 +38,7 @@ const summary = async (Model, req, res) => {
         newClients: [
           {
             $match: {
-              removed: false,
+              removed: false, createdBy: req.admin._id,
               created: { $gte: startDate.toDate(), $lte: endDate.toDate() },
               enabled: true,
             },

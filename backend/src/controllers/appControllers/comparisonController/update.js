@@ -75,7 +75,7 @@ const update = async (req, res) => {
 
     // Update the document
     const result = await Model.findOneAndUpdate(
-      { _id: req.params.id, removed: false },
+      { _id: req.params.id, removed: false, createdBy: req.admin._id },
       body,
       { new: true }
     ).exec();

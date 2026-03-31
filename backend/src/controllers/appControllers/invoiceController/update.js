@@ -23,7 +23,7 @@ const update = async (req, res) => {
 
   const previousInvoice = await Model.findOne({
     _id: req.params.id,
-    removed: false,
+    removed: false, createdBy: req.admin._id,
   });
 
   const { credit } = previousInvoice;
@@ -97,7 +97,7 @@ const update = async (req, res) => {
     calculate.sub(total, 0) === credit ? 'paid' : credit > 0 ? 'partially' : 'unpaid';
   body['paymentStatus'] = paymentStatus;
 
-  const result = await Model.findOneAndUpdate({ _id: req.params.id, removed: false }, body, {
+  const result = await Model.findOneAndUpdate({ _id: req.params.id, removed: false, createdBy: req.admin._id }, body, {
     new: true, // return the new result instead of the old one
   }).exec();
 

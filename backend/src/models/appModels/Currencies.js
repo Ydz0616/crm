@@ -48,7 +48,8 @@ const schema = new mongoose.Schema({
     enabled: {
         type: Boolean,
         default: true
-    }
+    },
+    createdBy: { type: mongoose.Schema.ObjectId, ref: 'Admin' },
     
 });
 

@@ -16,6 +16,7 @@ const readBySettingKey = async (req, res) => {
 
   const result = await Model.findOne({
     settingKey,
+    createdBy: req.admin._id
   });
 
   // If no results found, return document not found

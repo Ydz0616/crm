@@ -5,6 +5,7 @@ const schema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  createdBy: { type: mongoose.Schema.ObjectId, ref: 'Admin' },
 
   factory_code: {
     type: String,

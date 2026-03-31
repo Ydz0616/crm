@@ -1,61 +1,81 @@
-import React, { useState, useEffect, useLayoutEffect } from 'react';
-import { Form, Input, Select } from 'antd';
-import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
+import React from 'react';
+import { Form, Input } from 'antd';
+import { UserOutlined, MailOutlined, LockOutlined } from '@ant-design/icons';
 
 import useLanguage from '@/locale/useLanguage';
-import { countryList } from '@/utils/countryList';
 
-export default function RegisterForm({ userLocation }) {
+export default function RegisterForm() {
   const translate = useLanguage();
-
   return (
-    <>
+    <div>
       <Form.Item
+        label={translate('Name')}
         name="name"
-        label={translate('name')}
         rules={[
           {
             required: true,
+            message: 'Please input your name!',
           },
         ]}
       >
-        <Input prefix={<UserOutlined className="site-form-item-icon" />} size="large" />
+        <Input
+          prefix={<UserOutlined className="site-form-item-icon" />}
+          placeholder={translate('name')}
+          size="large"
+        />
       </Form.Item>
+      
       <Form.Item
-        name="email"
         label={translate('email')}
+        name="email"
         rules={[
           {
             required: true,
+            message: 'Please input your email!',
           },
           {
             type: 'email',
+            message: 'Invalid email address!',
           },
         ]}
       >
         <Input
           prefix={<MailOutlined className="site-form-item-icon" />}
+          placeholder={translate('email')}
           type="email"
           size="large"
         />
       </Form.Item>
+
       <Form.Item
-        name="password"
         label={translate('password')}
+        name="password"
         rules={[
           {
             required: true,
+            message: 'Please input your password!',
           },
+          {
+            min: 8,
+            message: 'Password must be at least 8 characters.',
+          }
         ]}
       >
-        <Input.Password prefix={<LockOutlined className="site-form-item-icon" />} size="large" />
+        <Input.Password
+          prefix={<LockOutlined className="site-form-item-icon" />}
+          placeholder={translate('password')}
+          size="large"
+        />
       </Form.Item>
-      {/* <Form.Item
-        name="confirm_password"
-        label={translate('confirm_password')}
+
+      <Form.Item
+        name="confirmPassword"
+        label="Confirm Password"
+        dependencies={['password']}
         rules={[
           {
             required: true,
+            message: 'Please confirm your password!',
           },
           ({ getFieldValue }) => ({
             validator(_, value) {
@@ -66,47 +86,13 @@ export default function RegisterForm({ userLocation }) {
             },
           }),
         ]}
-        hasFeedback
       >
-        <Input.Password prefix={<LockOutlined className="site-form-item-icon" />} size="large" />
-      </Form.Item> */}
-      <Form.Item
-        label={translate('country')}
-        name="country"
-        rules={[
-          {
-            required: true,
-          },
-        ]}
-        initialValue={userLocation}
-      >
-        <Select
-          showSearch
-          defaultOpen={false}
-          optionFilterProp="children"
-          filterOption={(input, option) =>
-            (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-          }
-          filterSort={(optionA, optionB) =>
-            (optionA?.label ?? '').toLowerCase().startsWith((optionB?.label ?? '').toLowerCase())
-          }
-          style={{
-            width: '100%',
-          }}
+        <Input.Password
+          prefix={<LockOutlined className="site-form-item-icon" />}
+          placeholder="Confirm Password"
           size="large"
-        >
-          {countryList.map((language) => (
-            <Select.Option
-              key={language.value}
-              value={language.value}
-              label={translate(language.label)}
-            >
-              {language?.icon && language?.icon + ' '}
-              {translate(language.label)}
-            </Select.Option>
-          ))}
-        </Select>
+        />
       </Form.Item>
-    </>
+    </div>
   );
 }
