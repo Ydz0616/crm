@@ -1,0 +1,276 @@
+/* ═══════════════════════════════════════════
+   Onboarding — 2-Step Wizard
+   上车表单全屏布局 + 居中卡片
+   ═══════════════════════════════════════════ */
+
+.onboarding-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0a0f1c 0%, #1a1f3c 50%, #0d1224 100%);
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 背景装饰光晕 */
+.onboarding-container::before {
+  content: '';
+  position: absolute;
+  top: -200px;
+  right: -200px;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.onboarding-container::after {
+  content: '';
+  position: absolute;
+  bottom: -200px;
+  left: -200px;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.onboarding-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 48px 40px;
+  width: 100%;
+  max-width: 560px;
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+/* ── Header ── */
+
+.onboarding-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.onboarding-logo {
+  height: 40px;
+  width: auto;
+  margin-bottom: 24px;
+  opacity: 0.9;
+}
+
+.onboarding-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.5px;
+}
+
+.onboarding-subtitle {
+  font-size: 15px;
+  color: rgba(148, 163, 184, 0.9);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── Steps ── */
+
+.onboarding-steps {
+  margin-bottom: 32px;
+}
+
+.onboarding-steps .ant-steps-item-title {
+  color: rgba(148, 163, 184, 0.7) !important;
+  font-size: 13px;
+}
+
+.onboarding-steps .ant-steps-item-active .ant-steps-item-title,
+.onboarding-steps .ant-steps-item-finish .ant-steps-item-title {
+  color: #f1f5f9 !important;
+}
+
+.onboarding-steps .ant-steps-item-icon {
+  border-color: rgba(99, 102, 241, 0.4) !important;
+  background: transparent !important;
+}
+
+.onboarding-steps .ant-steps-item-active .ant-steps-item-icon {
+  background: #6366f1 !important;
+  border-color: #6366f1 !important;
+}
+
+.onboarding-steps .ant-steps-item-finish .ant-steps-item-icon {
+  background: rgba(16, 185, 129, 0.2) !important;
+  border-color: #10b981 !important;
+}
+
+.onboarding-steps .ant-steps-item-finish .ant-steps-item-icon .ant-steps-icon {
+  color: #10b981 !important;
+}
+
+.onboarding-steps .ant-steps-item-tail::after {
+  background-color: rgba(99, 102, 241, 0.2) !important;
+}
+
+.onboarding-steps .ant-steps-item-finish .ant-steps-item-tail::after {
+  background-color: #10b981 !important;
+}
+
+/* ── Form ── */
+
+.onboarding-form {
+  margin-bottom: 24px;
+}
+
+.onboarding-form .ant-form-item-label > label {
+  color: rgba(203, 213, 225, 0.9);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.onboarding-form .ant-input,
+.onboarding-form .ant-input-affix-wrapper,
+.onboarding-form .ant-select-selector {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 10px !important;
+  color: #f1f5f9 !important;
+  transition: all 0.2s ease;
+}
+
+.onboarding-form .ant-input:focus,
+.onboarding-form .ant-input-affix-wrapper:focus,
+.onboarding-form .ant-input-affix-wrapper-focused,
+.onboarding-form .ant-select-focused .ant-select-selector {
+  border-color: rgba(99, 102, 241, 0.6) !important;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15) !important;
+}
+
+.onboarding-form .ant-input::placeholder {
+  color: rgba(148, 163, 184, 0.5);
+}
+
+.onboarding-form .ant-input-prefix {
+  color: rgba(148, 163, 184, 0.5);
+  margin-right: 8px;
+}
+
+.onboarding-form .ant-input-disabled,
+.onboarding-form .ant-input-affix-wrapper-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.onboarding-form .ant-select-arrow {
+  color: rgba(148, 163, 184, 0.5);
+}
+
+.onboarding-form .ant-select-selection-placeholder {
+  color: rgba(148, 163, 184, 0.5) !important;
+}
+
+.onboarding-form .ant-select-selection-item {
+  color: #f1f5f9 !important;
+}
+
+/* row layout for two-col fields */
+.onboarding-form-row {
+  display: flex;
+  gap: 16px;
+}
+
+.onboarding-form-row .onboarding-form-item {
+  flex: 1;
+}
+
+/* ── Actions ── */
+
+.onboarding-actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.onboarding-btn-next {
+  flex: 1;
+  height: 48px;
+  border-radius: 12px !important;
+  font-size: 15px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+  border: none !important;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+  transition: all 0.2s ease;
+}
+
+.onboarding-btn-next:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+}
+
+.onboarding-btn-back {
+  height: 48px;
+  border-radius: 12px !important;
+  font-size: 15px;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: rgba(203, 213, 225, 0.9) !important;
+  transition: all 0.2s ease;
+  padding: 0 24px;
+}
+
+.onboarding-btn-back:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.onboarding-btn-submit {
+  flex: 1;
+  height: 48px;
+  border-radius: 12px !important;
+  font-size: 15px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #10b981, #059669) !important;
+  border: none !important;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+  transition: all 0.2s ease;
+}
+
+.onboarding-btn-submit:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+/* ── Footer ── */
+
+.onboarding-footer-hint {
+  text-align: center;
+  font-size: 13px;
+  color: rgba(148, 163, 184, 0.5);
+  margin: 0;
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 640px) {
+  .onboarding-card {
+    padding: 32px 24px;
+    border-radius: 16px;
+  }
+
+  .onboarding-title {
+    font-size: 24px;
+  }
+
+  .onboarding-form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+}
