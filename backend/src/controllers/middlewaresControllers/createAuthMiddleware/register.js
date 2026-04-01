@@ -120,6 +120,7 @@ const register = async (req, res, { userModel }) => {
         name: newUser.name,
         role: newUser.role,
         email: newUser.email,
+        onboarded: newUser.onboarded,
       },
       message: 'Successfully registered.',
     });

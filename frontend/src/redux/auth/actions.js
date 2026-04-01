@@ -39,8 +39,18 @@ export const register =
     const data = await authService.register({ registerData });
 
     if (data.success === true) {
+      // 自动登录：后端 register 已 set cookie，直接进入 authenticated 状态
+      const auth_state = {
+        current: data.result,
+        isLoggedIn: true,
+        isLoading: false,
+        isSuccess: true,
+      };
+      window.localStorage.setItem('auth', JSON.stringify(auth_state));
+      window.localStorage.removeItem('isLogout');
       dispatch({
-        type: actionTypes.REGISTER_SUCCESS,
+        type: actionTypes.REQUEST_SUCCESS,
+        payload: data.result,
       });
     } else {
       dispatch({
