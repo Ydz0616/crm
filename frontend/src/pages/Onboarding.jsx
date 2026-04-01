@@ -8,15 +8,14 @@ import {
   BankOutlined,
   GlobalOutlined,
   EnvironmentOutlined,
-  RocketOutlined,
 } from '@ant-design/icons';
 
 import { selectAuth } from '@/redux/auth/selectors';
 import { request } from '@/request';
+import AuthModule from '@/modules/AuthModule';
+import Loading from '@/components/Loading';
 
-import logo from '@/style/images/logo.png';
-
-// 国家列表（外贸常用 top countries + 完整列表可后续扩展）
+// 国家列表
 const COUNTRY_OPTIONS = [
   { value: 'CN', label: '🇨🇳 China' },
   { value: 'US', label: '🇺🇸 United States' },
@@ -75,9 +74,8 @@ export default function Onboarding() {
 
   const handleNext = async () => {
     try {
-      // 只校验当前 step 的字段
       if (currentStep === 0) {
-        await form.validateFields(['firstName', 'lastName', 'phone', 'jobTitle']);
+        await form.validateFields(['phone', 'jobTitle']);
       }
       setCurrentStep(1);
     } catch (err) {
@@ -102,7 +100,6 @@ export default function Onboarding() {
       if (response.success) {
         message.success('Welcome to Ola! 🎉');
 
-        // 更新 localStorage auth state → onboarded: true
         const auth_state = {
           current: response.result,
           isLoggedIn: true,
@@ -110,13 +107,9 @@ export default function Onboarding() {
           isSuccess: true,
         };
         window.localStorage.setItem('auth', JSON.stringify(auth_state));
-
-        // 强制跳转到首页：Onboarding 在 Router 外部，无法用 useNavigate，
-        // 且需要清除浏览器 URL（可能停留在 /register）
         window.location.href = '/';
       } else {
         setLoading(false);
-        // errorHandler 已弹 notification
       }
     } catch (err) {
       setLoading(false);
@@ -124,100 +117,57 @@ export default function Onboarding() {
     }
   };
 
-  return (
-    <div className="onboarding-container">
-      <div className="onboarding-card">
-        {/* Header */}
-        <div className="onboarding-header">
-          <img src={logo} alt="Ola" className="onboarding-logo" />
-          <h1 className="onboarding-title">
-            {currentStep === 0 ? 'Welcome to Ola! 👋' : 'Almost there! 🏢'}
-          </h1>
-          <p className="onboarding-subtitle">
-            {currentStep === 0
-              ? "Let's set up your workspace in under a minute"
-              : 'Tell us about your company for your documents'}
-          </p>
-        </div>
-
-        {/* Steps indicator */}
+  const FormContainer = () => {
+    return (
+      <Loading isLoading={loading}>
         <Steps
           current={currentStep}
           items={steps}
-          className="onboarding-steps"
           size="small"
+          style={{ marginBottom: 30 }}
         />
 
-        {/* Form */}
         <Form
           form={form}
           layout="vertical"
-          className="onboarding-form"
-          initialValues={{
-            firstName: currentUser?.name || '',
-            lastName: currentUser?.surname || '',
-          }}
+          className="login-form" 
         >
           {/* Step 1: About You */}
           <div style={{ display: currentStep === 0 ? 'block' : 'none' }}>
-            <div className="onboarding-form-row">
-              <Form.Item
-                name="firstName"
-                label="First Name"
-                rules={[{ required: true, message: 'First name is required' }]}
-                className="onboarding-form-item"
-              >
-                <Input
-                  prefix={<UserOutlined />}
-                  placeholder="First name"
-                  size="large"
-                />
-              </Form.Item>
-
-              <Form.Item
-                name="lastName"
-                label="Last Name"
-                className="onboarding-form-item"
-              >
-                <Input
-                  prefix={<UserOutlined />}
-                  placeholder="Last name"
-                  size="large"
-                />
-              </Form.Item>
-            </div>
-
-            <Form.Item
-              label="Email"
-            >
+            <Form.Item label="Email">
               <Input
-                prefix={<MailOutlined />}
+                prefix={<MailOutlined className="site-form-item-icon" />}
                 value={currentUser?.email || ''}
                 disabled
                 size="large"
               />
             </Form.Item>
 
-            <Form.Item
-              name="phone"
-              label="Phone"
-            >
+            <Form.Item name="phone" label="Phone">
               <Input
-                prefix={<PhoneOutlined />}
+                prefix={<PhoneOutlined className="site-form-item-icon" />}
                 placeholder="+86 xxx xxxx xxxx"
                 size="large"
               />
             </Form.Item>
 
-            <Form.Item
-              name="jobTitle"
-              label="Job Title"
-            >
+            <Form.Item name="jobTitle" label="Job Title">
               <Input
-                prefix={<UserOutlined />}
+                prefix={<UserOutlined className="site-form-item-icon" />}
                 placeholder="e.g. Sales Manager"
                 size="large"
               />
+            </Form.Item>
+
+            <Form.Item>
+              <Button
+                type="primary"
+                className="login-form-button"
+                onClick={handleNext}
+                size="large"
+              >
+                Continue
+              </Button>
             </Form.Item>
           </div>
 
@@ -229,7 +179,7 @@ export default function Onboarding() {
               rules={[{ required: true, message: 'Company name is required' }]}
             >
               <Input
-                prefix={<BankOutlined />}
+                prefix={<BankOutlined className="site-form-item-icon" />}
                 placeholder="Your company's legal name"
                 size="large"
               />
@@ -246,91 +196,60 @@ export default function Onboarding() {
                 optionFilterProp="label"
                 options={COUNTRY_OPTIONS}
                 size="large"
-                suffixIcon={<GlobalOutlined />}
+                suffixIcon={<GlobalOutlined className="site-form-item-icon" />}
               />
             </Form.Item>
 
-            <Form.Item
-              name="companyAddress"
-              label="Company Address"
-            >
+            <Form.Item name="companyAddress" label="Company Address">
               <Input
-                prefix={<EnvironmentOutlined />}
+                prefix={<EnvironmentOutlined className="site-form-item-icon" />}
                 placeholder="Street address, city, postal code"
                 size="large"
               />
             </Form.Item>
 
-            <div className="onboarding-form-row">
-              <Form.Item
-                name="companyPhone"
-                label="Company Phone"
-                className="onboarding-form-item"
-              >
-                <Input
-                  prefix={<PhoneOutlined />}
-                  placeholder="Office phone"
-                  size="large"
-                />
-              </Form.Item>
+            <Form.Item
+              name="companyPhone"
+              label="Company Phone"
+            >
+              <Input
+                prefix={<PhoneOutlined className="site-form-item-icon" />}
+                placeholder="Office phone"
+                size="large"
+              />
+            </Form.Item>
 
-              <Form.Item
-                name="companyEmail"
-                label="Company Email"
-                className="onboarding-form-item"
-                rules={[
-                  { type: 'email', message: 'Please enter a valid email' },
-                ]}
-              >
-                <Input
-                  prefix={<MailOutlined />}
-                  placeholder="contact@company.com"
-                  size="large"
-                />
-              </Form.Item>
-            </div>
+            <Form.Item
+              name="companyEmail"
+              label="Company Email"
+              rules={[
+                { type: 'email', message: 'Please enter a valid email' },
+              ]}
+            >
+              <Input
+                prefix={<MailOutlined className="site-form-item-icon" />}
+                placeholder="contact@company.com"
+                size="large"
+              />
+            </Form.Item>
+
+            <Form.Item style={{ marginTop: 30 }}>
+              <div style={{ display: 'flex', gap: '16px' }}>
+                <Button onClick={handleBack} size="large" style={{ flex: 1 }}>
+                  Back
+                </Button>
+                <Button type="primary" onClick={handleSubmit} loading={loading} size="large" style={{ flex: 2 }}>
+                  Complete Workspace
+                </Button>
+              </div>
+            </Form.Item>
           </div>
         </Form>
+      </Loading>
+    );
+  };
 
-        {/* Actions */}
-        <div className="onboarding-actions">
-          {currentStep === 0 ? (
-            <Button
-              type="primary"
-              size="large"
-              onClick={handleNext}
-              className="onboarding-btn-next"
-            >
-              Next →
-            </Button>
-          ) : (
-            <>
-              <Button
-                size="large"
-                onClick={handleBack}
-                className="onboarding-btn-back"
-              >
-                ← Back
-              </Button>
-              <Button
-                type="primary"
-                size="large"
-                onClick={handleSubmit}
-                loading={loading}
-                icon={<RocketOutlined />}
-                className="onboarding-btn-submit"
-              >
-                Get Started
-              </Button>
-            </>
-          )}
-        </div>
+  const title = currentStep === 0 ? 'Welcome to Ola! 👋' : 'Almost there! 🏢';
 
-        {/* Footer hint */}
-        <p className="onboarding-footer-hint">
-          You can update these details anytime in Settings
-        </p>
-      </div>
-    </div>
-  );
+  return <AuthModule authContent={<FormContainer />} AUTH_TITLE={title} />;
 }

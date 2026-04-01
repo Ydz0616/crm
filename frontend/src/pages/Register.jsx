@@ -18,7 +18,7 @@ const RegisterPage = () => {
   const dispatch = useDispatch();
 
   const onFinish = (values) => {
-    // 剔除 confirmPassword, 因为后端 API 只需要 name, email, password
+    // 剔除 confirmPassword，后端 API 需要 name, surname, email, password
     const { confirmPassword, ...registerData } = values;
     dispatch(register({ registerData }));
   };

@@ -28,8 +28,6 @@ const onboarding = async (req, res) => {
   // 2. Joi 校验
   const schema = Joi.object({
     // Step 1: About You
-    firstName: Joi.string().min(1).max(50).required(),
-    lastName: Joi.string().allow('').max(50).optional(),
     phone: Joi.string().allow('').max(30).optional(),
     jobTitle: Joi.string().allow('').max(100).optional(),
 
@@ -51,8 +49,6 @@ const onboarding = async (req, res) => {
   }
 
   // 3. 更新 Admin 个人信息
-  admin.name = value.firstName;
-  admin.surname = value.lastName || '';
   admin.phone = value.phone || '';
   admin.jobTitle = value.jobTitle || '';
   admin.onboarded = true;
