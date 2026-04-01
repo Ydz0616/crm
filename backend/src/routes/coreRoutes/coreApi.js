@@ -149,6 +149,11 @@ router
     catchErrors(adminController.updateProfile)
   );
 
+//_______________________________ Admin Onboarding _______________________________
+
+const onboarding = require('@/controllers/coreControllers/adminController/onboarding');
+router.route('/admin/onboarding').post(catchErrors(onboarding));
+
 // //____________________________________________ API for Global Setting _________________
 
 router.route('/setting/create').post(catchErrors(settingController.create));
