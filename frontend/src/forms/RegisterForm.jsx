@@ -8,21 +8,36 @@ export default function RegisterForm() {
   const translate = useLanguage();
   return (
     <div>
-      <Form.Item
-        label={translate('Name')}
-        name="name"
-        rules={[
-          {
-            required: true,
-            message: 'Please input your name!',
-          },
-        ]}
-      >
-        <Input
-          prefix={<UserOutlined className="site-form-item-icon" />}
-          placeholder={translate('name')}
-          size="large"
-        />
+      <Form.Item style={{ marginBottom: 0 }}>
+        <Form.Item
+          label={translate('first_name')}
+          name="name"
+          rules={[
+            {
+              required: true,
+              message: 'Please input your first name!',
+            },
+          ]}
+          style={{ display: 'inline-block', width: 'calc(50% - 8px)' }}
+        >
+          <Input
+            prefix={<UserOutlined className="site-form-item-icon" />}
+            placeholder={translate('first_name')}
+            size="large"
+          />
+        </Form.Item>
+
+        <Form.Item
+          label={translate('last_name')}
+          name="surname"
+          style={{ display: 'inline-block', width: 'calc(50% - 8px)', margin: '0 0 0 16px' }}
+        >
+          <Input
+            prefix={<UserOutlined className="site-form-item-icon" />}
+            placeholder={translate('last_name')}
+            size="large"
+          />
+        </Form.Item>
       </Form.Item>
       
       <Form.Item

@@ -23,6 +23,8 @@ const adminSchema = new Schema({
     type: String,
     trim: true,
   },
+  phone: { type: String },     // 个人电话（上车时收集）
+  jobTitle: { type: String },  // 职位（上车时收集）
 
   role: {
     type: String,
@@ -30,15 +32,7 @@ const adminSchema = new Schema({
     enum: ['owner', 'admin', 'user'],
   },
 
-  // 公司信息（上车时收集）
-  company: {
-    name: { type: String },
-    country: { type: String },
-    phone: { type: String },
-    industry: { type: String },
-  },
-
-  // 上车状态
+  // 上车状态（注册时 false，完成上车表单后 true）
   onboarded: { type: Boolean, default: false },
 
   created: {

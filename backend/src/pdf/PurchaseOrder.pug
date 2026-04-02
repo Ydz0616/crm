@@ -338,10 +338,13 @@ html
         
         .info-row
           .info-column.company
-            p.strong 潍坊景程贸易有限公司
-            p 潍坊市奎文区东风东街360号泰华商务大厦1509号
-            p +86-536-8296032
-            p andy@plasmcut.com
+            p.strong #{settings.company_name || '请在设置中填写公司名称'}
+            if settings.company_address
+              p #{settings.company_address}
+            if settings.company_phone
+              p #{settings.company_phone}
+            if settings.company_email
+              p #{settings.company_email}
               
           .info-column.bill-to
             h3 供货方:

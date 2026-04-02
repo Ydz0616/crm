@@ -29,13 +29,6 @@ const authReducer = (state = INITIAL_STATE, action) => {
         isSuccess: true,
       };
 
-    case actionTypes.REGISTER_SUCCESS:
-      return {
-        current: null,
-        isLoggedIn: false,
-        isLoading: false,
-        isSuccess: true,
-      };
     case actionTypes.LOGOUT_SUCCESS:
       return INITIAL_STATE;
 

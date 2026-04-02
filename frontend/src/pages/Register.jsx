@@ -1,9 +1,8 @@
-import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 import useLanguage from '@/locale/useLanguage';
-import { Form, Button, Typography, notification } from 'antd';
+import { Form, Button, Typography } from 'antd';
 
 import { register } from '@/redux/auth/actions';
 import { selectAuth } from '@/redux/auth/selectors';
@@ -15,28 +14,17 @@ const { Text } = Typography;
 
 const RegisterPage = () => {
   const translate = useLanguage();
-  const { isLoading, isSuccess } = useSelector(selectAuth);
-  const navigate = useNavigate();
+  const { isLoading } = useSelector(selectAuth);
   const dispatch = useDispatch();
 
   const onFinish = (values) => {
-    // 剔除 confirmPassword, 因为后端 API 只需要 name, email, password
+    // 剔除 confirmPassword，后端 API 需要 name, surname, email, password
     const { confirmPassword, ...registerData } = values;
     dispatch(register({ registerData }));
   };
 
-  useEffect(() => {
-    if (isSuccess) {
-      // 当 register success 返回时
-      notification.success({
-        message: 'Registration Successful',
-        description: 'You can now log in with your new credentials.',
-      });
-      dispatch({ type: 'AUTH_RESET_STATE' });
-      // 成功后自动跳转到 Login 页面强制用户输入密码以获取包含身份令牌的 Context
-      navigate('/login');
-    }
-  }, [isSuccess]);
+  // 注册成功后 Redux 自动设为 isLoggedIn=true（auto-login），
+  // OlaOs 会检测 onboarded===false 并显示上车表单。无需手动 navigate。
 
   const FormContainer = () => {
     return (

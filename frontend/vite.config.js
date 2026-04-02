@@ -11,8 +11,8 @@ export default ({ mode }) => {
       ? process.env.VITE_BACKEND_SERVER
       : 'http://localhost:8888/';
 
-  // 使用环境变量PORT或默认值80
-  const port = parseInt(process.env.PORT || '80');
+  // 使用环境变量或者默认值3000避免Mac下的80端口冲突
+  const port = parseInt(process.env.VITE_PORT || process.env.PORT || '3000');
 
   const config = {
     plugins: [react()],

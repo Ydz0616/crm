@@ -10,18 +10,19 @@ const register = async (req, res, { userModel }) => {
   const UserModel = mongoose.model(userModel);
   const UserPasswordModel = mongoose.model(userModel + 'Password');
 
-  const { name, email, password } = req.body;
+  const { name, surname, email, password } = req.body;
 
   // 1. Joi 校验
   const objectSchema = Joi.object({
     name: Joi.string().min(2).max(50).required(),
+    surname: Joi.string().allow('').max(50).optional(),
     email: Joi.string()
       .email({ tlds: { allow: true } })
       .required(),
     password: Joi.string().min(6).required(),
   });
 
-  const { error, value } = objectSchema.validate({ name, email, password });
+  const { error, value } = objectSchema.validate({ name, surname, email, password });
   if (error) {
     return res.status(400).json({
       success: false,
@@ -44,6 +45,7 @@ const register = async (req, res, { userModel }) => {
   const newUser = await new UserModel({
     email: value.email,
     name: value.name,
+    surname: value.surname || '',
     role: 'user',
     enabled: true,
     onboarded: false,
@@ -118,8 +120,10 @@ const register = async (req, res, { userModel }) => {
       result: {
         _id: newUser._id,
         name: newUser.name,
+        surname: newUser.surname,
         role: newUser.role,
         email: newUser.email,
+        onboarded: newUser.onboarded,
       },
       message: 'Successfully registered.',
     });
