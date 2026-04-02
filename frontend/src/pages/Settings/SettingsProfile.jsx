@@ -4,6 +4,7 @@ import { Form, Input, Button, message } from 'antd';
 import { InfoCircleOutlined, UserOutlined, MailOutlined } from '@ant-design/icons';
 
 import { selectAuth } from '@/redux/auth/selectors';
+import * as actionTypes from '@/redux/auth/types';
 import { request } from '@/request';
 
 export default function SettingsProfile() {
@@ -47,9 +48,8 @@ export default function SettingsProfile() {
           window.localStorage.setItem('auth', JSON.stringify(storedAuth));
         }
 
-        // 发送 action 触发 redux sync (使用我们已有的 actionTypes.REQUEST_SUCCESS 或直接 reload)
-        // 简单暴力：让 UI 更新最稳妥的方式是 dispatch(update_success) 但如果没有，只需刷新页面或更新 redux state
-        dispatch({ type: 'REQUEST_SUCCESS', payload: storedAuth.current });
+        // 同步 Redux store
+        dispatch({ type: actionTypes.REQUEST_SUCCESS, payload: storedAuth.current });
       } else {
         message.error(msg || 'Failed to update profile');
       }

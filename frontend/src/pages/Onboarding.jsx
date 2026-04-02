@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Form, Input, Select, Button, Steps, message } from 'antd';
 import {
   UserOutlined,
@@ -11,61 +11,18 @@ import {
 } from '@ant-design/icons';
 
 import { selectAuth } from '@/redux/auth/selectors';
+import * as actionTypes from '@/redux/auth/types';
 import { request } from '@/request';
 import AuthModule from '@/modules/AuthModule';
 import Loading from '@/components/Loading';
-
-// 国家列表
-const COUNTRY_OPTIONS = [
-  { value: 'CN', label: '🇨🇳 China' },
-  { value: 'US', label: '🇺🇸 United States' },
-  { value: 'DE', label: '🇩🇪 Germany' },
-  { value: 'GB', label: '🇬🇧 United Kingdom' },
-  { value: 'JP', label: '🇯🇵 Japan' },
-  { value: 'KR', label: '🇰🇷 South Korea' },
-  { value: 'RU', label: '🇷🇺 Russia' },
-  { value: 'IN', label: '🇮🇳 India' },
-  { value: 'BR', label: '🇧🇷 Brazil' },
-  { value: 'AU', label: '🇦🇺 Australia' },
-  { value: 'CA', label: '🇨🇦 Canada' },
-  { value: 'FR', label: '🇫🇷 France' },
-  { value: 'IT', label: '🇮🇹 Italy' },
-  { value: 'ES', label: '🇪🇸 Spain' },
-  { value: 'NL', label: '🇳🇱 Netherlands' },
-  { value: 'TR', label: '🇹🇷 Turkey' },
-  { value: 'MX', label: '🇲🇽 Mexico' },
-  { value: 'TH', label: '🇹🇭 Thailand' },
-  { value: 'VN', label: '🇻🇳 Vietnam' },
-  { value: 'ID', label: '🇮🇩 Indonesia' },
-  { value: 'MY', label: '🇲🇾 Malaysia' },
-  { value: 'PH', label: '🇵🇭 Philippines' },
-  { value: 'SA', label: '🇸🇦 Saudi Arabia' },
-  { value: 'AE', label: '🇦🇪 UAE' },
-  { value: 'EG', label: '🇪🇬 Egypt' },
-  { value: 'ZA', label: '🇿🇦 South Africa' },
-  { value: 'NG', label: '🇳🇬 Nigeria' },
-  { value: 'PK', label: '🇵🇰 Pakistan' },
-  { value: 'BD', label: '🇧🇩 Bangladesh' },
-  { value: 'AR', label: '🇦🇷 Argentina' },
-  { value: 'CL', label: '🇨🇱 Chile' },
-  { value: 'CO', label: '🇨🇴 Colombia' },
-  { value: 'PE', label: '🇵🇪 Peru' },
-  { value: 'PL', label: '🇵🇱 Poland' },
-  { value: 'SE', label: '🇸🇪 Sweden' },
-  { value: 'NO', label: '🇳🇴 Norway' },
-  { value: 'DK', label: '🇩🇰 Denmark' },
-  { value: 'FI', label: '🇫🇮 Finland' },
-  { value: 'NZ', label: '🇳🇿 New Zealand' },
-  { value: 'SG', label: '🇸🇬 Singapore' },
-  { value: 'HK', label: '🇭🇰 Hong Kong' },
-  { value: 'TW', label: '🇹🇼 Taiwan' }
-].sort((a, b) => a.label.localeCompare(b.label));
+import { COUNTRY_OPTIONS } from '@/utils/countryOptions';
 
 export default function Onboarding() {
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
   const { current: currentUser } = useSelector(selectAuth);
+  const dispatch = useDispatch();
 
   const steps = [
     { title: 'About You', icon: <UserOutlined /> },
@@ -100,6 +57,7 @@ export default function Onboarding() {
       if (response.success) {
         message.success('Welcome to Ola! 🎉');
 
+        // 更新 localStorage
         const auth_state = {
           current: response.result,
           isLoggedIn: true,
@@ -107,7 +65,9 @@ export default function Onboarding() {
           isSuccess: true,
         };
         window.localStorage.setItem('auth', JSON.stringify(auth_state));
-        window.location.href = '/';
+
+        // 更新 Redux store — OlaOs 三层路由会自动切换到 DefaultApp
+        dispatch({ type: actionTypes.REQUEST_SUCCESS, payload: response.result });
       } else {
         setLoading(false);
       }

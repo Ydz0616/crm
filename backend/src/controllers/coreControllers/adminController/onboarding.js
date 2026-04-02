@@ -70,7 +70,11 @@ const onboarding = async (req, res) => {
     },
   }));
 
-  await Setting.bulkWrite(bulkOps);
+  const bulkResult = await Setting.bulkWrite(bulkOps);
+  if (bulkResult.modifiedCount < settingsToUpdate.length) {
+    const missing = settingsToUpdate.length - bulkResult.modifiedCount;
+    console.warn(`⚠️ Onboarding: ${missing}/${settingsToUpdate.length} settings were not updated (possible missing keys for user ${adminId})`);
+  }
 
   // 5. 返回更新后的用户信息
   console.log(`🚀 用户上车完成: ${admin.email} — 公司: ${value.companyName}`);

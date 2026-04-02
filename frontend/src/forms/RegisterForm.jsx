@@ -30,12 +30,6 @@ export default function RegisterForm() {
         <Form.Item
           label={translate('last_name')}
           name="surname"
-          rules={[
-            {
-              required: true,
-              message: 'Please input your last name!',
-            },
-          ]}
           style={{ display: 'inline-block', width: 'calc(50% - 8px)', margin: '0 0 0 16px' }}
         >
           <Input

@@ -3,51 +3,7 @@ import { Form, Input, Button, Select, message } from 'antd';
 import { GlobalOutlined } from '@ant-design/icons';
 import { request } from '@/request';
 import Loading from '@/components/Loading';
-
-const COUNTRY_OPTIONS = [
-  { value: 'CN', label: '🇨🇳 China' },
-  { value: 'US', label: '🇺🇸 United States' },
-  { value: 'DE', label: '🇩🇪 Germany' },
-  { value: 'GB', label: '🇬🇧 United Kingdom' },
-  { value: 'JP', label: '🇯🇵 Japan' },
-  { value: 'KR', label: '🇰🇷 South Korea' },
-  { value: 'RU', label: '🇷🇺 Russia' },
-  { value: 'IN', label: '🇮🇳 India' },
-  { value: 'BR', label: '🇧🇷 Brazil' },
-  { value: 'AU', label: '🇦🇺 Australia' },
-  { value: 'CA', label: '🇨🇦 Canada' },
-  { value: 'FR', label: '🇫🇷 France' },
-  { value: 'IT', label: '🇮🇹 Italy' },
-  { value: 'ES', label: '🇪🇸 Spain' },
-  { value: 'NL', label: '🇳🇱 Netherlands' },
-  { value: 'TR', label: '🇹🇷 Turkey' },
-  { value: 'MX', label: '🇲🇽 Mexico' },
-  { value: 'TH', label: '🇹🇭 Thailand' },
-  { value: 'VN', label: '🇻🇳 Vietnam' },
-  { value: 'ID', label: '🇮🇩 Indonesia' },
-  { value: 'MY', label: '🇲🇾 Malaysia' },
-  { value: 'PH', label: '🇵🇭 Philippines' },
-  { value: 'SA', label: '🇸🇦 Saudi Arabia' },
-  { value: 'AE', label: '🇦🇪 UAE' },
-  { value: 'EG', label: '🇪🇬 Egypt' },
-  { value: 'ZA', label: '🇿🇦 South Africa' },
-  { value: 'NG', label: '🇳🇬 Nigeria' },
-  { value: 'PK', label: '🇵🇰 Pakistan' },
-  { value: 'BD', label: '🇧🇩 Bangladesh' },
-  { value: 'AR', label: '🇦🇷 Argentina' },
-  { value: 'CL', label: '🇨🇱 Chile' },
-  { value: 'CO', label: '🇨🇴 Colombia' },
-  { value: 'PE', label: '🇵🇪 Peru' },
-  { value: 'PL', label: '🇵🇱 Poland' },
-  { value: 'SE', label: '🇸🇪 Sweden' },
-  { value: 'NO', label: '🇳🇴 Norway' },
-  { value: 'DK', label: '🇩🇰 Denmark' },
-  { value: 'FI', label: '🇫🇮 Finland' },
-  { value: 'NZ', label: '🇳🇿 New Zealand' },
-  { value: 'SG', label: '🇸🇬 Singapore' },
-  { value: 'HK', label: '🇭🇰 Hong Kong' },
-  { value: 'TW', label: '🇹🇼 Taiwan' }
-].sort((a, b) => a.label.localeCompare(b.label));
+import { COUNTRY_OPTIONS } from '@/utils/countryOptions';
 
 export default function SettingsGeneral() {
   const [form] = Form.useForm();
