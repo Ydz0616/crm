@@ -26,6 +26,8 @@ import {
   SettingOutlined,
   UserOutlined,
   CheckSquareOutlined,
+  HistoryOutlined,
+  EllipsisOutlined,
 } from '@ant-design/icons';
 
 const PAGE_MAP = {
@@ -89,14 +91,32 @@ export default function HeaderContent() {
       </div>
 
       <div className="header-right-actions">
-        <button className="header-action-btn">
-          <QuestionCircleOutlined />
-          <span>Help</span>
-        </button>
-        <button className="header-action-btn header-action-btn--ola">
-          <SmileOutlined />
-          <span>Ask Ola</span>
-        </button>
+        {location.pathname === '/askola' ? (
+          <>
+            <button className="header-action-btn">
+              <QuestionCircleOutlined />
+              <span>Help</span>
+            </button>
+            <button className="header-action-btn header-action-btn--ola">
+              <HistoryOutlined />
+              <span>History</span>
+            </button>
+            <button className="header-action-btn" style={{ padding: '0 8px', minWidth: 'auto', border: 'none', background: 'transparent', boxShadow: 'none' }}>
+              <EllipsisOutlined rotate={90} style={{ fontSize: '18px', color: '#8c8c8c' }} />
+            </button>
+          </>
+        ) : (
+          <>
+            <button className="header-action-btn">
+              <QuestionCircleOutlined />
+              <span>Help</span>
+            </button>
+            <button className="header-action-btn header-action-btn--ola">
+              <SmileOutlined />
+              <span>Ask Ola</span>
+            </button>
+          </>
+        )}
       </div>
     </Header>
   );
