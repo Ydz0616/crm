@@ -45,7 +45,15 @@ export default function AskOla() {
   }, [plusMenuOpen]);
 
   return (
-    <div className="askola-chat-page">
+    <div
+      style={{
+        margin: '40px auto 30px',
+        padding: '0 40px',
+        maxWidth: 1200,
+        width: '100%',
+      }}
+    >
+      <div className="askola-chat-page">
       {/* Center greeting */}
       <div className="askola-chat-center">
         <h1 className="askola-chat-greeting">What's on the agenda today?</h1>
@@ -93,6 +101,7 @@ export default function AskOla() {
           </button>
         </div>
       </div>
+    </div>
     </div>
   );
 }
