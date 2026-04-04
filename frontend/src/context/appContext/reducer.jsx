@@ -3,6 +3,7 @@ import * as actionTypes from './types';
 export const initialState = {
   isNavMenuClose: false,
   currentApp: 'default',
+  isOlaPanelOpen: false,
 };
 
 export function contextReducer(state, action) {
@@ -31,6 +32,16 @@ export function contextReducer(state, action) {
       return {
         ...state,
         currentApp: 'default',
+      };
+    case actionTypes.OPEN_OLA_PANEL:
+      return {
+        ...state,
+        isOlaPanelOpen: true,
+      };
+    case actionTypes.CLOSE_OLA_PANEL:
+      return {
+        ...state,
+        isOlaPanelOpen: false,
       };
 
     default: {

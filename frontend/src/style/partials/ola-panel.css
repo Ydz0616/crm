@@ -1,0 +1,178 @@
+/* ===== Ola Side Chat Panel ===== */
+
+.ola-panel {
+  display: flex;
+  flex-direction: column;
+  width: 420px;
+  min-width: 420px;
+  height: 100%;
+  background: #ffffff;
+  border-left: 1px solid #f0f0f0;
+  flex-shrink: 0;
+}
+
+/* Panel Header */
+.ola-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  min-height: 56px;
+  padding: 0 20px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.ola-panel-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: #1a1a1a;
+}
+
+.ola-panel-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: none;
+  background: none;
+  font-size: 14px;
+  color: #8c8c8c;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.ola-panel-close:hover {
+  background: #f5f5f5;
+  color: #555;
+}
+
+/* Header actions group */
+.ola-panel-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ola-panel-header-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: none;
+  background: none;
+  font-size: 16px;
+  color: #8c8c8c;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.ola-panel-header-btn:hover {
+  background: #f5f5f5;
+  color: #555;
+}
+
+/* Chat Body */
+.ola-panel-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+/* Input Wrapper */
+.ola-panel-input-wrapper {
+  padding: 12px 16px 16px;
+}
+
+.ola-panel-input-bar {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 14px 10px;
+  border: 1px solid #e0e0e0;
+  border-radius: 16px;
+  background: #fafafa;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.ola-panel-input-bar:focus-within {
+  border-color: #c0c0c0;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.04);
+  background: #ffffff;
+}
+
+/* TextArea */
+.ola-panel-input {
+  width: 100%;
+  border: none !important;
+  box-shadow: none !important;
+  font-size: 14px;
+  color: #1a1a1a;
+  background: transparent !important;
+  padding: 0 !important;
+  resize: none;
+  min-height: 22px;
+}
+
+.ola-panel-input::-webkit-scrollbar {
+  width: 4px;
+}
+
+.ola-panel-input::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ola-panel-input::-webkit-scrollbar-thumb {
+  background: #e0e0e0;
+  border-radius: 10px;
+}
+
+.ola-panel-input::placeholder {
+  color: #bbb;
+}
+
+/* Input Footer */
+.ola-panel-input-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+/* Send Button */
+.ola-panel-send-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: #1a1a1a;
+  color: #ffffff;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.ola-panel-send-btn:hover {
+  background: #333;
+}
+
+/* Slide animation */
+.ola-panel {
+  animation: ola-panel-slide-in 0.25s ease-out;
+}
+
+@keyframes ola-panel-slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}

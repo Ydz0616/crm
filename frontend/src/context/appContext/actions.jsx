@@ -21,6 +21,14 @@ const contextActions = (dispatch) => {
         dispatch({ type: actionTypes.DEFAULT_APP });
       },
     },
+    olaPanel: {
+      open: () => {
+        dispatch({ type: actionTypes.OPEN_OLA_PANEL });
+      },
+      close: () => {
+        dispatch({ type: actionTypes.CLOSE_OLA_PANEL });
+      },
+    },
   };
 };
 

@@ -18,6 +18,8 @@ import { selectSettings } from '@/redux/settings/selectors';
 
 import AppRouter from '@/router/AppRouter';
 
+import OlaChatPanel from '@/apps/OlaChatPanel/OlaChatPanel';
+
 import useResponsive from '@/hooks/useResponsive';
 
 import storePersist from '@/redux/storePersist';
@@ -27,7 +29,7 @@ export default function ErpCrmApp() {
 
   const { state: stateApp, appContextAction } = useAppContext();
   const { app } = appContextAction;
-  const { isNavMenuClose, currentApp } = stateApp;
+  const { isNavMenuClose, currentApp, isOlaPanelOpen } = stateApp;
 
   const { isMobile } = useResponsive();
 
@@ -71,25 +73,24 @@ export default function ErpCrmApp() {
             </Content>
           </Layout>
         ) : (
-          <Layout
-            style={{
-              marginLeft: isNavMenuClose ? 60 : 220,
-              transition: 'margin-left 0.2s',
-            }}
-          >
-            <HeaderContent />
-            <Content
-              style={{
-                margin: '0 auto',
-                overflow: 'initial',
-                width: '100%',
-                padding: '0 10px',
-                maxWidth: 'none',
-              }}
-            >
-              <AppRouter />
-            </Content>
-          </Layout>
+          <div style={{ display: 'flex', flex: 1, overflow: 'hidden', height: '100vh', marginLeft: isNavMenuClose ? 60 : 220, transition: 'margin-left 0.2s' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0, overflow: 'hidden' }}>
+              <HeaderContent />
+              <Content
+                style={{
+                  margin: '0 auto',
+                  overflow: 'auto',
+                  width: '100%',
+                  padding: '0 10px',
+                  maxWidth: 'none',
+                  flex: 1,
+                }}
+              >
+                <AppRouter />
+              </Content>
+            </div>
+            {isOlaPanelOpen && <OlaChatPanel />}
+          </div>
         )}
       </Layout>
     );

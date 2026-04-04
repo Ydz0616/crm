@@ -1,29 +1,22 @@
 import { useState, useRef, useEffect } from 'react';
+import { Input } from 'antd';
 import {
   PlusOutlined,
   AudioOutlined,
-  SoundOutlined,
+  ArrowUpOutlined,
   PaperClipOutlined,
-  PictureOutlined,
-  BulbOutlined,
-  ExperimentOutlined,
-  ShoppingCartOutlined,
-  EllipsisOutlined,
-  RightOutlined,
+  ApiOutlined,
+  CloseOutlined,
 } from '@ant-design/icons';
 
 const PLUS_MENU_ITEMS = [
   { icon: <PaperClipOutlined />, label: 'Upload photos & files' },
-  { icon: <PictureOutlined />, label: 'Create image' },
-  { icon: <BulbOutlined />, label: 'Thinking' },
-  { icon: <ExperimentOutlined />, label: 'Deep research' },
-  { icon: <ShoppingCartOutlined />, label: 'Shopping research' },
-  { icon: <EllipsisOutlined />, label: 'More', hasArrow: true },
 ];
 
 export default function AskOla() {
   const [inputValue, setInputValue] = useState('');
   const [plusMenuOpen, setPlusMenuOpen] = useState(false);
+  const [showBanner, setShowBanner] = useState(true);
   const menuRef = useRef(null);
   const btnRef = useRef(null);
 
@@ -56,49 +49,62 @@ export default function AskOla() {
       <div className="askola-chat-page">
       {/* Center greeting */}
       <div className="askola-chat-center">
-        <h1 className="askola-chat-greeting">What's on the agenda today?</h1>
+        <h1 className="askola-chat-greeting">What can I do for you?</h1>
       </div>
 
       {/* Input bar */}
       <div className="askola-chat-input-wrapper">
         <div className="askola-chat-input-bar">
-          <div className="askola-plus-container">
-            <button
-              ref={btnRef}
-              className="askola-chat-plus-btn"
-              onClick={() => setPlusMenuOpen(!plusMenuOpen)}
-            >
-              <PlusOutlined />
-            </button>
-
-            {plusMenuOpen && (
-              <div ref={menuRef} className="askola-plus-menu">
-                {PLUS_MENU_ITEMS.map((item, i) => (
-                  <button key={i} className="askola-plus-menu-item">
-                    <span className="askola-plus-menu-icon">{item.icon}</span>
-                    <span className="askola-plus-menu-label">{item.label}</span>
-                    {item.hasArrow && (
-                      <RightOutlined className="askola-plus-menu-arrow" />
-                    )}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <input
+          <Input.TextArea
             className="askola-chat-input"
-            type="text"
             placeholder="Ask anything"
+            autoSize={{ minRows: 1, maxRows: 10 }}
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
           />
-          <button className="askola-chat-mic-btn">
-            <AudioOutlined />
-          </button>
-          <button className="askola-chat-send-btn">
-            <SoundOutlined />
-          </button>
+          <div className="askola-chat-input-footer">
+            <div className="askola-plus-container">
+              <button
+                ref={btnRef}
+                className="askola-chat-plus-btn"
+                onClick={() => setPlusMenuOpen(!plusMenuOpen)}
+              >
+                <PlusOutlined />
+              </button>
+
+              {plusMenuOpen && (
+                <div ref={menuRef} className="askola-plus-menu">
+                  {PLUS_MENU_ITEMS.map((item, i) => (
+                    <button key={i} className="askola-plus-menu-item">
+                      <span className="askola-plus-menu-icon">{item.icon}</span>
+                      <span className="askola-plus-menu-label">{item.label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="askola-chat-footer-right">
+              <button className="askola-chat-mic-btn">
+                <AudioOutlined />
+              </button>
+              <button className="askola-chat-send-btn">
+                <ArrowUpOutlined />
+              </button>
+            </div>
+          </div>
+
+          {showBanner && (
+            <div className="askola-chat-banner">
+              <div className="askola-banner-left">
+                <ApiOutlined />
+                <span>Connect your tools to Ola</span>
+              </div>
+              <button className="askola-banner-close" onClick={() => setShowBanner(false)}>
+                <CloseOutlined />
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
