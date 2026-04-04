@@ -60,10 +60,10 @@ export default function ErpCrmApp() {
             <HeaderContent />
             <Content
               style={{
-                margin: '40px auto 30px',
+                margin: '0 auto',
                 overflow: 'initial',
                 width: '100%',
-                padding: '0 25px',
+                padding: '0 10px',
                 maxWidth: 'none',
               }}
             >
@@ -80,11 +80,11 @@ export default function ErpCrmApp() {
             <HeaderContent />
             <Content
               style={{
-                margin: '40px auto 30px',
+                margin: '0 auto',
                 overflow: 'initial',
                 width: '100%',
-                padding: '0 40px',
-                maxWidth: 1200,
+                padding: '0 10px',
+                maxWidth: 'none',
               }}
             >
               <AppRouter />
