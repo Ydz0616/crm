@@ -388,3 +388,50 @@
     display: block;
   }
 }
+
+/* Navigation Settings Button */
+.navigation-settings-container {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
+  margin-left: 12px;
+  margin-right: 12px;
+  margin-bottom: 16px;
+}
+
+.navigation-settings-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: #111;
+  font-size: 13px;
+  font-weight: 500;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.navigation-settings-btn:hover {
+  border-color: #d9d9d9;
+  background: #fdfdfd;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.navigation-settings-btn .anticon {
+  font-size: 14px;
+}
+
+/* Collapsed sidebar structural adjustments */
+.ant-layout-sider-collapsed .navigation-settings-container {
+  margin-left: 8px;
+  margin-right: 8px;
+}
+
+.ant-layout-sider-collapsed .navigation-settings-btn {
+  padding: 6px 0;
+}
