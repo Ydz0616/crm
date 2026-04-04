@@ -17,6 +17,7 @@ import {
   SmileOutlined,
   LeftOutlined,
   SearchOutlined,
+  LogoutOutlined,
 } from '@ant-design/icons';
 import { Input } from 'antd';
 
@@ -181,6 +182,13 @@ export default function Settings() {
               ))}
             </div>
           ))}
+
+          <div className="settings-sidebar-logout-container">
+            <button className="settings-sidebar-logout-btn" onClick={() => navigate('/logout')}>
+              <LogoutOutlined />
+              <span>Log Out</span>
+            </button>
+          </div>
         </div>
 
         {/* Content area */}
