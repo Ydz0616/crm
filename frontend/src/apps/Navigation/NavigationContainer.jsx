@@ -171,11 +171,6 @@ function Sidebar({ collapsible, isMobile = false }) {
       label: translate('Finance'),
       children: [
         {
-          key: 'invoice',
-          icon: <ContainerOutlined />,
-          label: <Link to={'/invoice'}>{translate('invoices')}</Link>,
-        },
-        {
           key: 'quote',
           icon: <FileSyncOutlined />,
           label: <Link to={'/quote'}>{translate('quote')}</Link>,
@@ -184,6 +179,11 @@ function Sidebar({ collapsible, isMobile = false }) {
           key: 'purchaseorder',
           icon: <FileOutlined />,
           label: <Link to={'/purchaseorder'}>{translate('purchase_order')}</Link>,
+        },
+        {
+          key: 'invoice',
+          icon: <ContainerOutlined />,
+          label: <Link to={'/invoice'}>{translate('invoices')}</Link>,
         },
         {
           key: 'payment',
