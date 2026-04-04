@@ -1,16 +1,34 @@
 /* ===== Ask Ola Chat Page ===== */
 
-.askola-chat-page {
+.askola-chat-page--active {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 56px);
+  width: 100%;
+  overflow: hidden;
+}
+
+.askola-chat-page--empty {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  min-height: calc(100vh - 160px);
-  position: relative;
-  padding: 12vh 24px 200px;
+  justify-content: center;
+  height: calc(100vh - 160px);
   width: 100%;
-  box-sizing: border-box;
-  overflow: hidden;
+}
+
+.askola-chat-welcome {
+  width: 100%;
+  max-width: 680px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  animation: askola-fade-in 0.5s ease-out;
+}
+
+@keyframes askola-fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* Center greeting */
@@ -18,7 +36,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 32px;
 }
 
 .askola-chat-greeting {
@@ -30,13 +47,274 @@
   letter-spacing: -0.5px;
 }
 
-/* Input bar */
-.askola-chat-input-wrapper {
-  width: 100%;
-  max-width: 680px;
-  margin: 0 auto;
+/* ===== Message Scroll Area ===== */
+.askola-chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 0;
 }
 
+.askola-chat-messages::-webkit-scrollbar {
+  width: 4px;
+}
+
+.askola-chat-messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.askola-chat-messages::-webkit-scrollbar-thumb {
+  background: #e0e0e0;
+  border-radius: 10px;
+}
+
+.askola-chat-messages-inner {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ===== Message Bubble ===== */
+.askola-message {
+  margin-bottom: 20px;
+}
+
+.askola-message--user {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.askola-message--user .askola-message-blocks {
+  background: #f0f0f0;
+  border-radius: 18px 18px 4px 18px;
+  padding: 12px 16px;
+  max-width: 75%;
+}
+
+.askola-message--assistant {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.askola-message--assistant .askola-message-blocks {
+  max-width: 100%;
+}
+
+/* ===== Text Block ===== */
+.askola-block-text {
+  font-size: 14px;
+  line-height: 1.7;
+  color: #1a1a1a;
+}
+
+.askola-block-text p {
+  margin: 0 0 8px;
+}
+
+.askola-block-text p:last-child {
+  margin-bottom: 0;
+}
+
+.askola-block-text ul,
+.askola-block-text ol {
+  margin: 4px 0 8px;
+  padding-left: 20px;
+}
+
+.askola-block-text li {
+  margin-bottom: 4px;
+}
+
+.askola-block-text strong {
+  font-weight: 600;
+}
+
+.askola-block-text code {
+  background: #f5f5f5;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #d4380d;
+}
+
+/* ===== File Block ===== */
+.askola-block-file {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #fafafa;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  text-decoration: none;
+  color: #1a1a1a;
+  transition: background 0.15s;
+  margin: 6px 0;
+}
+
+.askola-block-file:hover {
+  background: #f0f0f0;
+  color: #1a1a1a;
+}
+
+.askola-file-icon {
+  font-size: 22px;
+  color: #d4380d;
+}
+
+.askola-file-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.askola-file-name {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.askola-file-size {
+  font-size: 11px;
+  color: #8c8c8c;
+}
+
+/* ===== Thinking Block ===== */
+.askola-block-thinking {
+  margin: 8px 0;
+  padding: 10px 14px;
+  background: #fafafa;
+  border: 1px solid #f0f0f0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.askola-block-thinking:hover {
+  background: #f5f5f5;
+}
+
+.askola-thinking-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #8c8c8c;
+}
+
+.askola-thinking-label {
+  flex: 1;
+}
+
+.askola-thinking-toggle {
+  font-size: 10px;
+  color: #bfbfbf;
+}
+
+.askola-thinking-content {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  background: #f5f5f5;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #595959;
+  white-space: pre-wrap;
+  font-family: 'SF Mono', Menlo, Monaco, monospace;
+}
+
+/* ===== Action Block ===== */
+.askola-block-action {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+/* ===== Widget Block ===== */
+.askola-block-widget {
+  margin: 10px 0;
+}
+
+/* Widget Card */
+.askola-widget-card {
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  padding: 16px;
+  background: #ffffff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.askola-widget-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 12px;
+}
+
+.askola-widget-meta {
+  display: flex;
+  gap: 24px;
+  font-size: 13px;
+  color: #595959;
+  margin-bottom: 12px;
+}
+
+.askola-widget-total {
+  text-align: right;
+  font-size: 14px;
+  color: #1a1a1a;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #f0f0f0;
+}
+
+/* Unmatched section */
+.askola-widget-unmatched {
+  padding-top: 10px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.askola-widget-unmatched-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #595959;
+  margin-bottom: 6px;
+}
+
+.askola-widget-unmatched-list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  color: #8c8c8c;
+}
+
+/* ===== Unknown Block Fallback ===== */
+.askola-block-unknown {
+  padding: 10px 14px;
+  background: #fafafa;
+  border: 1px dashed #d9d9d9;
+  border-radius: 8px;
+  color: #8c8c8c;
+  font-size: 13px;
+  margin: 6px 0;
+}
+
+/* ===== Sticky Input Wrapper ===== */
+.askola-chat-input-wrapper {
+  padding: 12px 24px 20px;
+  max-width: 800px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* Input bar */
 .askola-chat-input-bar {
   display: flex;
   flex-direction: column;
@@ -164,51 +442,6 @@
   background: #333;
 }
 
-/* Connect tools banner */
-.askola-chat-banner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin: 10px -14px -10px; /* Bleeds into container padding */
-  padding: 10px 16px;
-  background: #f8f8f8;
-  border-top: 1px solid #f0f0f0;
-  border-bottom-left-radius: 20px;
-  border-bottom-right-radius: 20px;
-}
-
-.askola-banner-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 13px;
-  color: #666;
-}
-
-.askola-banner-left .anticon {
-  font-size: 16px;
-  color: #888;
-}
-
-.askola-banner-close {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  color: #999;
-  font-size: 14px;
-  cursor: pointer;
-  padding: 4px;
-  border-radius: 4px;
-  transition: all 0.2s;
-}
-
-.askola-banner-close:hover {
-  color: #666;
-  background: rgba(0, 0, 0, 0.05);
-}
-
 /* Plus button container */
 .askola-plus-container {
   position: relative;
@@ -267,7 +500,13 @@
   flex: 1;
 }
 
-.askola-plus-menu-arrow {
-  font-size: 11px;
-  color: #999;
+/* ===== AntD Table overrides inside widget cards ===== */
+.askola-widget-card .ant-table {
+  font-size: 13px;
+}
+
+.askola-widget-card .ant-table-thead > tr > th {
+  background: #fafafa;
+  font-weight: 600;
+  font-size: 12px;
 }
