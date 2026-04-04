@@ -10,7 +10,7 @@ import {
   // RobotOutlined,
   // ThunderboltOutlined,
   // ApartmentOutlined,
-  // MessageOutlined,
+  MessageOutlined,
   WalletOutlined,
   // DollarOutlined,
   // SearchOutlined,
@@ -35,7 +35,7 @@ const PAGE_MAP = {
   '/askola': { icon: <SmileOutlined />, label: 'Ask Ola' },
   // === MVP-HIDDEN: 以下页面已从导航中隐藏 ===
   // '/notifications': { icon: <BellOutlined />, label: 'Notifications' },
-  // '/messages': { icon: <MessageOutlined />, label: 'Messages' },
+  '/messages': { icon: <MessageOutlined />, label: 'Messages' },
   // '/file': { icon: <FileOutlined />, label: 'File' },
   // '/agents': { icon: <RobotOutlined />, label: 'Agents' },
   // '/sequences': { icon: <ThunderboltOutlined />, label: 'Sequences' },

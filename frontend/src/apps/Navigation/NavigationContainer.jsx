@@ -29,7 +29,7 @@ import {
   // FilterOutlined,
   // ReconciliationOutlined,
   // BellOutlined,
-  // MessageOutlined,
+  MessageOutlined,
   // RobotOutlined,
   // ThunderboltOutlined,
   // ApartmentOutlined,
@@ -97,6 +97,11 @@ function Sidebar({ collapsible, isMobile = false }) {
           key: 'askola',
           icon: <SmileOutlined />,
           label: <Link to={'/askola'}>Ask Ola</Link>,
+        },
+        {
+          key: 'messages',
+          icon: <MessageOutlined />,
+          label: <Link to={'/messages'}>Messages</Link>,
         },
         // === MVP-HIDDEN: 空壳页面，尚未实现 ===
         // {

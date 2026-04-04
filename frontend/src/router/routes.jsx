@@ -15,7 +15,7 @@ const AskOla = lazy(() => import('@/pages/AskOla'));
 // const Sequences = lazy(() => import('@/pages/Sequences'));
 // const Workflows = lazy(() => import('@/pages/Workflows'));
 // const File = lazy(() => import('@/pages/File'));
-// const Messages = lazy(() => import('@/pages/Messages'));
+const Messages = lazy(() => import('@/pages/Messages'));
 // === END MVP-HIDDEN ===
 const Customer = lazy(() => import('@/pages/Customer'));
 const Factory = lazy(() => import('@/pages/Factory'));  
@@ -103,10 +103,10 @@ let routes = {
     //   path: '/file',
     //   element: <File />,
     // },
-    // {
-    //   path: '/messages',
-    //   element: <Messages />,
-    // },
+    {
+      path: '/messages',
+      element: <Messages />,
+    },
     // === END MVP-HIDDEN ===
     {
       path: '/customer',
