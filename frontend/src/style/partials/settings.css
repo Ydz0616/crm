@@ -79,29 +79,9 @@
   background: #d9d9d9;
 }
 
-/* Search input in sidebar */
-.settings-sidebar-search {
-  margin-bottom: 16px;
-}
-
-.settings-sidebar-search .ant-input-affix-wrapper {
-  border-radius: 8px;
-  border: 1px solid #e8e8e8;
-  background: #ffffff;
-  height: 34px;
-  font-size: 13px;
-}
-
-.settings-sidebar-search .ant-input-affix-wrapper:hover,
-.settings-sidebar-search .ant-input-affix-wrapper:focus,
-.settings-sidebar-search .ant-input-affix-wrapper-focused {
-  border-color: #d9d9d9;
-  box-shadow: none;
-}
-
 /* Sidebar section groups */
 .settings-sidebar-group {
-  margin-bottom: 20px;
+  margin-bottom: 0;
 }
 
 .settings-sidebar-group-label {
@@ -110,9 +90,9 @@
   color: #999;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  padding-left: 8px;
+  padding: 8px 0 8px 8px;
   margin-top: 8px;
-  margin-bottom: 4px;
+  margin-bottom: 0;
 }
 
 /* Sidebar menu items */
