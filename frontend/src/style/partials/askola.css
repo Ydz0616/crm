@@ -500,6 +500,18 @@
   flex: 1;
 }
 
+/* ===== Typing Indicator ===== */
+.askola-typing-indicator {
+  color: #8c8c8c;
+  font-size: 14px;
+  animation: askola-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes askola-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
 /* ===== AntD Table overrides inside widget cards ===== */
 .askola-widget-card .ant-table {
   font-size: 13px;

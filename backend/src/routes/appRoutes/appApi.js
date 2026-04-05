@@ -54,4 +54,8 @@ const priceSearchController = require('@/controllers/appControllers/priceSearchC
 // 添加价格搜索路由
 router.route('/priceSearch/history').post(priceSearchController.searchPriceHistory);
 
+// Ola AI 助手 — 代理转发到 NanoBot serve
+const olaController = require('@/controllers/appControllers/olaController');
+router.route('/ola/chat').post(catchErrors(olaController['chat']));
+
 module.exports = router;
