@@ -3,8 +3,11 @@ import { Input } from 'antd';
 import { CloseOutlined, ArrowUpOutlined, HistoryOutlined, EllipsisOutlined } from '@ant-design/icons';
 import { useAppContext } from '@/context/appContext';
 
+const DEFAULT_CHAT_TITLE = 'Untitled chat';
+
 export default function OlaChatPanel() {
   const [inputValue, setInputValue] = useState('');
+  const [chatTitle, setChatTitle] = useState(DEFAULT_CHAT_TITLE);
   const { appContextAction } = useAppContext();
   const { olaPanel } = appContextAction;
 
@@ -12,7 +15,7 @@ export default function OlaChatPanel() {
     <div className="ola-panel">
       {/* Panel Header */}
       <div className="ola-panel-header">
-        <span className="ola-panel-title">Untitled chat</span>
+        <span className="ola-panel-title">{chatTitle}</span>
         <div className="ola-panel-header-actions">
           <button className="ola-panel-header-btn" title="History">
             <HistoryOutlined />
