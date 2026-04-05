@@ -1,5 +1,7 @@
 import { Layout } from 'antd';
 import { useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useAppContext } from '@/context/appContext';
 
 import {
   QuestionCircleOutlined,
@@ -71,6 +73,16 @@ export default function HeaderContent() {
   const { Header } = Layout;
   const location = useLocation();
   const pageInfo = getPageInfo(location.pathname);
+  const { state: stateApp, appContextAction } = useAppContext();
+  const { isOlaPanelOpen } = stateApp;
+  const { olaPanel } = appContextAction;
+
+  // Auto-close the side panel when navigating to the Ask Ola page
+  useEffect(() => {
+    if (location.pathname === '/askola' && isOlaPanelOpen) {
+      olaPanel.close();
+    }
+  }, [location.pathname]);
 
   return (
     <Header
@@ -111,10 +123,12 @@ export default function HeaderContent() {
               <QuestionCircleOutlined />
               <span>Help</span>
             </button>
-            <button className="header-action-btn header-action-btn--ola">
-              <SmileOutlined />
-              <span>Ask Ola</span>
-            </button>
+            {!isOlaPanelOpen && (
+              <button className="header-action-btn header-action-btn--ola" onClick={() => olaPanel.open()}>
+                <SmileOutlined />
+                <span>Ask Ola</span>
+              </button>
+            )}
           </>
         )}
       </div>

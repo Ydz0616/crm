@@ -1,107 +1,58 @@
 import { useState, useRef, useEffect } from 'react';
-import {
-  PlusOutlined,
-  AudioOutlined,
-  SoundOutlined,
-  PaperClipOutlined,
-  PictureOutlined,
-  BulbOutlined,
-  ExperimentOutlined,
-  ShoppingCartOutlined,
-  EllipsisOutlined,
-  RightOutlined,
-} from '@ant-design/icons';
-
-const PLUS_MENU_ITEMS = [
-  { icon: <PaperClipOutlined />, label: 'Upload photos & files' },
-  { icon: <PictureOutlined />, label: 'Create image' },
-  { icon: <BulbOutlined />, label: 'Thinking' },
-  { icon: <ExperimentOutlined />, label: 'Deep research' },
-  { icon: <ShoppingCartOutlined />, label: 'Shopping research' },
-  { icon: <EllipsisOutlined />, label: 'More', hasArrow: true },
-];
+import MOCK_MESSAGES from '@/mock/askOlaMockData';
+import MessageBubble from '@/components/AskOla/MessageBubble';
+import ChatInput from '@/components/AskOla/ChatInput';
 
 export default function AskOla() {
-  const [inputValue, setInputValue] = useState('');
-  const [plusMenuOpen, setPlusMenuOpen] = useState(false);
-  const menuRef = useRef(null);
-  const btnRef = useRef(null);
+  const [messages, setMessages] = useState(MOCK_MESSAGES);
+  const bottomRef = useRef(null);
 
-  // Close on outside click
+  // Auto-scroll to bottom when messages change
   useEffect(() => {
-    function handleClick(e) {
-      if (
-        plusMenuOpen &&
-        menuRef.current &&
-        !menuRef.current.contains(e.target) &&
-        btnRef.current &&
-        !btnRef.current.contains(e.target)
-      ) {
-        setPlusMenuOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, [plusMenuOpen]);
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const handleSend = (messageContent) => {
+    const newMessage = {
+      id: `msg_user_${Date.now()}`,
+      role: 'user',
+      timestamp: new Date().toISOString(),
+      blocks: [{ type: 'text', content: messageContent.text }],
+    };
+    setMessages((prev) => [...prev, newMessage]);
+  };
+
+  const isEmpty = messages.length === 0;
 
   return (
-    <div
-      style={{
-        margin: '40px auto 30px',
-        padding: '0 40px',
-        maxWidth: 1200,
-        width: '100%',
-      }}
-    >
-      <div className="askola-chat-page">
-      {/* Center greeting */}
-      <div className="askola-chat-center">
-        <h1 className="askola-chat-greeting">What's on the agenda today?</h1>
-      </div>
-
-      {/* Input bar */}
-      <div className="askola-chat-input-wrapper">
-        <div className="askola-chat-input-bar">
-          <div className="askola-plus-container">
-            <button
-              ref={btnRef}
-              className="askola-chat-plus-btn"
-              onClick={() => setPlusMenuOpen(!plusMenuOpen)}
-            >
-              <PlusOutlined />
-            </button>
-
-            {plusMenuOpen && (
-              <div ref={menuRef} className="askola-plus-menu">
-                {PLUS_MENU_ITEMS.map((item, i) => (
-                  <button key={i} className="askola-plus-menu-item">
-                    <span className="askola-plus-menu-icon">{item.icon}</span>
-                    <span className="askola-plus-menu-label">{item.label}</span>
-                    {item.hasArrow && (
-                      <RightOutlined className="askola-plus-menu-arrow" />
-                    )}
-                  </button>
-                ))}
-              </div>
-            )}
+    <div className={`askola-chat-page ${isEmpty ? 'askola-chat-page--empty' : 'askola-chat-page--active'}`}>
+      {isEmpty ? (
+        <div className="askola-chat-welcome">
+          <div className="askola-chat-center">
+            <h1 className="askola-chat-greeting">What can I do for you?</h1>
+          </div>
+          <div className="askola-chat-input-wrapper">
+            <ChatInput onSend={handleSend} />
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Scrollable message area */}
+          <div className="askola-chat-messages">
+            <div className="askola-chat-messages-inner">
+              {messages.map((msg) => (
+                <MessageBubble key={msg.id} message={msg} />
+              ))}
+              <div ref={bottomRef} />
+            </div>
           </div>
 
-          <input
-            className="askola-chat-input"
-            type="text"
-            placeholder="Ask anything"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-          />
-          <button className="askola-chat-mic-btn">
-            <AudioOutlined />
-          </button>
-          <button className="askola-chat-send-btn">
-            <SoundOutlined />
-          </button>
-        </div>
-      </div>
-    </div>
+          {/* Sticky input at bottom */}
+          <div className="askola-chat-input-wrapper">
+            <ChatInput onSend={handleSend} />
+          </div>
+        </>
+      )}
     </div>
   );
 }

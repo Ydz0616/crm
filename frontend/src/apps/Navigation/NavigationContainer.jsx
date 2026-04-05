@@ -29,7 +29,7 @@ import {
   // FilterOutlined,
   // ReconciliationOutlined,
   // BellOutlined,
-  // MessageOutlined,
+  MessageOutlined,
   // RobotOutlined,
   // ThunderboltOutlined,
   // ApartmentOutlined,
@@ -97,6 +97,11 @@ function Sidebar({ collapsible, isMobile = false }) {
           key: 'askola',
           icon: <SmileOutlined />,
           label: <Link to={'/askola'}>Ask Ola</Link>,
+        },
+        {
+          key: 'messages',
+          icon: <MessageOutlined />,
+          label: <Link to={'/messages'}>Messages</Link>,
         },
         // === MVP-HIDDEN: 空壳页面，尚未实现 ===
         // {
@@ -166,11 +171,6 @@ function Sidebar({ collapsible, isMobile = false }) {
       label: translate('Finance'),
       children: [
         {
-          key: 'invoice',
-          icon: <ContainerOutlined />,
-          label: <Link to={'/invoice'}>{translate('invoices')}</Link>,
-        },
-        {
           key: 'quote',
           icon: <FileSyncOutlined />,
           label: <Link to={'/quote'}>{translate('quote')}</Link>,
@@ -179,6 +179,11 @@ function Sidebar({ collapsible, isMobile = false }) {
           key: 'purchaseorder',
           icon: <FileOutlined />,
           label: <Link to={'/purchaseorder'}>{translate('purchase_order')}</Link>,
+        },
+        {
+          key: 'invoice',
+          icon: <ContainerOutlined />,
+          label: <Link to={'/invoice'}>{translate('invoices')}</Link>,
         },
         {
           key: 'payment',
@@ -338,109 +343,11 @@ function Sidebar({ collapsible, isMobile = false }) {
           }}
         />
       </div>
-      <div className="sidebar-user-profile-wrapper" ref={profileWrapperRef}>
-        {/* Profile Popup Menu */}
-        {isProfileMenuOpen && !showLogoApp && (
-          <div className="profile-popup-menu">
-            <div className="profile-popup-header">
-              <Avatar
-                size={28}
-                src={avatarSrc}
-                style={{
-                  color: '#f56a00',
-                  backgroundColor: avatarSrc ? 'transparent' : '#fde3cf',
-                }}
-              >
-                {avatarInitial}
-              </Avatar>
-              <div className="profile-popup-header-text">
-                <span className="profile-popup-name">{currentAdmin?.name || 'User'}</span>
-                <span className="profile-popup-handle">{currentAdmin?.email || ''}</span>
-              </div>
-            </div>
-            <div className="profile-popup-divider" />
-            {/* === MVP-HIDDEN: 无 plan 系统，暂不需要 ===
-            <div className="profile-popup-item">
-              <StarOutlined className="profile-popup-item-icon" />
-              <span>Upgrade plan</span>
-            </div>
-            <div className="profile-popup-item">
-              <SmileOutlined className="profile-popup-item-icon" />
-              <span>Personalization</span>
-            </div>
-            === END MVP-HIDDEN === */}
-            <div
-              className="profile-popup-item"
-              onClick={() => {
-                navigate('/settings');
-                setIsProfileMenuOpen(false);
-              }}
-            >
-              <SettingOutlined className="profile-popup-item-icon" />
-              <span>{translate('settings')}</span>
-            </div>
-            <div className="profile-popup-divider" />
-            <div className="profile-popup-item profile-popup-item-with-arrow">
-              <QuestionCircleOutlined className="profile-popup-item-icon" />
-              <span>Help</span>
-              <RightOutlined className="profile-popup-item-arrow" />
-            </div>
-            <div
-              className="profile-popup-item"
-              onClick={() => {
-                navigate('/logout');
-                setIsProfileMenuOpen(false);
-              }}
-            >
-              <LogoutOutlined className="profile-popup-item-icon" />
-              <span>Log out</span>
-            </div>
-          </div>
-        )}
-        <div
-          className="sidebar-user-profile"
-          onClick={(e) => {
-            // Don't toggle if clicking Upgrade button
-            if (e.target.closest('.user-profile-upgrade-btn')) return;
-            setIsProfileMenuOpen((prev) => !prev);
-          }}
-        >
-          <div className="user-profile-info">
-            <Avatar
-              size={28}
-              src={avatarSrc}
-              style={{
-                color: '#f56a00',
-                backgroundColor: avatarSrc ? 'transparent' : '#fde3cf',
-                fontSize: '14px',
-              }}
-            >
-              {avatarInitial}
-            </Avatar>
-            {!showLogoApp && (
-              /* === MVP-HIDDEN: 无 plan 系统，注释 Free 标签 ===
-              <div className="user-profile-text">
-                <span className="user-profile-name">{currentAdmin?.name || 'User'}</span>
-                <span className="user-profile-plan">Free</span>
-              </div>
-              === END MVP-HIDDEN === */
-              <div className="user-profile-text">
-                <span className="user-profile-name">{currentAdmin?.name || 'User'}</span>
-              </div>
-            )}
-          </div>
-          {/* === MVP-HIDDEN: 无 plan 系统，注释 Upgrade 按钮 ===
-          {!showLogoApp && (
-            <Button
-              className="user-profile-upgrade-btn"
-              size="small"
-              onClick={(e) => e.stopPropagation()}
-            >
-              Upgrade
-            </Button>
-          )}
-          === END MVP-HIDDEN === */}
-        </div>
+      <div className="navigation-settings-container">
+        <button className="navigation-settings-btn" onClick={() => navigate('/settings')}>
+          <SettingOutlined />
+          {!showLogoApp && <span>{translate('settings')}</span>}
+        </button>
       </div>
       {showLogoApp && (
         <div
