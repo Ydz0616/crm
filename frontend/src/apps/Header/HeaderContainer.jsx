@@ -109,7 +109,7 @@ export default function HeaderContent() {
               <QuestionCircleOutlined />
               <span>Help</span>
             </button>
-            <button className="header-action-btn header-action-btn--ola">
+            <button className="header-action-btn header-action-btn--ola" onClick={() => appContextAction.historyModal.open()}>
               <HistoryOutlined />
               <span>History</span>
             </button>
