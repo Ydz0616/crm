@@ -24,6 +24,8 @@ import useResponsive from '@/hooks/useResponsive';
 
 import storePersist from '@/redux/storePersist';
 
+import HistoryModal from '@/components/AskOla/HistoryModal';
+
 export default function ErpCrmApp() {
   const { Content } = Layout;
 
@@ -56,6 +58,7 @@ export default function ErpCrmApp() {
     return (
       <Layout hasSider>
         <Navigation />
+        <HistoryModal />
 
         {isMobile ? (
           <Layout style={{ marginLeft: 0 }}>

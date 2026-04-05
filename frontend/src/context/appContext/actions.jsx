@@ -29,6 +29,14 @@ const contextActions = (dispatch) => {
         dispatch({ type: actionTypes.CLOSE_OLA_PANEL });
       },
     },
+    historyModal: {
+      open: () => {
+        dispatch({ type: actionTypes.OPEN_HISTORY_MODAL });
+      },
+      close: () => {
+        dispatch({ type: actionTypes.CLOSE_HISTORY_MODAL });
+      },
+    },
   };
 };
 

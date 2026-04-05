@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Input } from 'antd';
-import { CloseOutlined, ArrowUpOutlined, HistoryOutlined, EllipsisOutlined } from '@ant-design/icons';
+import { CloseOutlined, ArrowUpOutlined, HistoryOutlined, EllipsisOutlined, PlusOutlined } from '@ant-design/icons';
 import { useAppContext } from '@/context/appContext';
 
 const DEFAULT_CHAT_TITLE = 'Untitled chat';
@@ -17,7 +17,10 @@ export default function OlaChatPanel() {
       <div className="ola-panel-header">
         <span className="ola-panel-title">{chatTitle}</span>
         <div className="ola-panel-header-actions">
-          <button className="ola-panel-header-btn" title="History">
+          <button className="ola-panel-header-btn" title="Add Chat">
+            <PlusOutlined />
+          </button>
+          <button className="ola-panel-header-btn" title="History" onClick={() => appContextAction.historyModal.open()}>
             <HistoryOutlined />
           </button>
           <button className="ola-panel-header-btn" title="Ask Ola Setting">
