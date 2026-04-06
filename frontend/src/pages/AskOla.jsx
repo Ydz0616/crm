@@ -4,7 +4,7 @@ import MessageBubble from '@/components/AskOla/MessageBubble';
 import ChatInput from '@/components/AskOla/ChatInput';
 
 export default function AskOla() {
-  const [messages, setMessages] = useState(MOCK_MESSAGES);
+  const [messages, setMessages] = useState([]);
   const bottomRef = useRef(null);
 
   // Auto-scroll to bottom when messages change
