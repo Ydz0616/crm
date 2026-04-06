@@ -139,8 +139,9 @@
 
 /* Collapsed state: logo centering with symmetric margins */
 .ant-layout-sider-collapsed .logo {
-  margin: 16px 0 0 0;
-  padding-bottom: 12px;
+  height: 56px;
+  margin: 0;
+  padding: 0;
   justify-content: center;
   cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='10' viewBox='0 0 24 16'><polygon points='8,0 0,8 8,16' fill='%23ffffff' stroke='%23000000' stroke-width='1.5'/><polygon points='16,0 24,8 16,16' fill='%23000000'/></svg>") 8 5, pointer !important;
 }
@@ -150,22 +151,27 @@
   right: 0;
 }
 
-/* Make Sider inner wrapper a flex column so expand-trigger-zone can fill remaining space */
-.ant-layout-sider-collapsed .ant-layout-sider-children {
-  display: flex !important;
-  flex-direction: column !important;
-  height: 100% !important;
+/* Collapsed state: remove group titles and spacing */
+.ant-layout-sider-collapsed .ant-menu-item-group {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.ant-layout-sider-collapsed .ant-menu-item-group-list {
+  margin: 0 !important;
   padding: 0 !important;
 }
 
 /* Collapsed state: center menu item icons */
 .ant-layout-sider-collapsed .ant-menu-item {
+  height: 32px !important;
+  line-height: 32px !important;
   display: flex !important;
   justify-content: center !important;
   align-items: center !important;
   padding: 0 !important;
   padding-inline: 0 !important;
-  margin: 2px 4px !important;
+  margin: 1px 4px !important;
   width: calc(100% - 8px) !important;
   position: relative !important;
 }
@@ -185,12 +191,19 @@
   overflow: hidden !important;
 }
 
-/* Collapsed state: remove menu bottom padding so expand-trigger-zone fills all remaining space */
+/* Collapsed state: remove all menu and container padding, add top gap for symmetry */
 .ant-layout-sider-collapsed .ant-menu {
-  padding-bottom: 0 !important;
+  padding: 0 !important;
+  padding-top: 8px !important;
+  margin: 0 !important;
 }
 
-/* Expand trigger zone in collapsed sidebar */
+.ant-layout-sider-collapsed .sidebar-menu-scroll {
+  padding: 0 !important;
+  flex: none !important;
+}
+
+/* Expand trigger zone in collapsed sidebar - now fills from the bottom */
 .expand-trigger-zone {
   display: flex;
   align-items: center;
@@ -428,8 +441,11 @@
 
 /* Collapsed sidebar structural adjustments */
 .ant-layout-sider-collapsed .navigation-settings-container {
+  margin-top: 8px !important;
+  padding-top: 8px;
   margin-left: 8px;
   margin-right: 8px;
+  margin-bottom: 8px;
 }
 
 .ant-layout-sider-collapsed .navigation-settings-btn {
