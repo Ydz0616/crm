@@ -7,7 +7,6 @@ import {
   EllipsisOutlined,
   RedoOutlined,
   ArrowRightOutlined,
-  ArrowLeftOutlined,
 } from '@ant-design/icons';
 import { Dropdown, Table, Button, Input } from 'antd';
 import { PageHeader } from '@ant-design/pro-layout';
@@ -178,8 +177,6 @@ export default function DataTable({ config, extra = [] }) {
   return (
     <>
       <PageHeader
-        onBack={() => window.history.back()}
-        backIcon={<ArrowLeftOutlined />}
         title={DATATABLE_TITLE}
         ghost={false}
         extra={[
