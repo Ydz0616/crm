@@ -129,9 +129,6 @@ export default function ReadItem({ config, selectedItem }) {
   return (
     <>
       <PageHeader
-        onBack={() => {
-          navigate(`/${entity.toLowerCase()}`);
-        }}
         title={`${ENTITY_NAME} # ${currentAdavancedCrud.number}/${currentAdavancedCrud.year || ''}`}
         ghost={false}
         tags={[

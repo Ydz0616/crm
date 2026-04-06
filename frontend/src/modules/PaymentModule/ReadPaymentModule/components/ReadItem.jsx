@@ -73,9 +73,6 @@ export default function ReadItem({ config, selectedItem }) {
   return (
     <>
       <PageHeader
-        onBack={() => {
-          navigate(`/${entity.toLowerCase()}`);
-        }}
         title={`${ENTITY_NAME} # ${currentErp.number}/${currentErp.year || ''}`}
         ghost={false}
         tags={

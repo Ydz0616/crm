@@ -143,9 +143,6 @@ export default function UpdateItem({ config, UpdateForm }) {
   return (
     <>
       <PageHeader
-        onBack={() => {
-          navigate(`/${entity.toLowerCase()}`);
-        }}
         title={translate('update')}
         ghost={false}
         tags={[
