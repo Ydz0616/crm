@@ -1,5 +1,5 @@
-import { Layout } from 'antd';
-import { useLocation } from 'react-router-dom';
+import { Layout, Tooltip } from 'antd';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useAppContext } from '@/context/appContext';
 
@@ -72,6 +72,7 @@ function getPageInfo(pathname) {
 export default function HeaderContent() {
   const { Header } = Layout;
   const location = useLocation();
+  const navigate = useNavigate();
   const pageInfo = getPageInfo(location.pathname);
   const { state: stateApp, appContextAction } = useAppContext();
   const { isOlaPanelOpen } = stateApp;
@@ -113,8 +114,14 @@ export default function HeaderContent() {
               <HistoryOutlined />
               <span>History</span>
             </button>
-            <button className="header-action-btn" style={{ padding: '0 8px', minWidth: 'auto', border: 'none', background: 'transparent', boxShadow: 'none' }}>
-              <EllipsisOutlined rotate={90} style={{ fontSize: '18px', color: '#8c8c8c' }} />
+            <button
+              className="header-action-btn"
+              onClick={() => navigate('/settings/edit/ask_ola')}
+              style={{ padding: '0 8px', minWidth: 'auto', border: 'none', background: 'transparent', boxShadow: 'none' }}
+            >
+              <Tooltip title="Setting" placement="bottom">
+                <EllipsisOutlined rotate={90} style={{ fontSize: '18px', color: '#8c8c8c' }} />
+              </Tooltip>
             </button>
           </>
         ) : (
