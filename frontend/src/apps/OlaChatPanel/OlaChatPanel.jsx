@@ -1,12 +1,11 @@
 import { useState } from 'react';
-import { Input } from 'antd';
-import { CloseOutlined, ArrowUpOutlined, HistoryOutlined, EllipsisOutlined, PlusOutlined } from '@ant-design/icons';
+import { CloseOutlined, HistoryOutlined, EllipsisOutlined, PlusOutlined } from '@ant-design/icons';
 import { useAppContext } from '@/context/appContext';
+import ChatInput from '@/components/AskOla/ChatInput';
 
 const DEFAULT_CHAT_TITLE = 'Untitled chat';
 
 export default function OlaChatPanel() {
-  const [inputValue, setInputValue] = useState('');
   const [chatTitle, setChatTitle] = useState(DEFAULT_CHAT_TITLE);
   const { appContextAction } = useAppContext();
   const { olaPanel } = appContextAction;
@@ -39,21 +38,7 @@ export default function OlaChatPanel() {
 
       {/* Input Bar */}
       <div className="ola-panel-input-wrapper">
-        <div className="ola-panel-input-bar">
-          <Input.TextArea
-            className="ola-panel-input"
-            placeholder="Ask anything..."
-            autoSize={{ minRows: 1, maxRows: 6 }}
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-          />
-          <div className="ola-panel-input-footer">
-            <div />
-            <button className="ola-panel-send-btn">
-              <ArrowUpOutlined />
-            </button>
-          </div>
-        </div>
+        <ChatInput onSend={(payload) => { /* handle message send later */ }} />
       </div>
     </div>
   );
