@@ -1,11 +1,15 @@
-// Ola CRM — MCP Server (Phase A1 skeleton)
+// Ola CRM — MCP Server
 //
 // 独立 Node 进程，监听 127.0.0.1:8889/mcp，通过 Model Context Protocol
-// 把 CRM 业务能力暴露给 NanoBot。本文件是 A1 骨架：空工具列表、无鉴权、
-// 无审计日志、不连 mongoose。后续 A2/A3/A4 会逐层叠加。
+// 把 CRM 业务能力暴露给 NanoBot。
 //
 // 启动: `npm run mcp:dev` (from backend/)
-// 验收: curl http://127.0.0.1:8889/mcp 不 500；ps -o rss= < 80MB
+//
+// Stateless streamableHttp 模式：每个 POST /mcp 请求**自带完整生命周期**，
+// 因此服务端必须 per-request 创建 server + transport，处理完销毁。
+// A1 最初做成 singleton 是个 latent bug —— 只有 initialize 这种"协议入口"
+// 调用刚好 work，第二个调用（如 tools/list）就 500。A2 一并修复。
+// 参考: https://github.com/modelcontextprotocol/typescript-sdk#without-session-management-stateless
 
 require('module-alias/register');
 require('dotenv').config({ path: '.env' });
@@ -16,6 +20,9 @@ const { McpServer } = require('@modelcontextprotocol/sdk/server/mcp.js');
 const {
   StreamableHTTPServerTransport,
 } = require('@modelcontextprotocol/sdk/server/streamableHttp.js');
+
+// require('./auth') 会在加载时校验 MCP_SERVICE_TOKEN env，缺失即抛错 → 整进程退出
+const requireAuth = require('./auth');
 
 const HOST = '127.0.0.1';
 const PORT = Number(process.env.MCP_PORT) || 8889;
@@ -30,29 +37,40 @@ process.on('uncaughtException', (err) => {
   process.exit(1);
 });
 
-async function main() {
-  const mcpServer = new McpServer({
+/**
+ * Factory: 每次请求创建一个全新的 McpServer，注册当前的工具集，返回未连接的实例。
+ * A4 之后这里会调用 tools/registry.js 自动 import crud/* 和 compute/*。
+ * A1-A3 阶段返回空工具集。
+ */
+function createMcpServer() {
+  const server = new McpServer({
     name: 'ola-crm-mcp',
     version: '0.1.0',
   });
+  // TODO(A4): registry.registerAll(server)
+  return server;
+}
 
-  // A1 阶段不注册任何工具。tool/list 会返回空数组。
-  // A4 之后由 tools/registry.js 自动注册 crud/* 和 compute/*。
-
-  // Stateless transport：sessionIdGenerator=undefined 表示不维护会话状态，
-  // 每次请求独立。MVP 单 NanoBot 客户端足够，也最省 RAM。
-  const transport = new StreamableHTTPServerTransport({
-    sessionIdGenerator: undefined,
-  });
-
-  await mcpServer.connect(transport);
-
+function main() {
   const app = express();
 
-  // 仅在 /mcp 路由上挂 json parser，不全局挂 —— 全局挂会污染未来可能的
-  // 其他路由（健康检查、metrics 等），保持最小作用域。
-  app.post('/mcp', express.json({ limit: '1mb' }), async (req, res) => {
+  // POST /mcp —— 唯一的 MCP 入口。
+  // 中间件顺序：先鉴权（无 token 直接 401，省 body parse），再 json parse，再 handler。
+  app.post('/mcp', requireAuth, express.json({ limit: '1mb' }), async (req, res) => {
+    // Stateless: per-request server + transport，确保每个 HTTP POST 是一个独立完整的 MCP 生命周期
+    const server = createMcpServer();
+    const transport = new StreamableHTTPServerTransport({
+      sessionIdGenerator: undefined,
+    });
+
+    // 客户端断开 → 立即清理，防内存泄漏
+    res.on('close', () => {
+      transport.close().catch((e) => console.error('[mcp] transport close error:', e));
+      server.close().catch((e) => console.error('[mcp] server close error:', e));
+    });
+
     try {
+      await server.connect(transport);
       await transport.handleRequest(req, res, req.body);
     } catch (err) {
       console.error('[mcp] POST /mcp handler error:', err);
@@ -80,7 +98,7 @@ async function main() {
 
   const httpServer = app.listen(PORT, HOST, () => {
     console.log(`[mcp] listening on http://${HOST}:${PORT}/mcp`);
-    console.log(`[mcp] tools registered: 0 (A1 skeleton)`);
+    console.log(`[mcp] mode: stateless per-request, auth: bearer, tools: 0`);
   });
 
   // 优雅关闭，方便 nodemon / Ctrl+C 不留僵尸进程
@@ -93,7 +111,4 @@ async function main() {
   process.on('SIGTERM', () => shutdown('SIGTERM'));
 }
 
-main().catch((err) => {
-  console.error('[mcp] failed to start:', err);
-  process.exit(1);
-});
+main();
