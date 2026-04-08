@@ -24,6 +24,11 @@ const {
 // require('./auth') 会在加载时校验 MCP_SERVICE_TOKEN env，缺失即抛错 → 整进程退出
 const requireAuth = require('./auth');
 const { auditLog, hashInput } = require('./logger');
+const registry = require('./tools/registry');
+
+// 启动时探测一次 tool 总数（也校验 registry 不抛错）；createMcpServer 仍是
+// per-request 调用，因为 stateless 模式要求每个请求一个全新的 McpServer 实例。
+const TOOL_COUNT = registry.discover().length;
 
 const HOST = '127.0.0.1';
 const PORT = Number(process.env.MCP_PORT) || 8889;
@@ -58,7 +63,7 @@ function createMcpServer() {
     name: 'ola-crm-mcp',
     version: '0.1.0',
   });
-  // TODO(A4): registry.registerAll(server)
+  registry.registerAll(server);
   return server;
 }
 
@@ -70,13 +75,25 @@ function main() {
   app.post('/mcp', requireAuth, express.json({ limit: '1mb' }), async (req, res) => {
     const startedAt = Date.now();
     const inputHash = hashInput(req.body);
-    // A3: tool 字段先打 'mcp.request' (请求级粒度)；A4 注册真工具后改为 tool/call 真名
+    // A4: tools/call 时把 tool 字段升级为具体工具名；其它 JSON-RPC method 仍用 method 名。
+    // 任何形状异常退回 'mcp.request'，绝不让 logger 抛错阻塞响应。
+    const toolLabel = (() => {
+      try {
+        const m = req.body && req.body.method;
+        if (m === 'tools/call') {
+          const n = req.body.params && req.body.params.name;
+          if (typeof n === 'string' && n.length > 0) return n;
+        }
+        if (typeof m === 'string' && m.length > 0) return m;
+      } catch (_) { /* fall through */ }
+      return 'mcp.request';
+    })();
     let logged = false;
     const logOnce = (ok, code, message) => {
       if (logged) return;
       logged = true;
       auditLog({
-        tool: 'mcp.request',
+        tool: toolLabel,
         input_hash: inputHash,
         latency_ms: Date.now() - startedAt,
         ok,
@@ -146,7 +163,7 @@ function main() {
 
   const httpServer = app.listen(PORT, HOST, () => {
     console.log(`[mcp] listening on http://${HOST}:${PORT}/mcp`);
-    console.log(`[mcp] mode: stateless per-request, auth: bearer, audit: on, tools: 0`);
+    console.log(`[mcp] mode: stateless per-request, auth: bearer, audit: on, tools: ${TOOL_COUNT}`);
   });
 
   // 优雅关闭，方便 nodemon / Ctrl+C 不留僵尸进程
