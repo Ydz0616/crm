@@ -21,6 +21,27 @@ const create = async (req, res) => {
     });
   }
 
+  // Currency / exchangeRate 业务校验（Joi 之后）
+  const userPassedExchangeRate = body.exchangeRate !== undefined && body.exchangeRate !== null;
+  if (value.currency === 'CNY') {
+    if (!userPassedExchangeRate || Number(value.exchangeRate) <= 1) {
+      return res.status(400).json({
+        success: false,
+        result: null,
+        message: '人民币报价必须填写汇率（必须大于 1），禁止使用默认值',
+      });
+    }
+  } else if (value.currency === 'USD') {
+    if (userPassedExchangeRate && Number(body.exchangeRate) !== 1) {
+      return res.status(400).json({
+        success: false,
+        result: null,
+        message: '美元报价的汇率必须为 1，禁止自定义',
+      });
+    }
+    value.exchangeRate = 1;
+  }
+
   const { items = [], freight = 0, discount = 0 } = value;
 
   // default
@@ -65,6 +86,8 @@ const create = async (req, res) => {
   body['discount'] = discount;
   body['total'] = total;
   body['items'] = items;
+  body['currency'] = value.currency;
+  body['exchangeRate'] = value.exchangeRate;
   body['createdBy'] = req.admin._id;
 
   // Creating a new document in the collection
