@@ -36,9 +36,6 @@ const copy = async (req, res) => {
       shipping: sourceQuote.shipping,
       freight: sourceQuote.freight,
       termsOfDelivery: sourceQuote.termsOfDelivery,
-      shippingMark: sourceQuote.shippingMark,
-      packaging: sourceQuote.packaging,
-      shipmentDocuments: sourceQuote.shipmentDocuments,
       paymentTerms: sourceQuote.paymentTerms,
       createdBy: req.admin._id // 添加创建者ID
     });

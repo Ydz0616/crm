@@ -122,19 +122,7 @@ const quoteSchema = new mongoose.Schema({
     type: [String],
     default: [],
   },
-  shippingMark: {
-    type: [String],
-    default: [],
-  },
   paymentTerms: {
-    type: [String],
-    default: [],
-  },
-  packaging: {
-    type: [String],
-    default: [],
-  },
-  shipmentDocuments: {
     type: [String],
     default: [],
   },

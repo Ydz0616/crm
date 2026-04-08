@@ -413,8 +413,8 @@ html
       .col.col-24
           .space
       
-      - var showTermsSection = (model.termsOfDelivery && model.termsOfDelivery.length > 0) || (model.shippingMark && model.shippingMark.length > 0) || (model.paymentTerms && model.paymentTerms.length > 0) || model.bankDetails || (model.packaging && model.packaging.length > 0) || (model.shipmentDocuments && model.shipmentDocuments.length > 0) || (model.notes && model.notes.length > 0)
-      
+      - var showTermsSection = (model.termsOfDelivery && model.termsOfDelivery.length > 0) || (model.paymentTerms && model.paymentTerms.length > 0) || (model.notes && model.notes.length > 0)
+
       if showTermsSection
         .col.col-24
           if model.paymentTerms && model.paymentTerms.length > 0
@@ -424,14 +424,7 @@ html
                 each term, index in model.paymentTerms
                   li #{term}
             .space(style="margin-top: 10px; margin-bottom: 10px;")
-          
-          if model.bankDetails
-            //- TODO: Bank Details 模块 — 后续用专门模组处理，详见 GitHub Issue
-            //- 原 hardcode 银行信息已移除（BOC, Everbright, Rural, VTB）
-            //- 未来需从 Settings 或独立 BankAccount model 动态加载
-            
-            .space(style="margin-top: 10px; margin-bottom: 10px;")
-            
+
           if model.termsOfDelivery && model.termsOfDelivery.length > 0
             p
               strong(style="font-weight: bold;") Terms of Delivery (Incoterms® 2020):
@@ -439,31 +432,7 @@ html
                 each term, index in model.termsOfDelivery
                   li #{term}
             .space(style="margin-top: 10px; margin-bottom: 10px;")
-          
-          if model.shippingMark && model.shippingMark.length > 0
-            p
-              strong(style="font-weight: bold;") Shipping Mark:
-              ul(style="list-style-type: none; padding-left: 0; margin-top: 5px;")
-                each mark, index in model.shippingMark
-                  li #{mark}
-            .space(style="margin-top: 10px; margin-bottom: 10px;")
-          
-          if model.shipmentDocuments && model.shipmentDocuments.length > 0
-            p
-              strong(style="font-weight: bold;") Shipment & Documents:
-              ul(style="list-style-type: none; padding-left: 0; margin-top: 5px;")
-                each doc, index in model.shipmentDocuments
-                  li #{doc}
-            .space(style="margin-top: 10px; margin-bottom: 10px;")
-          
-          if model.packaging && model.packaging.length > 0
-            p
-              strong(style="font-weight: bold;") Packaging:
-              ul(style="list-style-type: none; padding-left: 0; margin-top: 5px;")
-                each pack, index in model.packaging
-                  li #{pack}
-            .space(style="margin-top: 10px; margin-bottom: 10px;")
-          
+
           if model.notes && model.notes.length > 0
             p
               strong(style="font-weight: bold;") Other conditions:
