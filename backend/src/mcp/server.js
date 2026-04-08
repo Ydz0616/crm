@@ -23,6 +23,7 @@ const {
 
 // require('./auth') 会在加载时校验 MCP_SERVICE_TOKEN env，缺失即抛错 → 整进程退出
 const requireAuth = require('./auth');
+const { auditLog, hashInput } = require('./logger');
 
 const HOST = '127.0.0.1';
 const PORT = Number(process.env.MCP_PORT) || 8889;
@@ -36,6 +37,16 @@ process.on('uncaughtException', (err) => {
   console.error('[mcp] uncaughtException:', err);
   process.exit(1);
 });
+
+// HTTP status → MCP error code (与 controllerAdapter.statusToCode 保持一致)
+function mapStatusToCode(status) {
+  if (status === 400) return 'VALIDATION';
+  if (status === 401 || status === 403) return 'PERMISSION';
+  if (status === 404) return 'NOT_FOUND';
+  if (status === 405) return 'METHOD_NOT_ALLOWED';
+  if (status === 409) return 'CONFLICT';
+  return 'INTERNAL';
+}
 
 /**
  * Factory: 每次请求创建一个全新的 McpServer，注册当前的工具集，返回未连接的实例。
@@ -57,48 +68,85 @@ function main() {
   // POST /mcp —— 唯一的 MCP 入口。
   // 中间件顺序：先鉴权（无 token 直接 401，省 body parse），再 json parse，再 handler。
   app.post('/mcp', requireAuth, express.json({ limit: '1mb' }), async (req, res) => {
+    const startedAt = Date.now();
+    const inputHash = hashInput(req.body);
+    // A3: tool 字段先打 'mcp.request' (请求级粒度)；A4 注册真工具后改为 tool/call 真名
+    let logged = false;
+    const logOnce = (ok, code, message) => {
+      if (logged) return;
+      logged = true;
+      auditLog({
+        tool: 'mcp.request',
+        input_hash: inputHash,
+        latency_ms: Date.now() - startedAt,
+        ok,
+        code: code ?? null,
+        ...(message ? { message } : {}),
+      });
+    };
+
     // Stateless: per-request server + transport，确保每个 HTTP POST 是一个独立完整的 MCP 生命周期
     const server = createMcpServer();
     const transport = new StreamableHTTPServerTransport({
       sessionIdGenerator: undefined,
     });
 
-    // 客户端断开 → 立即清理，防内存泄漏
+    // 客户端断开 → 立即清理，防内存泄漏。同时兜底补一条日志（如果 handler 没机会写）
     res.on('close', () => {
       transport.close().catch((e) => console.error('[mcp] transport close error:', e));
       server.close().catch((e) => console.error('[mcp] server close error:', e));
+      // 正常路径下 handler 已经记过日志；这里只在异常断开时兜底
+      logOnce(res.statusCode < 400, res.statusCode >= 400 ? mapStatusToCode(res.statusCode) : null);
     });
 
     try {
       await server.connect(transport);
       await transport.handleRequest(req, res, req.body);
+      // transport 把 status 写进 res；handler 走到这里说明协议层没抛，按 res.statusCode 判断结果
+      const ok = res.statusCode < 400;
+      logOnce(ok, ok ? null : mapStatusToCode(res.statusCode));
     } catch (err) {
       console.error('[mcp] POST /mcp handler error:', err);
+      const code = 'INTERNAL';
+      logOnce(false, code, err.message);
       if (!res.headersSent) {
+        // 统一错误信封：{ok, code, message}，HTTP 500
         res.status(500).json({
-          jsonrpc: '2.0',
-          error: { code: -32603, message: 'Internal server error' },
-          id: null,
+          ok: false,
+          code,
+          message: err.message || 'Internal server error',
         });
       }
     }
   });
 
-  // GET/DELETE 在 stateless 模式下无意义 —— 明确返回 405，不要让 SDK 抛
-  // 难懂的 session 错误。这样 curl 探活时也能拿到一个明确响应。
+  // GET/DELETE 在 stateless 模式下无意义 —— 明确返回 405，统一 {ok, code, message} 信封
   const methodNotAllowed = (_req, res) => {
     res.status(405).json({
-      jsonrpc: '2.0',
-      error: { code: -32000, message: 'Method not allowed in stateless mode' },
-      id: null,
+      ok: false,
+      code: 'METHOD_NOT_ALLOWED',
+      message: 'Only POST is supported on /mcp (stateless mode)',
     });
   };
   app.get('/mcp', methodNotAllowed);
   app.delete('/mcp', methodNotAllowed);
 
+  // 全局 Express error handler —— 兜底任何未捕获的同步/异步异常
+  // 必须放在所有路由之后，签名 4 个参数 Express 才识别为 error handler
+  // eslint-disable-next-line no-unused-vars
+  app.use((err, req, res, next) => {
+    console.error('[mcp] unhandled express error:', err);
+    if (res.headersSent) return;
+    res.status(500).json({
+      ok: false,
+      code: 'INTERNAL',
+      message: err && err.message ? err.message : 'Internal server error',
+    });
+  });
+
   const httpServer = app.listen(PORT, HOST, () => {
     console.log(`[mcp] listening on http://${HOST}:${PORT}/mcp`);
-    console.log(`[mcp] mode: stateless per-request, auth: bearer, tools: 0`);
+    console.log(`[mcp] mode: stateless per-request, auth: bearer, audit: on, tools: 0`);
   });
 
   // 优雅关闭，方便 nodemon / Ctrl+C 不留僵尸进程
