@@ -24,11 +24,12 @@ const {
 // require('./auth') 会在加载时校验 MCP_SERVICE_TOKEN env，缺失即抛错 → 整进程退出
 const requireAuth = require('./auth');
 const { auditLog, hashInput } = require('./logger');
-const registry = require('./tools/registry');
-
-// 启动时探测一次 tool 总数（也校验 registry 不抛错）；createMcpServer 仍是
-// per-request 调用，因为 stateless 模式要求每个请求一个全新的 McpServer 实例。
-const TOOL_COUNT = registry.discover().length;
+const { bootstrap } = require('./bootstrap');
+// NOTE: do NOT require('./tools/registry') at top-level — it transitively
+// requires controllers which call mongoose.model('Client'/...), which
+// throws unless bootstrap() has run first. Lazy-load inside main().
+let registry = null;
+let TOOL_COUNT = 0;
 
 const HOST = '127.0.0.1';
 const PORT = Number(process.env.MCP_PORT) || 8889;
@@ -67,7 +68,14 @@ function createMcpServer() {
   return server;
 }
 
-function main() {
+async function main() {
+  const bootInfo = await bootstrap();
+  console.log(`[mcp] bootstrap ok — system admin: ${bootInfo.admin.email} (${bootInfo.admin.role})`);
+  // Lazy-load registry now that mongoose models are registered.
+  // eslint-disable-next-line global-require
+  registry = require('./tools/registry');
+  TOOL_COUNT = registry.discover().length;
+
   const app = express();
 
   // POST /mcp —— 唯一的 MCP 入口。
@@ -176,4 +184,7 @@ function main() {
   process.on('SIGTERM', () => shutdown('SIGTERM'));
 }
 
-main();
+main().catch((err) => {
+  console.error('[mcp] fatal during boot:', err);
+  process.exit(1);
+});
