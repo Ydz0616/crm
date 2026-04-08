@@ -12,10 +12,12 @@
     "setup": "node src/setup/setup.js",
     "add-admin": "node src/setup/addAdmin.js",
     "upgrade": "node src/setup/upgrade.js",
-    "reset": "node src/setup/reset.js"
+    "reset": "node src/setup/reset.js",
+    "mcp:dev": "node src/mcp/server.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.509.0",
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "axios": "^1.9.0",
     "bcryptjs": "^2.4.3",
     "compression": "^1.7.4",
