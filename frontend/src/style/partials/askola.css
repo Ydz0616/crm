@@ -106,6 +106,12 @@
   color: #1a1a1a;
 }
 
+/* User-input plain text — preserve newlines, no markdown reinterpretation */
+.askola-block-text--plain {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 .askola-block-text p {
   margin: 0 0 8px;
 }

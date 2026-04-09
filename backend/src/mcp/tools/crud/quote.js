@@ -20,9 +20,35 @@
 // access pattern; search is a fallback for the Agent.
 
 const { z } = require('zod');
+const mongoose = require('mongoose');
 const quoteController = require('@/controllers/appControllers/quoteController');
 const { runController } = require('../../adapters/controllerAdapter');
 const { getSystemAdmin } = require('../../bootstrap');
+
+// Auto-fill `items[].description` from the Merch master record (by
+// serialNumber) so the generated Quote shows meaningful descriptions in
+// the UI even when the Agent only passed itemName/quantity/price.
+// CN preferred, falls back to EN. Items where the Agent already provided
+// a description are left untouched. Items whose itemName doesn't match
+// any Merch are also left untouched (no silent failure, no fabrication).
+async function enrichItemDescriptions(items) {
+  const Merch = mongoose.model('Merch');
+  const serialNumbers = items
+    .filter((it) => !it.description && it.itemName)
+    .map((it) => it.itemName);
+  if (serialNumbers.length === 0) return items;
+  const merchDocs = await Merch.find({
+    serialNumber: { $in: serialNumbers },
+    removed: false,
+  }).lean();
+  const bySerial = new Map(merchDocs.map((m) => [m.serialNumber, m]));
+  return items.map((it) => {
+    if (it.description) return it;
+    const m = bySerial.get(it.itemName);
+    if (!m) return it;
+    return { ...it, description: m.description_cn || m.description_en || '' };
+  });
+}
 
 async function call(method, input) {
   return runController(method, { ...input, admin: getSystemAdmin() });
@@ -97,7 +123,7 @@ const create = {
     }
 
     // Rewrite null prices → 0 (Joi requires number; price=0 is the "no price yet" sentinel).
-    const items = input.items.map((it) => ({
+    let items = input.items.map((it) => ({
       itemName: it.itemName,
       description: it.description || '',
       quantity: it.quantity,
@@ -106,6 +132,7 @@ const create = {
       unit_en: it.unit_en || '',
       unit_cn: it.unit_cn || '',
     }));
+    items = await enrichItemDescriptions(items);
 
     const now = new Date();
     const body = {
@@ -158,7 +185,7 @@ const update = {
         message: 'quote.update rejects `total` — totals are computed server-side',
       };
     }
-    const items = rest.items.map((it) => ({
+    let items = rest.items.map((it) => ({
       itemName: it.itemName,
       description: it.description || '',
       quantity: it.quantity,
@@ -167,6 +194,7 @@ const update = {
       unit_en: it.unit_en || '',
       unit_cn: it.unit_cn || '',
     }));
+    items = await enrichItemDescriptions(items);
     const now = new Date();
     const body = {
       client: rest.client,
