@@ -33,8 +33,22 @@ cd "$CRM_DIR/backend"
 node src/server.js > /tmp/ola-backend.log 2>&1 &
 BACKEND_PID=$!
 
+# Wait for backend to bind port before starting MCP (both need MongoDB)
+echo -n "     Waiting for backend..."
+for i in $(seq 1 15); do
+  if lsof -ti:8888 >/dev/null 2>&1; then
+    echo -e " ${GREEN}ok${NC}"
+    break
+  fi
+  sleep 1
+  if [ $i -eq 15 ]; then
+    echo -e " ${RED}timeout${NC}"
+  fi
+done
+
 # 2. MCP Server
 echo -e "${GREEN}[2/4] Starting MCP server (port 8889)...${NC}"
+cd "$CRM_DIR/backend"
 node src/mcp/server.js > /tmp/ola-mcp.log 2>&1 &
 MCP_PID=$!
 
@@ -55,8 +69,8 @@ cd "$CRM_DIR/frontend"
 npx vite --port 3000 > /tmp/ola-frontend.log 2>&1 &
 FRONTEND_PID=$!
 
-# Wait for services to come up
-sleep 3
+# Wait for remaining services to come up
+sleep 5
 
 echo ""
 echo "=== Status ==="
