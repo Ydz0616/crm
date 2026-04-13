@@ -30,6 +30,7 @@ import {
   CheckSquareOutlined,
   HistoryOutlined,
   EllipsisOutlined,
+  PlusOutlined,
 } from '@ant-design/icons';
 
 const PAGE_MAP = {
@@ -106,9 +107,9 @@ export default function HeaderContent() {
       <div className="header-right-actions">
         {location.pathname === '/askola' ? (
           <>
-            <button className="header-action-btn">
-              <QuestionCircleOutlined />
-              <span>Help</span>
+            <button className="header-action-btn" onClick={() => { appContextAction.chatSession.setActive(null); }}>
+              <PlusOutlined />
+              <span>New Chat</span>
             </button>
             <button className="header-action-btn header-action-btn--ola" onClick={() => appContextAction.historyModal.open()}>
               <HistoryOutlined />
