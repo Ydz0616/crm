@@ -116,19 +116,6 @@
   min-height: 22px;
 }
 
-.ola-panel-input::-webkit-scrollbar {
-  width: 4px;
-}
-
-.ola-panel-input::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.ola-panel-input::-webkit-scrollbar-thumb {
-  background: #e0e0e0;
-  border-radius: 10px;
-}
-
 .ola-panel-input::placeholder {
   color: #bbb;
 }
