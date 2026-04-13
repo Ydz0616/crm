@@ -84,7 +84,7 @@ const update = async (req, res) => {
           item.unit_en = merchItem.unit_en;
         } else {
           // 如果在数据库中找不到，尝试从之前的报价中恢复
-          if (previousQuote.items && previousQuote.items.length > 0) {
+          if (previousQuote && previousQuote.items && previousQuote.items.length > 0) {
             const prevItem = previousQuote.items.find(prevItem => prevItem.itemName === item.itemName);
             if (prevItem) {
               if (!item.unit_cn) item.unit_cn = prevItem.unit_cn;
@@ -117,7 +117,13 @@ const update = async (req, res) => {
     new: true, // return the new result instead of the old one
   }).exec();
 
-  // Returning successfull response
+  if (!result) {
+    return res.status(404).json({
+      success: false,
+      result: null,
+      message: 'Quote not found or not owned by current user',
+    });
+  }
 
   return res.status(200).json({
     success: true,

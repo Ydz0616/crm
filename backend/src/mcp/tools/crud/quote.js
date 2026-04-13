@@ -57,7 +57,7 @@ async function call(method, input) {
 function pad2(n) { return n < 10 ? `0${n}` : `${n}`; }
 
 function defaultQuoteNumber(now = new Date()) {
-  return `Q-${now.getFullYear()}${pad2(now.getMonth() + 1)}${pad2(now.getDate())}${pad2(now.getHours())}${pad2(now.getMinutes())}`;
+  return `Q-${now.getFullYear()}${pad2(now.getMonth() + 1)}${pad2(now.getDate())}${pad2(now.getHours())}${pad2(now.getMinutes())}${pad2(now.getSeconds())}`;
 }
 
 function plusDays(d, days) {
