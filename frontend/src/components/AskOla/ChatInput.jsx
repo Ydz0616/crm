@@ -57,7 +57,7 @@ export default function ChatInput({ onSend }) {
       <Input.TextArea
         className="askola-chat-input"
         placeholder="Ask anything"
-        autoSize={{ minRows: 1, maxRows: 10 }}
+        autoSize={{ minRows: 1, maxRows: 5 }}
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
         onKeyDown={handleKeyDown}

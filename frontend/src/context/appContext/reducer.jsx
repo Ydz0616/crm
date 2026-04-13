@@ -4,6 +4,7 @@ export const initialState = {
   isNavMenuClose: false,
   currentApp: 'default',
   isOlaPanelOpen: false,
+  isHistoryModalOpen: false,
 };
 
 export function contextReducer(state, action) {
@@ -42,6 +43,16 @@ export function contextReducer(state, action) {
       return {
         ...state,
         isOlaPanelOpen: false,
+      };
+    case actionTypes.OPEN_HISTORY_MODAL:
+      return {
+        ...state,
+        isHistoryModalOpen: true,
+      };
+    case actionTypes.CLOSE_HISTORY_MODAL:
+      return {
+        ...state,
+        isHistoryModalOpen: false,
       };
 
     default: {

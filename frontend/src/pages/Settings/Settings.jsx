@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import {
   SettingOutlined,
@@ -43,7 +43,14 @@ import MoneyFormatSettings from './MoneyFormatSettings';
 export default function Settings() {
   const translate = useLanguage();
   const navigate = useNavigate();
+  const { settingsKey } = useParams();
   const [activeKey, setActiveKey] = useState('profile');
+
+  useEffect(() => {
+    if (settingsKey) {
+      setActiveKey(settingsKey);
+    }
+  }, [settingsKey]);
 
   // Sidebar menu structure
   const sidebarSections = [
