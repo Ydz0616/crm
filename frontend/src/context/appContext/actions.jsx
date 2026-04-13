@@ -37,6 +37,14 @@ const contextActions = (dispatch) => {
         dispatch({ type: actionTypes.CLOSE_HISTORY_MODAL });
       },
     },
+    chatSession: {
+      setActive: (sessionId) => {
+        dispatch({ type: actionTypes.SET_ACTIVE_SESSION, payload: sessionId });
+      },
+      setList: (sessions) => {
+        dispatch({ type: actionTypes.SET_SESSION_LIST, payload: sessions });
+      },
+    },
   };
 };
 

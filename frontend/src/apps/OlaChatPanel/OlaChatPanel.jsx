@@ -18,7 +18,7 @@ export default function OlaChatPanel() {
       <div className="ola-panel-header">
         <span className="ola-panel-title">{chatTitle}</span>
         <div className="ola-panel-header-actions">
-          <button className="ola-panel-header-btn" title="Add Chat">
+          <button className="ola-panel-header-btn" title="Add Chat" onClick={() => appContextAction.chatSession.setActive(null)}>
             <PlusOutlined />
           </button>
           <button className="ola-panel-header-btn" title="History" onClick={() => appContextAction.historyModal.open()}>

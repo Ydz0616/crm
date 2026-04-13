@@ -5,6 +5,8 @@ export const initialState = {
   currentApp: 'default',
   isOlaPanelOpen: false,
   isHistoryModalOpen: false,
+  activeSessionId: null,
+  sessionList: [],
 };
 
 export function contextReducer(state, action) {
@@ -53,6 +55,16 @@ export function contextReducer(state, action) {
       return {
         ...state,
         isHistoryModalOpen: false,
+      };
+    case actionTypes.SET_ACTIVE_SESSION:
+      return {
+        ...state,
+        activeSessionId: action.payload,
+      };
+    case actionTypes.SET_SESSION_LIST:
+      return {
+        ...state,
+        sessionList: action.payload,
       };
 
     default: {
