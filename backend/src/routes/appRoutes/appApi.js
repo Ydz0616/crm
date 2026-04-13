@@ -57,5 +57,10 @@ router.route('/priceSearch/history').post(priceSearchController.searchPriceHisto
 // Ola AI 助手 — 代理转发到 NanoBot serve
 const olaController = require('@/controllers/appControllers/olaController');
 router.route('/ola/chat').post(catchErrors(olaController['chat']));
+router.route('/ola/session/create').post(catchErrors(olaController['sessionCreate']));
+router.route('/ola/session/list').get(catchErrors(olaController['sessionList']));
+router.route('/ola/session/delete/:id').delete(catchErrors(olaController['sessionDelete']));
+router.route('/ola/session/rename/:id').patch(catchErrors(olaController['sessionRename']));
+router.route('/ola/session/messages/:id').get(catchErrors(olaController['sessionMessages']));
 
 module.exports = router;
