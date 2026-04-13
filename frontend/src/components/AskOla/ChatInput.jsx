@@ -58,8 +58,8 @@ export default function ChatInput({ onSend, disabled = false }) {
     <div className="askola-chat-input-bar">
       <Input.TextArea
         className="askola-chat-input"
-        placeholder={disabled ? 'Ola is thinking...' : 'Ask anything'}
-        autoSize={{ minRows: 1, maxRows: 10 }}
+        placeholder="Ask anything"
+        autoSize={{ minRows: 1, maxRows: 5 }}
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
         onKeyDown={handleKeyDown}

@@ -1,0 +1,164 @@
+/* History Modal Styles */
+
+.history-modal .ant-modal-content {
+  padding: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.history-modal-container {
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  max-height: 85vh;
+}
+
+/* Header & Search Area */
+.history-modal-search {
+  display: flex;
+  align-items: center;
+  padding: 18px 24px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.history-modal-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 15px;
+  color: #262626;
+  background: transparent;
+}
+
+.history-modal-input::placeholder {
+  color: #8c8c8c;
+  font-weight: 500;
+}
+
+.history-modal-close {
+  background: transparent;
+  border: none;
+  color: #8c8c8c;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.history-modal-close:hover {
+  color: #262626;
+  background: #f0f0f0;
+}
+
+/* Scrollable Content */
+.history-modal-content {
+  overflow-y: auto;
+  padding: 12px 16px 24px;
+}
+
+.history-category-group {
+  margin-top: 20px;
+}
+
+.history-category-group:first-child {
+  margin-top: 8px;
+}
+
+.history-category-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #8c8c8c;
+  margin-bottom: 6px;
+  padding: 0 8px;
+}
+
+.history-items-list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* List Items */
+.history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 12px 12px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  background: transparent;
+}
+
+.history-item:hover {
+  background: #f5f5f5;
+}
+
+.history-item--current {
+  background: #084d85;
+}
+
+.history-item--current:hover {
+  background: #0958d9;
+}
+
+.history-item--current .history-item-title {
+  font-weight: 500;
+  color: #ffffff;
+}
+
+.history-item--current .history-item-time,
+.history-item--current .history-item-delete {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.history-item--current .history-item-delete:hover {
+  color: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.history-item-title {
+  font-size: 14px;
+  color: #262626;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  padding-right: 16px;
+  font-weight: 500;
+}
+
+.history-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.history-item-time {
+  font-size: 12px;
+  color: #8c8c8c;
+}
+
+.history-item-delete {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #bfbfbf;
+  font-size: 15px;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.history-item-delete:hover {
+  color: #ff4d4f;
+  background: rgba(255, 77, 79, 0.1);
+}

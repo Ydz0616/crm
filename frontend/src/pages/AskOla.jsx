@@ -6,7 +6,6 @@ import ChatInput from '@/components/AskOla/ChatInput';
 
 export default function AskOla() {
   const [messages, setMessages] = useState([]);
-  const [loading, setLoading] = useState(false);
   const bottomRef = useRef(null);
 
   // Auto-scroll to bottom when messages change

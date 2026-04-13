@@ -15,34 +15,10 @@
   height: 100% !important;
 }
 
-/* Scrollable menu area */
+/* Custom scrollbar for sidebar menu */
 .sidebar-menu-scroll {
   flex: 1;
-  overflow-y: overlay;
   overflow-x: hidden;
-}
-
-/* Thin gray scrollbar */
-.sidebar-menu-scroll::-webkit-scrollbar {
-  width: 4px;
-}
-
-.sidebar-menu-scroll::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.sidebar-menu-scroll::-webkit-scrollbar-thumb {
-  background: transparent;
-  border-radius: 4px;
-  transition: background 0.3s;
-}
-
-.navigation:hover .sidebar-menu-scroll::-webkit-scrollbar-thumb {
-  background: #ccc;
-}
-
-.navigation:hover .sidebar-menu-scroll::-webkit-scrollbar-thumb:hover {
-  background: #aaa;
 }
 
 .logo {
@@ -102,13 +78,14 @@
 /* Menu items styling */
 .navigation .ant-menu-light {
   background: transparent;
+  padding: 0 12px !important;
 }
 
 .navigation .ant-menu-item {
   height: 36px !important;
   line-height: 36px !important;
-  margin: 2px 12px !important;
-  width: calc(100% - 24px) !important;
+  margin: 4px 0 !important;
+  width: 100% !important;
   padding-left: 12px !important;
   padding-inline: 12px !important;
   border-radius: 6px !important;
@@ -139,8 +116,10 @@
 
 /* Collapsed state: logo centering with symmetric margins */
 .ant-layout-sider-collapsed .logo {
-  margin: 16px 0 0 0;
-  padding-bottom: 12px;
+  height: 56px;
+  flex: 0 0 56px;
+  margin: 0;
+  padding: 0;
   justify-content: center;
   cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='10' viewBox='0 0 24 16'><polygon points='8,0 0,8 8,16' fill='%23ffffff' stroke='%23000000' stroke-width='1.5'/><polygon points='16,0 24,8 16,16' fill='%23000000'/></svg>") 8 5, pointer !important;
 }
@@ -150,23 +129,28 @@
   right: 0;
 }
 
-/* Make Sider inner wrapper a flex column so expand-trigger-zone can fill remaining space */
-.ant-layout-sider-collapsed .ant-layout-sider-children {
-  display: flex !important;
-  flex-direction: column !important;
-  height: 100% !important;
+/* Collapsed state: remove group titles and spacing */
+.ant-layout-sider-collapsed .ant-menu-item-group {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.ant-layout-sider-collapsed .ant-menu-item-group-list {
+  margin: 0 !important;
   padding: 0 !important;
 }
 
 /* Collapsed state: center menu item icons */
 .ant-layout-sider-collapsed .ant-menu-item {
+  height: 32px !important;
+  line-height: 32px !important;
   display: flex !important;
   justify-content: center !important;
   align-items: center !important;
   padding: 0 !important;
   padding-inline: 0 !important;
-  margin: 2px 4px !important;
-  width: calc(100% - 8px) !important;
+  margin: 1px 0 !important;
+  width: 100% !important;
   position: relative !important;
 }
 
@@ -185,18 +169,27 @@
   overflow: hidden !important;
 }
 
-/* Collapsed state: remove menu bottom padding so expand-trigger-zone fills all remaining space */
+/* Collapsed state: remove all menu and container padding, add top gap for symmetry */
 .ant-layout-sider-collapsed .ant-menu {
-  padding-bottom: 0 !important;
+  padding: 0 4px !important;
+  padding-top: 8px !important;
+  margin: 0 !important;
 }
 
-/* Expand trigger zone in collapsed sidebar */
+.ant-layout-sider-collapsed .sidebar-menu-scroll {
+  padding: 0 !important;
+  flex: 0 1 auto !important;
+  overflow-y: auto !important;
+  min-height: 0; /* Important for flex shrink to work */
+}
+
+/* Expand trigger zone in collapsed sidebar - now fills from the bottom */
 .expand-trigger-zone {
-  display: flex;
+  display: flex !important;
   align-items: center;
   justify-content: center;
   cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='10' viewBox='0 0 24 16'><polygon points='8,0 0,8 8,16' fill='%23ffffff' stroke='%23000000' stroke-width='1.5'/><polygon points='16,0 24,8 16,16' fill='%23000000'/></svg>") 8 5, pointer;
-  flex: 1;
+  flex: 1 !important;
 }
 
 /* Collapse/expand toggle button cursor */
@@ -428,8 +421,12 @@
 
 /* Collapsed sidebar structural adjustments */
 .ant-layout-sider-collapsed .navigation-settings-container {
+  flex: 0 0 auto !important;
+  margin-top: 8px !important;
+  padding-top: 8px;
   margin-left: 8px;
   margin-right: 8px;
+  margin-bottom: 8px;
 }
 
 .ant-layout-sider-collapsed .navigation-settings-btn {
