@@ -30,7 +30,7 @@ export default function HistoryModal() {
       closable={false}
       width={520}
       className="history-modal"
-      bodyStyle={{ padding: 0 }}
+      styles={{ body: { padding: 0 } }}
       centered
     >
       <div className="history-modal-container">

@@ -83,7 +83,7 @@ export default function HeaderContent() {
     if (location.pathname === '/askola' && isOlaPanelOpen) {
       olaPanel.close();
     }
-  }, [location.pathname]);
+  }, [location.pathname, isOlaPanelOpen, olaPanel]);
 
   return (
     <Header

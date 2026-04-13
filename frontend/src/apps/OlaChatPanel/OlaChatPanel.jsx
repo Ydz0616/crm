@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { CloseOutlined, HistoryOutlined, EllipsisOutlined, PlusOutlined } from '@ant-design/icons';
 import { Tooltip } from 'antd';
 import { useAppContext } from '@/context/appContext';
@@ -8,7 +7,7 @@ import ChatInput from '@/components/AskOla/ChatInput';
 const DEFAULT_CHAT_TITLE = 'Untitled chat';
 
 export default function OlaChatPanel() {
-  const [chatTitle, setChatTitle] = useState(DEFAULT_CHAT_TITLE);
+  const chatTitle = DEFAULT_CHAT_TITLE;
   const { appContextAction } = useAppContext();
   const { olaPanel } = appContextAction;
   const navigate = useNavigate();
