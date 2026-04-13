@@ -5,9 +5,6 @@ export const fields = {
   serialNumberLong: {
     type: 'string',
   },
-  serialNumberEasyWeld: {
-    type: 'string',
-  },        
   description_en: {
     type: 'string',
   },

@@ -8,7 +8,7 @@ import WidgetBlock from './blocks/WidgetBlock';
  * Block component mapping table — extend here for new block types
  */
 const BLOCK_MAP = {
-  text: (block, i) => <TextBlock key={i} content={block.content} />,
+  text: (block, i, isUser) => <TextBlock key={i} content={block.content} plain={isUser} />,
   file: (block, i) => (
     <FileBlock
       key={i}
@@ -34,7 +34,7 @@ export default function MessageBubble({ message }) {
       <div className="askola-message-blocks">
         {blocks.map((block, i) => {
           const renderer = BLOCK_MAP[block.type];
-          if (renderer) return renderer(block, i);
+          if (renderer) return renderer(block, i, isUser);
           return (
             <div key={i} className="askola-block-unknown">
               [不支持的内容类型: {block.type}]

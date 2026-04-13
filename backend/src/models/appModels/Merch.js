@@ -16,9 +16,6 @@ const schema = new mongoose.Schema({
     type: String, 
     required: true
   },
-  serialNumberEasyWeld: {
-    type: String
-  },
   description_en: {
     type: String,
     required: true

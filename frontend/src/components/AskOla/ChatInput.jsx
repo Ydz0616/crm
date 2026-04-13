@@ -14,8 +14,9 @@ const PLUS_MENU_ITEMS = [
 /**
  * Independent chat input component.
  * @param {function} onSend - Callback: onSend({ text: string, mentions: [], attachments: [] })
+ * @param {boolean} disabled - Disable input and send button while waiting for response
  */
-export default function ChatInput({ onSend }) {
+export default function ChatInput({ onSend, disabled = false }) {
   const [inputValue, setInputValue] = useState('');
   const [plusMenuOpen, setPlusMenuOpen] = useState(false);
   const menuRef = useRef(null);
@@ -39,6 +40,7 @@ export default function ChatInput({ onSend }) {
   }, [plusMenuOpen]);
 
   const handleSend = () => {
+    if (disabled) return;
     const text = inputValue.trim();
     if (!text) return;
     onSend({ text, mentions: [], attachments: [] });
@@ -61,6 +63,7 @@ export default function ChatInput({ onSend }) {
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
         onKeyDown={handleKeyDown}
+        disabled={disabled}
       />
       <div className="askola-chat-input-footer">
         <div className="askola-plus-container">
@@ -86,7 +89,7 @@ export default function ChatInput({ onSend }) {
           <button className="askola-chat-mic-btn">
             <AudioOutlined />
           </button>
-          <button className="askola-chat-send-btn" onClick={handleSend}>
+          <button className="askola-chat-send-btn" onClick={handleSend} disabled={disabled}>
             <ArrowUpOutlined />
           </button>
         </div>

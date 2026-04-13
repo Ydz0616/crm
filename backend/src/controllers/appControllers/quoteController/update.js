@@ -21,6 +21,27 @@ const update = async (req, res) => {
     });
   }
 
+  // Currency / exchangeRate 业务校验（Joi 之后）
+  const userPassedExchangeRate = body.exchangeRate !== undefined && body.exchangeRate !== null;
+  if (value.currency === 'CNY') {
+    if (!userPassedExchangeRate || Number(value.exchangeRate) <= 1) {
+      return res.status(400).json({
+        success: false,
+        result: null,
+        message: '人民币报价必须填写汇率（必须大于 1），禁止使用默认值',
+      });
+    }
+  } else if (value.currency === 'USD') {
+    if (userPassedExchangeRate && Number(body.exchangeRate) !== 1) {
+      return res.status(400).json({
+        success: false,
+        result: null,
+        message: '美元报价的汇率必须为 1，禁止自定义',
+      });
+    }
+    value.exchangeRate = 1;
+  }
+
   const previousQuote = await Model.findOne({
     _id: req.params.id,
     removed: false,
@@ -63,7 +84,7 @@ const update = async (req, res) => {
           item.unit_en = merchItem.unit_en;
         } else {
           // 如果在数据库中找不到，尝试从之前的报价中恢复
-          if (previousQuote.items && previousQuote.items.length > 0) {
+          if (previousQuote && previousQuote.items && previousQuote.items.length > 0) {
             const prevItem = previousQuote.items.find(prevItem => prevItem.itemName === item.itemName);
             if (prevItem) {
               if (!item.unit_cn) item.unit_cn = prevItem.unit_cn;
@@ -86,18 +107,23 @@ const update = async (req, res) => {
   body['discount'] = discount;
   body['total'] = total;
   body['items'] = items;
+  body['currency'] = value.currency;
+  body['exchangeRate'] = value.exchangeRate;
   body['pdf'] = 'quote-' + req.params.id + '.pdf';
 
-  if (body.hasOwnProperty('currency')) {
-    delete body.currency;
-  }
   // Find document by id and updates with the required fields
 
   const result = await Model.findOneAndUpdate({ _id: req.params.id, removed: false, createdBy: req.admin._id }, body, {
     new: true, // return the new result instead of the old one
   }).exec();
 
-  // Returning successfull response
+  if (!result) {
+    return res.status(404).json({
+      success: false,
+      result: null,
+      message: 'Quote not found or not owned by current user',
+    });
+  }
 
   return res.status(200).json({
     success: true,

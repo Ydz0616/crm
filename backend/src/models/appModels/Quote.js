@@ -97,9 +97,14 @@ const quoteSchema = new mongoose.Schema({
   },
   currency: {
     type: String,
+    enum: ['USD', 'CNY'],
     default: 'USD',
-    uppercase: true,
     required: true,
+  },
+  exchangeRate: {
+    type: Number,
+    default: 1,
+    min: 0,
   },
   discount: {
     type: Number,
@@ -117,23 +122,7 @@ const quoteSchema = new mongoose.Schema({
     type: [String],
     default: [],
   },
-  shippingMark: {
-    type: [String],
-    default: [],
-  },
   paymentTerms: {
-    type: [String],
-    default: [],
-  },
-  bankDetails: {
-    type: String,
-    default: '',
-  },
-  packaging: {
-    type: [String],
-    default: [],
-  },
-  shipmentDocuments: {
     type: [String],
     default: [],
   },

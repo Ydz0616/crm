@@ -12,7 +12,6 @@ import useLanguage from '@/locale/useLanguage';
 import calculate from '@/utils/calculate';
 import { useSelector } from 'react-redux';
 import SelectAsync from '@/components/SelectAsync';
-import SelectCurrency from '@/components/SelectCurrency';
 
 const { Title, Text } = Typography;
 
@@ -36,29 +35,23 @@ function LoadQuoteForm({ subTotal = 0, current = null }) {
   const [freight, setFreight] = useState(0);
   const [discount, setDiscount] = useState(0);
   const [currentYear, setCurrentYear] = useState(() => new Date().getFullYear());
-  
-  const [selectedCurrency, setSelectedCurrency] = useState(null);
+
   const { moneyFormatter } = useMoney();
+
+  // Watch currency so we can conditionally render the exchangeRate input.
+  // CNY → user must enter exchangeRate (>1). USD → field is hidden and exchangeRate is forced to 1 server-side.
+  const currencyValue = Form.useWatch('currency');
+  const formInstance = Form.useFormInstance();
+
+  // When user switches USD → CNY → USD, clear any leftover exchangeRate so we never POST it on USD.
+  useEffect(() => {
+    if (currencyValue === 'USD' && formInstance) {
+      formInstance.setFieldValue('exchangeRate', undefined);
+    }
+  }, [currencyValue, formInstance]);
 
   // Initialize notes if current is provided
   const initialNotes = current && current.notes ? (Array.isArray(current.notes) ? current.notes : [current.notes]) : [];
-
-  const handleCurrencyChange = (value, currencyObject) => {
-    console.log('Currency Change - Value:', value);
-    console.log('Currency Change - Object:', currencyObject);
-    
-    if (currencyObject) {
-      const newCurrency = {
-        currency_symbol: currencyObject.currency_symbol,
-        currency_position: currencyObject.currency_position,
-        decimal_separator: currencyObject.decimal_separator,
-        thousand_separator: currencyObject.thousand_separator,
-        cent_precision: currencyObject.cent_precision
-      };
-      console.log('Setting new currency:', newCurrency);
-      setSelectedCurrency(newCurrency);
-    }
-  };
 
   const handleFreightChange = (value) => {
     setFreight(value || 0);
@@ -174,6 +167,7 @@ function LoadQuoteForm({ subTotal = 0, current = null }) {
             <Form.Item
               name="currency"
               label={translate('Currency')}
+              initialValue={current?.currency || 'USD'}
               rules={[
                 {
                   required: true,
@@ -181,19 +175,43 @@ function LoadQuoteForm({ subTotal = 0, current = null }) {
                 },
               ]}
             >
-              <SelectCurrency
-                value={selectedCurrency}
-                onChange={handleCurrencyChange}
-                entity={'currencies'}
-                outputValue={'currency_code'}
-                displayLabels={['currency_symbol','currency_name']}
-                withRedirect={true}
-                urlToRedirect="/currencies"
-                redirectLabel={translate('Add New Currency')}
+              <Select
                 placeholder={translate('Select currency')}
+                options={[
+                  { value: 'USD', label: 'USD ($)' },
+                  { value: 'CNY', label: 'CNY (¥)' },
+                ]}
               />
             </Form.Item>
           </Col>
+          {currencyValue === 'CNY' && (
+            <Col className="gutter-row" span={6}>
+              <Form.Item
+                name="exchangeRate"
+                label={translate('Exchange Rate')}
+                initialValue={current?.exchangeRate}
+                rules={[
+                  {
+                    required: true,
+                    message: translate('Please enter exchange rate'),
+                  },
+                  {
+                    type: 'number',
+                    min: 1.0001,
+                    message: translate('Exchange rate must be greater than 1'),
+                  },
+                ]}
+              >
+                <InputNumber
+                  style={{ width: '100%' }}
+                  step={0.01}
+                  precision={4}
+                  min={0}
+                  placeholder="e.g. 7.2"
+                />
+              </Form.Item>
+            </Col>
+          )}
           <Col className="gutter-row" span={6}>
             <Form.Item
               name="freight"
@@ -281,316 +299,6 @@ function LoadQuoteForm({ subTotal = 0, current = null }) {
 
       <Card className="card-form" style={{ marginBottom: '16px' }}>
         <Title level={4}>
-          <CalendarOutlined /> {translate('Terms & Conditions')}
-        </Title>
-        <Row gutter={[16, 16]}>
-          <Col className="gutter-row" span={24}>
-            <Form.Item 
-              label={translate('Terms of Delivery (Incoterms® 2020)')} 
-              style={{ marginBottom: '16px' }}
-            >
-              <Form.List name="termsOfDelivery" initialValue={current?.termsOfDelivery || []}>
-                {(fields, { add, remove }) => (
-                  <>
-                    {fields.map((field, index) => (
-                      <Row key={field.key} style={{ marginBottom: '8px' }}>
-                        <Col span={22}>
-                          <Form.Item
-                            {...field}
-                            noStyle
-                          >
-                            <Input 
-                              placeholder={`${translate('Terms of Delivery')} #${index + 1}`}
-                              style={{ width: '100%' }}
-                            />
-                          </Form.Item>
-                        </Col>
-                        <Col span={2} style={{ paddingLeft: '8px' }}>
-                          <Button 
-                            type="text" 
-                            danger 
-                            onClick={() => remove(field.name)} 
-                            icon={<DeleteOutlined />}
-                          />
-                        </Col>
-                      </Row>
-                    ))}
-                    <Form.Item>
-                      <Button
-                        type="dashed"
-                        onClick={() => add()}
-                        icon={<PlusOutlined />}
-                        style={{ width: '100%' }}
-                      >
-                        {translate('Add Term of Delivery')}
-                      </Button>
-                    </Form.Item>
-                  </>
-                )}
-              </Form.List>
-            </Form.Item>
-          </Col>
-          
-          <Col className="gutter-row" span={24}>
-            <Form.Item 
-              label={translate('Shipping Mark')} 
-              style={{ marginBottom: '16px' }}
-            >
-              <Form.List name="shippingMark" initialValue={current?.shippingMark || []}>
-                {(fields, { add, remove }) => (
-                  <>
-                    {fields.map((field, index) => (
-                      <Row key={field.key} style={{ marginBottom: '8px' }}>
-                        <Col span={22}>
-                          <Form.Item
-                            {...field}
-                            noStyle
-                          >
-                            <Input 
-                              placeholder={`${translate('Shipping Mark')} #${index + 1}`}
-                              style={{ width: '100%' }}
-                            />
-                          </Form.Item>
-                        </Col>
-                        <Col span={2} style={{ paddingLeft: '8px' }}>
-                          <Button 
-                            type="text" 
-                            danger 
-                            onClick={() => remove(field.name)} 
-                            icon={<DeleteOutlined />}
-                          />
-                        </Col>
-                      </Row>
-                    ))}
-                    <Form.Item>
-                      <Button
-                        type="dashed"
-                        onClick={() => add()}
-                        icon={<PlusOutlined />}
-                        style={{ width: '100%' }}
-                      >
-                        {translate('Add Shipping Mark')}
-                      </Button>
-                    </Form.Item>
-                  </>
-                )}
-              </Form.List>
-            </Form.Item>
-          </Col>
-          
-          <Col className="gutter-row" span={24}>
-            <Form.Item 
-              label={translate('Payment Terms')} 
-              style={{ marginBottom: '16px' }}
-            >
-              <Form.List name="paymentTerms" initialValue={current?.paymentTerms || []}>
-                {(fields, { add, remove }) => (
-                  <>
-                    {fields.map((field, index) => (
-                      <Row key={field.key} style={{ marginBottom: '8px' }}>
-                        <Col span={22}>
-                          <Form.Item
-                            {...field}
-                            noStyle
-                          >
-                            <Input 
-                              placeholder={`${translate('Payment Term')} #${index + 1}`}
-                              style={{ width: '100%' }}
-                            />
-                          </Form.Item>
-                        </Col>
-                        <Col span={2} style={{ paddingLeft: '8px' }}>
-                          <Button 
-                            type="text" 
-                            danger 
-                            onClick={() => remove(field.name)} 
-                            icon={<DeleteOutlined />}
-                          />
-                        </Col>
-                      </Row>
-                    ))}
-                    <Form.Item>
-                      <Button
-                        type="dashed"
-                        onClick={() => add()}
-                        icon={<PlusOutlined />}
-                        style={{ width: '100%' }}
-                      >
-                        {translate('Add Payment Term')}
-                      </Button>
-                    </Form.Item>
-                  </>
-                )}
-              </Form.List>
-            </Form.Item>
-          </Col>
-          
-          <Col className="gutter-row" span={24}>
-            <Form.Item 
-              label={translate('Bank Details')} 
-              style={{ marginBottom: '16px' }}
-            >
-              <Form.Item name="bankDetails" initialValue={current?.bankDetails || ''}>
-                <Select
-                  placeholder={translate('Select Bank')}
-                  style={{ width: '100%' }}
-                  options={[
-                    { value: 'boc', label: 'BOC' },
-                    { value: 'everbright', label: 'Everbright' },
-                    { value: 'rural', label: 'Rural' },
-                    { value: 'vtb', label: 'VTB' },
-                  ]}
-                />
-              </Form.Item>
-            </Form.Item>
-          </Col>
-          
-          <Col className="gutter-row" span={24}>
-            <Form.Item 
-              label={translate('Packaging')} 
-              style={{ marginBottom: '16px' }}
-            >
-              <Form.List name="packaging" initialValue={current?.packaging || []}>
-                {(fields, { add, remove }) => (
-                  <>
-                    {fields.map((field, index) => (
-                      <Row key={field.key} style={{ marginBottom: '8px' }}>
-                        <Col span={22}>
-                          <Form.Item
-                            {...field}
-                            noStyle
-                          >
-                            <Input 
-                              placeholder={`${translate('Packaging')} #${index + 1}`}
-                              style={{ width: '100%' }}
-                            />
-                          </Form.Item>
-                        </Col>
-                        <Col span={2} style={{ paddingLeft: '8px' }}>
-                          <Button 
-                            type="text" 
-                            danger 
-                            onClick={() => remove(field.name)} 
-                            icon={<DeleteOutlined />}
-                          />
-                        </Col>
-                      </Row>
-                    ))}
-                    <Form.Item>
-                      <Button
-                        type="dashed"
-                        onClick={() => add()}
-                        icon={<PlusOutlined />}
-                        style={{ width: '100%' }}
-                      >
-                        {translate('Add Packaging')}
-                      </Button>
-                    </Form.Item>
-                  </>
-                )}
-              </Form.List>
-            </Form.Item>
-          </Col>
-          
-          <Col className="gutter-row" span={24}>
-            <Form.Item 
-              label={translate('Shipment & Documents')} 
-              style={{ marginBottom: '16px' }}
-            >
-              <Form.List name="shipmentDocuments" initialValue={current?.shipmentDocuments || []}>
-                {(fields, { add, remove }) => (
-                  <>
-                    {fields.map((field, index) => (
-                      <Row key={field.key} style={{ marginBottom: '8px' }}>
-                        <Col span={22}>
-                          <Form.Item
-                            {...field}
-                            noStyle
-                          >
-                            <Input 
-                              placeholder={`${translate('Shipment & Document')} #${index + 1}`}
-                              style={{ width: '100%' }}
-                            />
-                          </Form.Item>
-                        </Col>
-                        <Col span={2} style={{ paddingLeft: '8px' }}>
-                          <Button 
-                            type="text" 
-                            danger 
-                            onClick={() => remove(field.name)} 
-                            icon={<DeleteOutlined />}
-                          />
-                        </Col>
-                      </Row>
-                    ))}
-                    <Form.Item>
-                      <Button
-                        type="dashed"
-                        onClick={() => add()}
-                        icon={<PlusOutlined />}
-                        style={{ width: '100%' }}
-                      >
-                        {translate('Add Shipment & Document')}
-                      </Button>
-                    </Form.Item>
-                  </>
-                )}
-              </Form.List>
-            </Form.Item>
-          </Col>
-          
-          <Col className="gutter-row" span={24}>
-            <Form.Item 
-              label={translate('Other conditions')} 
-              tooltip={translate('Add any special instructions or conditions about this quote')}
-              style={{ marginBottom: '8px' }}
-            >
-              <Form.List name="notes" initialValue={initialNotes}>
-                {(fields, { add, remove }) => (
-                  <>
-                    {fields.map((field, index) => (
-                      <Row key={field.key} style={{ marginBottom: '8px' }}>
-                        <Col span={22}>
-                          <Form.Item
-                            {...field}
-                            noStyle
-                          >
-                            <Input 
-                              placeholder={`${translate('Condition')} #${index + 1}`}
-                              style={{ width: '100%' }}
-                            />
-                          </Form.Item>
-                        </Col>
-                        <Col span={2} style={{ paddingLeft: '8px' }}>
-                          <Button 
-                            type="text" 
-                            danger 
-                            onClick={() => remove(field.name)} 
-                            icon={<DeleteOutlined />}
-                          />
-                        </Col>
-                      </Row>
-                    ))}
-                    <Form.Item>
-                      <Button
-                        type="dashed"
-                        onClick={() => add()}
-                        icon={<PlusOutlined />}
-                        style={{ width: '100%' }}
-                      >
-                        {translate('Add Condition')}
-                      </Button>
-                    </Form.Item>
-                  </>
-                )}
-              </Form.List>
-            </Form.Item>
-          </Col>
-        </Row>
-      </Card>
-
-      <Card className="card-form" style={{ marginBottom: '16px' }}>
-        <Title level={4}>
           <ShoppingOutlined /> {translate('Quote Items')}
         </Title>
         <div style={{ marginBottom: '10px' }}>
@@ -629,6 +337,146 @@ function LoadQuoteForm({ subTotal = 0, current = null }) {
             </>
           )}
         </Form.List>
+      </Card>
+
+      <Card className="card-form" style={{ marginBottom: '16px' }}>
+        <Title level={4}>
+          <CalendarOutlined /> {translate('Terms & Conditions')}
+        </Title>
+        <Row gutter={[16, 16]}>
+          <Col className="gutter-row" span={24}>
+            <Form.Item
+              label={translate('Terms of Delivery (Incoterms® 2020)')}
+              style={{ marginBottom: '16px' }}
+            >
+              <Form.List name="termsOfDelivery" initialValue={current?.termsOfDelivery || []}>
+                {(fields, { add, remove }) => (
+                  <>
+                    {fields.map((field, index) => (
+                      <Row key={field.key} style={{ marginBottom: '8px' }}>
+                        <Col span={22}>
+                          <Form.Item {...field} noStyle>
+                            <Input
+                              placeholder={`${translate('Terms of Delivery')} #${index + 1}`}
+                              style={{ width: '100%' }}
+                            />
+                          </Form.Item>
+                        </Col>
+                        <Col span={2} style={{ paddingLeft: '8px' }}>
+                          <Button
+                            type="text"
+                            danger
+                            onClick={() => remove(field.name)}
+                            icon={<DeleteOutlined />}
+                          />
+                        </Col>
+                      </Row>
+                    ))}
+                    <Form.Item>
+                      <Button
+                        type="dashed"
+                        onClick={() => add()}
+                        icon={<PlusOutlined />}
+                        style={{ width: '100%' }}
+                      >
+                        {translate('Add Term of Delivery')}
+                      </Button>
+                    </Form.Item>
+                  </>
+                )}
+              </Form.List>
+            </Form.Item>
+          </Col>
+
+          <Col className="gutter-row" span={24}>
+            <Form.Item
+              label={translate('Payment Terms')}
+              style={{ marginBottom: '16px' }}
+            >
+              <Form.List name="paymentTerms" initialValue={current?.paymentTerms || []}>
+                {(fields, { add, remove }) => (
+                  <>
+                    {fields.map((field, index) => (
+                      <Row key={field.key} style={{ marginBottom: '8px' }}>
+                        <Col span={22}>
+                          <Form.Item {...field} noStyle>
+                            <Input
+                              placeholder={`${translate('Payment Term')} #${index + 1}`}
+                              style={{ width: '100%' }}
+                            />
+                          </Form.Item>
+                        </Col>
+                        <Col span={2} style={{ paddingLeft: '8px' }}>
+                          <Button
+                            type="text"
+                            danger
+                            onClick={() => remove(field.name)}
+                            icon={<DeleteOutlined />}
+                          />
+                        </Col>
+                      </Row>
+                    ))}
+                    <Form.Item>
+                      <Button
+                        type="dashed"
+                        onClick={() => add()}
+                        icon={<PlusOutlined />}
+                        style={{ width: '100%' }}
+                      >
+                        {translate('Add Payment Term')}
+                      </Button>
+                    </Form.Item>
+                  </>
+                )}
+              </Form.List>
+            </Form.Item>
+          </Col>
+
+          <Col className="gutter-row" span={24}>
+            <Form.Item
+              label={translate('Other conditions')}
+              tooltip={translate('Add any special instructions or conditions about this quote')}
+              style={{ marginBottom: '8px' }}
+            >
+              <Form.List name="notes" initialValue={initialNotes}>
+                {(fields, { add, remove }) => (
+                  <>
+                    {fields.map((field, index) => (
+                      <Row key={field.key} style={{ marginBottom: '8px' }}>
+                        <Col span={22}>
+                          <Form.Item {...field} noStyle>
+                            <Input
+                              placeholder={`${translate('Condition')} #${index + 1}`}
+                              style={{ width: '100%' }}
+                            />
+                          </Form.Item>
+                        </Col>
+                        <Col span={2} style={{ paddingLeft: '8px' }}>
+                          <Button
+                            type="text"
+                            danger
+                            onClick={() => remove(field.name)}
+                            icon={<DeleteOutlined />}
+                          />
+                        </Col>
+                      </Row>
+                    ))}
+                    <Form.Item>
+                      <Button
+                        type="dashed"
+                        onClick={() => add()}
+                        icon={<PlusOutlined />}
+                        style={{ width: '100%' }}
+                      >
+                        {translate('Add Condition')}
+                      </Button>
+                    </Form.Item>
+                  </>
+                )}
+              </Form.List>
+            </Form.Item>
+          </Col>
+        </Row>
       </Card>
 
       <Card className="card-form">
