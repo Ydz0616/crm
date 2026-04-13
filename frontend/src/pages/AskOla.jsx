@@ -1,22 +1,62 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { notification } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
 import request from '@/request/request';
+import { useAppContext } from '@/context/appContext';
 import MessageBubble from '@/components/AskOla/MessageBubble';
 import ChatInput from '@/components/AskOla/ChatInput';
 
 export default function AskOla() {
   const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(false);
   const bottomRef = useRef(null);
+  const { state: stateApp, appContextAction } = useAppContext();
+  const { activeSessionId } = stateApp;
+  const { chatSession } = appContextAction;
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Load messages when activeSessionId changes
+  const loadMessages = useCallback(async (sessionId) => {
+    if (!sessionId) {
+      setMessages([]);
+      return;
+    }
+    const response = await request.get({ entity: `ola/session/messages/${sessionId}` });
+    if (response.success) {
+      const loaded = response.result.map((msg) => ({
+        id: msg._id,
+        role: msg.role,
+        timestamp: msg.created,
+        blocks: msg.blocks || [{ type: 'text', content: msg.content }],
+      }));
+      setMessages(loaded);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadMessages(activeSessionId);
+  }, [activeSessionId, loadMessages]);
+
+  // Refresh session list
+  const refreshSessionList = useCallback(async () => {
+    const response = await request.get({ entity: 'ola/session/list' });
+    if (response.success) {
+      chatSession.setList(response.result);
+    }
+  }, [chatSession]);
+
+  const handleNewChat = useCallback(() => {
+    chatSession.setActive(null);
+    setMessages([]);
+  }, [chatSession]);
+
   const handleSend = async (messageContent) => {
     const text = messageContent.text;
 
-    // 添加用户消息
     const userMessage = {
       id: `msg_user_${Date.now()}`,
       role: 'user',
@@ -27,12 +67,22 @@ export default function AskOla() {
     setLoading(true);
 
     try {
+      const jsonData = { message: text };
+      if (activeSessionId) {
+        jsonData.sessionId = activeSessionId;
+      }
+
       const response = await request.post({
         entity: 'ola/chat',
-        jsonData: { message: text },
+        jsonData,
       });
 
       if (response.success) {
+        // If this was the first message, set the returned sessionId as active
+        if (!activeSessionId && response.result.sessionId) {
+          chatSession.setActive(response.result.sessionId);
+        }
+
         const assistantMessage = {
           id: `msg_assistant_${Date.now()}`,
           role: 'assistant',
@@ -40,6 +90,9 @@ export default function AskOla() {
           blocks: [{ type: 'text', content: response.result.content }],
         };
         setMessages((prev) => [...prev, assistantMessage]);
+
+        // Refresh session list (new session may have been created)
+        refreshSessionList();
       } else {
         notification.error({
           message: 'Ola 响应失败',
@@ -71,7 +124,6 @@ export default function AskOla() {
         </div>
       ) : (
         <>
-          {/* Scrollable message area */}
           <div className="askola-chat-messages">
             <div className="askola-chat-messages-inner">
               {messages.map((msg) => (
@@ -90,12 +142,16 @@ export default function AskOla() {
             </div>
           </div>
 
-          {/* Sticky input at bottom */}
           <div className="askola-chat-input-wrapper">
             <ChatInput onSend={handleSend} disabled={loading} />
           </div>
         </>
       )}
+
+      {/* New Chat button — always visible */}
+      <button className="askola-new-chat-btn" onClick={handleNewChat} title="New Chat">
+        <PlusOutlined />
+      </button>
     </div>
   );
 }
