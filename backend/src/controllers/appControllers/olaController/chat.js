@@ -159,7 +159,7 @@ const chat = async (req, res) => {
           });
           resolve();
 
-          // Fire-and-forget: persist messages to DB
+          // Fire-and-forget: persist messages, then check auto-title
           ChatMessage.insertMany([
             {
               sessionId: session._id,
@@ -175,27 +175,26 @@ const chat = async (req, res) => {
               blocks: [{ type: 'text', content }],
               createdBy: userId,
             },
-          ]).catch((err) => {
+          ]).then(() => {
+            // Auto-generate title after 2nd exchange (4 messages = enough context)
+            // Chained after insertMany to avoid race condition on count
+            if (session.title === 'New Chat') {
+              return ChatMessage.countDocuments({ sessionId: session._id, removed: false })
+                .then((count) => {
+                  if (count >= 4) {
+                    return ChatMessage.find({ sessionId: session._id, removed: false })
+                      .sort({ created: 1 }).lean()
+                      .then((msgs) => generateTitle(session, msgs));
+                  }
+                });
+            }
+          }).catch((err) => {
             console.error(
               `[ChatMessage] Failed to persist messages for session ${session._id}:`,
               err.message,
               { sessionId: session._id, userMessage: message.trim(), assistantContent: content }
             );
           });
-
-          // Auto-generate title after 2nd exchange (4 messages = enough context)
-          if (session.title === 'New Chat') {
-            ChatMessage.countDocuments({ sessionId: session._id, removed: false })
-              .then((count) => {
-                if (count >= 4) {
-                  ChatMessage.find({ sessionId: session._id, removed: false })
-                    .sort({ created: 1 }).lean()
-                    .then((msgs) => generateTitle(session, msgs))
-                    .catch((err) => console.error(`[AutoTitle] Failed to load messages:`, err.message));
-                }
-              })
-              .catch((err) => console.error(`[AutoTitle] Failed to count messages:`, err.message));
-          }
         } catch (parseErr) {
           res.status(502).json({
             success: false,

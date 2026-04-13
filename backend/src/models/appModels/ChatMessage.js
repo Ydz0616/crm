@@ -23,7 +23,7 @@ const schema = new mongoose.Schema({
   },
   blocks: {
     type: mongoose.Schema.Types.Mixed,
-    default: [],
+    default: () => [],
   },
   createdBy: { type: mongoose.Schema.ObjectId, ref: 'Admin' },
   created: {
@@ -36,6 +36,6 @@ const schema = new mongoose.Schema({
   },
 });
 
-schema.plugin(require('mongoose-autopopulate'));
+schema.index({ sessionId: 1, removed: 1 });
 
 module.exports = mongoose.model('ChatMessage', schema);

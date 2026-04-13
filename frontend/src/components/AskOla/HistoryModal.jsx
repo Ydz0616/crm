@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { Modal } from 'antd';
+import { Modal, notification } from 'antd';
 import { DeleteOutlined, CloseOutlined } from '@ant-design/icons';
 import { useAppContext } from '@/context/appContext';
 import request from '@/request/request';
@@ -58,7 +58,11 @@ export default function HistoryModal() {
 
   const handleDelete = async (e, sessionId) => {
     e.stopPropagation();
-    await request.delete({ entity: 'ola/session', id: sessionId });
+    const res = await request.delete({ entity: 'ola/session', id: sessionId });
+    if (!res.success) {
+      notification.error({ message: 'Failed to delete session', description: res.message });
+      return;
+    }
     if (activeSessionId === sessionId) {
       chatSession.setActive(null);
     }

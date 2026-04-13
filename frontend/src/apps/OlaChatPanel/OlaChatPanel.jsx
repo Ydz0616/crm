@@ -2,7 +2,6 @@ import { CloseOutlined, HistoryOutlined, EllipsisOutlined, PlusOutlined } from '
 import { Tooltip } from 'antd';
 import { useAppContext } from '@/context/appContext';
 import { useNavigate } from 'react-router-dom';
-import ChatInput from '@/components/AskOla/ChatInput';
 
 const DEFAULT_CHAT_TITLE = 'Untitled chat';
 
@@ -43,9 +42,9 @@ export default function OlaChatPanel() {
         {/* Empty – placeholder for future messages */}
       </div>
 
-      {/* Input Bar */}
-      <div className="ola-panel-input-wrapper">
-        <ChatInput onSend={(payload) => { /* handle message send later */ }} />
+      {/* Input placeholder — full chat at /askola */}
+      <div className="ola-panel-input-wrapper" style={{ padding: '12px 16px', textAlign: 'center', color: '#8c8c8c', fontSize: '13px', cursor: 'pointer' }} onClick={() => navigate('/askola')}>
+        Open Ask Ola to chat
       </div>
     </div>
   );

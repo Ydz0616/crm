@@ -109,7 +109,7 @@ const sessionRename = async (req, res) => {
   const { title } = req.body;
   const userId = req.admin._id;
 
-  if (!title || typeof title !== 'string' || title.trim() === '') {
+  if (!title || typeof title !== 'string' || title.trim() === '' || title.trim().length > 200) {
     return res.status(400).json({
       success: false,
       result: null,
