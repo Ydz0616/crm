@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Modal } from 'antd';
 import { DeleteOutlined, CloseOutlined } from '@ant-design/icons';
 import { useAppContext } from '@/context/appContext';
@@ -18,22 +18,34 @@ function formatTimeAgo(dateStr) {
 }
 
 export default function HistoryModal() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sessions, setSessions] = useState([]);
   const { state: stateApp, appContextAction } = useAppContext();
-  const { isHistoryModalOpen, sessionList, activeSessionId } = stateApp;
+  const { isHistoryModalOpen, activeSessionId } = stateApp;
   const { historyModal, chatSession } = appContextAction;
-
-  const fetchSessions = useCallback(async () => {
-    const response = await request.get({ entity: 'ola/session/list' });
-    if (response.success) {
-      chatSession.setList(response.result);
-    }
-  }, [chatSession]);
+  const hasFetched = useRef(false);
 
   useEffect(() => {
-    if (isHistoryModalOpen) {
-      fetchSessions();
+    if (isHistoryModalOpen && !hasFetched.current) {
+      hasFetched.current = true;
+      setSearchQuery('');
+      request.get({ entity: 'ola/session/list' }).then((response) => {
+        if (response.success) {
+          setSessions(response.result);
+          chatSession.setList(response.result);
+        }
+      });
     }
-  }, [isHistoryModalOpen, fetchSessions]);
+    if (!isHistoryModalOpen) {
+      hasFetched.current = false;
+    }
+  }, [isHistoryModalOpen]);
+
+  const filteredSessions = useMemo(() => {
+    if (!searchQuery.trim()) return sessions;
+    const q = searchQuery.trim().toLowerCase();
+    return sessions.filter((s) => s.title.toLowerCase().includes(q));
+  }, [sessions, searchQuery]);
 
   const handleClose = () => {
     historyModal.close();
@@ -47,11 +59,15 @@ export default function HistoryModal() {
   const handleDelete = async (e, sessionId) => {
     e.stopPropagation();
     await request.delete({ entity: 'ola/session', id: sessionId });
-    // If deleting the active session, clear it
     if (activeSessionId === sessionId) {
       chatSession.setActive(null);
     }
-    fetchSessions();
+    // Refresh local list
+    const response = await request.get({ entity: 'ola/session/list' });
+    if (response.success) {
+      setSessions(response.result);
+      chatSession.setList(response.result);
+    }
   };
 
   return (
@@ -67,7 +83,13 @@ export default function HistoryModal() {
     >
       <div className="history-modal-container">
         <div className="history-modal-search">
-          <input type="text" placeholder="Select a conversation" className="history-modal-input" />
+          <input
+            type="text"
+            placeholder="Search conversations..."
+            className="history-modal-input"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
           <button className="history-modal-close" onClick={handleClose}>
             <CloseOutlined />
           </button>
@@ -75,12 +97,12 @@ export default function HistoryModal() {
 
         <div className="history-modal-content">
           <div className="history-items-list">
-            {sessionList.length === 0 ? (
+            {filteredSessions.length === 0 ? (
               <div style={{ padding: '24px', textAlign: 'center', color: '#8c8c8c' }}>
-                No conversations yet
+                {searchQuery.trim() ? 'No matching conversations' : 'No conversations yet'}
               </div>
             ) : (
-              sessionList.map((session) => (
+              filteredSessions.map((session) => (
                 <div
                   key={session._id}
                   className={`history-item ${session._id === activeSessionId ? 'history-item--current' : ''}`}

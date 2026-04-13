@@ -41,18 +41,18 @@ export default function AskOla() {
     loadMessages(activeSessionId);
   }, [activeSessionId, loadMessages]);
 
-  // Refresh session list
-  const refreshSessionList = useCallback(async () => {
+  // Refresh session list — no deps on chatSession to avoid infinite re-render
+  const refreshSessionList = async () => {
     const response = await request.get({ entity: 'ola/session/list' });
     if (response.success) {
       chatSession.setList(response.result);
     }
-  }, [chatSession]);
+  };
 
-  const handleNewChat = useCallback(() => {
+  const handleNewChat = () => {
     chatSession.setActive(null);
     setMessages([]);
-  }, [chatSession]);
+  };
 
   const handleSend = async (messageContent) => {
     const text = messageContent.text;

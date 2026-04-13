@@ -14,8 +14,11 @@ const NANOBOT_TIMEOUT_MS = 120000; // 2 分钟，与 nanobot 默认超时一致
  * Fire-and-forget: ask NanoBot to generate a short title for the conversation.
  * Only called on the first exchange (when title is still "New Chat").
  */
-function generateTitle(session, userMessage, assistantReply) {
-  const prompt = `Based on this conversation, generate a short title (max 6 words, no quotes, no punctuation at the end). Reply with ONLY the title, nothing else.\n\nUser: ${userMessage}\nAssistant: ${assistantReply}`;
+function generateTitle(session, messages) {
+  const conversation = messages
+    .map((m) => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`)
+    .join('\n');
+  const prompt = `Based on this conversation, generate a short title (max 6 words, no quotes, no punctuation at the end). Reply with ONLY the title, nothing else.\n\n${conversation}`;
 
   const payload = JSON.stringify({
     messages: [{ role: 'user', content: prompt }],
@@ -180,9 +183,18 @@ const chat = async (req, res) => {
             );
           });
 
-          // Auto-generate title on first exchange
+          // Auto-generate title after 2nd exchange (4 messages = enough context)
           if (session.title === 'New Chat') {
-            generateTitle(session, message.trim(), content);
+            ChatMessage.countDocuments({ sessionId: session._id, removed: false })
+              .then((count) => {
+                if (count >= 4) {
+                  ChatMessage.find({ sessionId: session._id, removed: false })
+                    .sort({ created: 1 }).lean()
+                    .then((msgs) => generateTitle(session, msgs))
+                    .catch((err) => console.error(`[AutoTitle] Failed to load messages:`, err.message));
+                }
+              })
+              .catch((err) => console.error(`[AutoTitle] Failed to count messages:`, err.message));
           }
         } catch (parseErr) {
           res.status(502).json({
