@@ -57,8 +57,40 @@ cd frontend && npm install
 | `VITE_DEV_BYPASS_AUTH` | 绕过登录墙 | `true`（仅开发用） |
 
 ---
+## 场景 D：一键启动本地环境（推荐）
 
-## 场景 A：全栈开发（zyd 日常模式）
+通过主目录的 Bash 脚本，一键启动后端、前端、MCP 和 NanoBot 服务。
+
+### 步骤
+
+```bash
+bash start-dev.sh
+```
+
+**脚本功能：**
+1. **服务并行启动**：后端 (8888)、MCP (8889)、NanoBot (8900)、前端 (3000) 将在后台运行。
+2. **统一日志管理**：所有服务日志输出到 `/tmp/ola-{service}.log`。
+3. **健康检查**：启动后自动检测各端口连通性。
+
+**预期输出：**
+```
+=== Status ===
+  Backend : running (port 8888)
+  MCP     : running (port 8889)
+  Frontend: running (port 3000)
+
+Logs: /tmp/ola-{backend,mcp,nanobot,frontend}.log
+Stop all: bash start-dev.sh
+```
+
+**停止服务：**
+```bash
+bash stop-dev.sh
+```
+
+---
+
+## 场景 A：全栈开发（手动控制模式）
 
 后端 + 前端都在本地运行，前端通过 Vite proxy 连接本地后端。
 
