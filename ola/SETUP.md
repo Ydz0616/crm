@@ -31,17 +31,20 @@ This directory is what makes **Ask Ola** behave as a real tool-calling agent
 
 When you run `bash start-dev.sh` on a fresh mac:
 
-1. Sources `backend/.env` into the shell environment.
-2. If `~/.nanobot/config.json` does **not** exist → renders
-   `ola/nanobot.config.template.json` by substituting `${MCP_SERVICE_TOKEN}`
-   and `${GEMINI_API_KEY}` from env, and writes the result to
-   `~/.nanobot/config.json` (mode 600). Both secrets end up on disk in this
-   one file — nanobot v0.1.4.post6 requires `providers.gemini.apiKey` to be
-   present in config at startup (`_make_provider` raises `ValueError` on
-   empty key; no env fallback). The file is gitignored home-dir, owner-only.
+1. Verifies `backend/.env` exists (fails fast if missing).
+2. If `~/.nanobot/config.json` does **not** exist → runs a short Node
+   subprocess that loads `backend/.env` via `dotenv` (so the parent shell
+   is **not** polluted), reads `MCP_SERVICE_TOKEN` and `GEMINI_API_KEY`,
+   substitutes them into `ola/nanobot.config.template.json`, and writes the
+   result to `~/.nanobot/config.json` (mode 600). Both secrets end up on
+   disk in this one file — nanobot v0.1.4.post6 requires
+   `providers.gemini.apiKey` to be present in config at startup
+   (`_make_provider` raises `ValueError` on empty key; no env fallback).
+   The file is gitignored home-dir, owner-only.
 3. If `~/.nanobot/workspace/SOUL.md` does **not** exist → copies the 5 md
    files from `ola/nanobot-workspace/` into `~/.nanobot/workspace/`.
 4. Starts backend (8888), MCP server (8889), nanobot (8900), frontend (3000).
+   Each service reads `backend/.env` via its own `dotenv` call at startup.
 
 On subsequent boots, steps 2 and 3 are **no-ops** if the files already
 exist — your local agent memory and session history under
