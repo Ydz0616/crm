@@ -1,3 +1,4 @@
+include _logo.pug
 doctype html
 html
   head
@@ -48,9 +49,6 @@ html
       }
       alignLeft :{
         text-align: left;
-      }
-      .logo {
-        width: 150px;
       }
       .company-info{
         text-align: right;
@@ -264,7 +262,8 @@ html
     
       header.clearfix
         .top-area
-          img.logo.left(src=settings.public_server_file+settings.company_logo)
+          //- Logo 暂时隐藏 — 位置还要让用户可调（见 task.md Phase I）
+          //- +companyLogo
           .right.company-info
               p.strong #{settings.company_name}
               p #{settings.company_address}

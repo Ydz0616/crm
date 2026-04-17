@@ -17,6 +17,18 @@ const pugFiles = ['invoice', 'offer', 'quote', 'payment', 'purchaseorder'];
 require('dotenv').config({ path: '.env' });
 require('dotenv').config({ path: '.env.local' });
 
+// Resolve the public URL prefix used by pug templates to build absolute
+// asset URLs (e.g. for company logo). Dev → backend itself; prod →
+// SERVER_HOST. Must return a URL ending with '/'.
+const resolvePublicBase = () => {
+  if (process.env.NODE_ENV === 'development') {
+    return `http://localhost:${process.env.PORT || 8888}/`;
+  }
+  const host = process.env.SERVER_HOST;
+  if (host) return host.endsWith('/') ? host : host + '/';
+  return process.env.PUBLIC_SERVER_FILE || '/';
+};
+
 // 确保目录存在
 const ensureDirectoryExists = (filePath) => {
   const dirname = path.dirname(filePath);
@@ -40,7 +52,7 @@ exports.generatePdfStream = async (
     // render pdf html
     if (pugFiles.includes(modelName.toLowerCase())) {
       // Compile Pug template
-      const settings = await loadSettings();
+      const settings = await loadSettings(result.createdBy);
       const selectedLang = settings['easycrm_app_language'];
       const translate = useLanguage({ selectedLang });
 
@@ -80,92 +92,10 @@ exports.generatePdfStream = async (
 
       const { dateFormat } = useDate({ settings });
 
-      // 确保公司logo路径是有效的
-      const serverUrl = process.env.PUBLIC_SERVER_FILE || '/';
-      
-      // 获取服务器域名和端口
-      const serverHost = process.env.SERVER_HOST || '';
-      
-      // 确保使用最新的logo文件
-      if (settings.company_logo) {
-        // 如果路径包含company-logo-时间戳的格式，替换为固定名称
-        if (settings.company_logo.includes('company-logo-')) {
-          settings.company_logo = 'public/uploads/setting/company-logo.png';
-        }
-      }
-      
-      console.log('[PDF生成]', {
-        serverUrl,
-        serverHost,
-        company_logo: settings.company_logo,
-        NODE_ENV: process.env.NODE_ENV 
-      });
-      
-      // 处理公司logo路径
-      if (settings.company_logo && !settings.company_logo.startsWith('http')) {
-        // 本地开发使用相对路径
-        if (process.env.NODE_ENV === 'development') {
-          settings.public_server_file = serverUrl;
-          console.log('[PDF生成] 开发环境图片路径设置:', {
-            public_server_file: settings.public_server_file,
-            company_logo: settings.company_logo,
-            fullPath: settings.public_server_file + settings.company_logo
-          });
-        } 
-        // 生产环境使用完整URL
-        else {
-          if (serverHost) {
-            if (settings.company_logo.startsWith('/')) {
-              settings.company_logo = settings.company_logo.substring(1);
-            }
-            settings.public_server_file = serverHost.endsWith('/') ? serverHost : serverHost + '/';
-            console.log('[PDF生成] 生产环境图片路径设置:', {
-              public_server_file: settings.public_server_file,
-              company_logo: settings.company_logo,
-              fullPath: settings.public_server_file + settings.company_logo
-            });
-          } else {
-            settings.public_server_file = serverUrl;
-            console.log('[PDF生成] 默认环境图片路径设置:', {
-              public_server_file: settings.public_server_file,
-              company_logo: settings.company_logo,
-              fullPath: settings.public_server_file + settings.company_logo
-            });
-          }
-        }
-      }
-      
-      // 添加版本号防止缓存
-      if (settings.company_logo && !settings.company_logo.includes('?v=')) {
-        settings.company_logo = `${settings.company_logo}?v=${Date.now()}`;
-      }
-      
-      console.log('[PDF生成] 图片最终URL:', settings.public_server_file + settings.company_logo);
+      settings.public_server_file = resolvePublicBase();
 
-      // Gotenberg优化: 处理logo路径
-      if (settings.company_logo && !settings.company_logo.startsWith('http')) {
-        // 使用已知的固定路径，同时记录原始路径
-        const fixedLogoPath = path.join(process.cwd(), 'backend/src/public/uploads/setting/company-logo.png');
-        console.log('[PDF生成] 为Gotenberg优化: 使用绝对logo路径', fixedLogoPath);
-        
-        // 保存原始路径以备后用
-        settings.original_logo = settings.company_logo;
-        
-        // 检查文件是否存在
-        if (fs.existsSync(fixedLogoPath)) {
-          console.log('[PDF生成] 找到logo文件:', fixedLogoPath);
-          
-          // 在这里我们设置为相对路径，让processImagesInHtml函数处理成base64
-          settings.company_logo = 'public/uploads/setting/company-logo.png';
-        } else {
-          console.warn('[PDF生成] 找不到logo文件:', fixedLogoPath);
-        }
-      }
-
-      // 如果是采购订单，添加中文大写金额
       if (modelName.toLowerCase() === 'purchaseorder' && result.total) {
         result.totalInChinese = numberToChineseAmount(result.total);
-        console.log('[PDF生成] 添加中文大写金额:', result.totalInChinese);
       }
 
       const htmlContent = pug.renderFile('src/pdf/' + modelName + '.pug', {
@@ -177,7 +107,6 @@ exports.generatePdfStream = async (
         moment: moment,
       });
 
-      // 添加内联样式确保中文显示，同时确保logo路径包含完整路径
       const htmlWithFonts = `
         <style>
           @font-face {
@@ -188,15 +117,8 @@ exports.generatePdfStream = async (
             font-family: 'Noto Sans CJK SC', 'Noto Sans CJK', sans-serif !important;
           }
         </style>
-        ${htmlContent.replace(
-          new RegExp(`src="${settings.public_server_file}${settings.company_logo}"`, 'g'),
-          `src="${settings.company_logo}"`
-        )}
+        ${htmlContent}
       `;
-
-      console.log('[PDF生成] 处理后的图片路径:', 
-        htmlWithFonts.includes(settings.company_logo) ? 
-        '找到logo路径' : '未找到logo路径');
 
       try {
         console.log('使用Gotenberg生成PDF流: ' + modelName);
@@ -252,7 +174,7 @@ exports.generatePdf = async (
     // render pdf html
     if (pugFiles.includes(modelName.toLowerCase())) {
       // Compile Pug template
-      const settings = await loadSettings();
+      const settings = await loadSettings(result.createdBy);
       const selectedLang = settings['easycrm_app_language'];
       const translate = useLanguage({ selectedLang });
 
@@ -292,92 +214,10 @@ exports.generatePdf = async (
 
       const { dateFormat } = useDate({ settings });
 
-      // 确保公司logo路径是有效的
-      const serverUrl = process.env.PUBLIC_SERVER_FILE || '/';
-      
-      // 获取服务器域名和端口
-      const serverHost = process.env.SERVER_HOST || '';
-      
-      // 确保使用最新的logo文件
-      if (settings.company_logo) {
-        // 如果路径包含company-logo-时间戳的格式，替换为固定名称
-        if (settings.company_logo.includes('company-logo-')) {
-          settings.company_logo = 'public/uploads/setting/company-logo.png';
-        }
-      }
-      
-      console.log('[PDF生成]', {
-        serverUrl,
-        serverHost,
-        company_logo: settings.company_logo,
-        NODE_ENV: process.env.NODE_ENV 
-      });
-      
-      // 处理公司logo路径
-      if (settings.company_logo && !settings.company_logo.startsWith('http')) {
-        // 本地开发使用相对路径
-        if (process.env.NODE_ENV === 'development') {
-          settings.public_server_file = serverUrl;
-          console.log('[PDF生成] 开发环境图片路径设置:', {
-            public_server_file: settings.public_server_file,
-            company_logo: settings.company_logo,
-            fullPath: settings.public_server_file + settings.company_logo
-          });
-        } 
-        // 生产环境使用完整URL
-        else {
-          if (serverHost) {
-            if (settings.company_logo.startsWith('/')) {
-              settings.company_logo = settings.company_logo.substring(1);
-            }
-            settings.public_server_file = serverHost.endsWith('/') ? serverHost : serverHost + '/';
-            console.log('[PDF生成] 生产环境图片路径设置:', {
-              public_server_file: settings.public_server_file,
-              company_logo: settings.company_logo,
-              fullPath: settings.public_server_file + settings.company_logo
-            });
-          } else {
-            settings.public_server_file = serverUrl;
-            console.log('[PDF生成] 默认环境图片路径设置:', {
-              public_server_file: settings.public_server_file,
-              company_logo: settings.company_logo,
-              fullPath: settings.public_server_file + settings.company_logo
-            });
-          }
-        }
-      }
-      
-      // 添加版本号防止缓存
-      if (settings.company_logo && !settings.company_logo.includes('?v=')) {
-        settings.company_logo = `${settings.company_logo}?v=${Date.now()}`;
-      }
-      
-      console.log('[PDF生成] 图片最终URL:', settings.public_server_file + settings.company_logo);
+      settings.public_server_file = resolvePublicBase();
 
-      // Gotenberg优化: 处理logo路径
-      if (settings.company_logo && !settings.company_logo.startsWith('http')) {
-        // 使用已知的固定路径，同时记录原始路径
-        const fixedLogoPath = path.join(process.cwd(), 'backend/src/public/uploads/setting/company-logo.png');
-        console.log('[PDF生成] 为Gotenberg优化: 使用绝对logo路径', fixedLogoPath);
-        
-        // 保存原始路径以备后用
-        settings.original_logo = settings.company_logo;
-        
-        // 检查文件是否存在
-        if (fs.existsSync(fixedLogoPath)) {
-          console.log('[PDF生成] 找到logo文件:', fixedLogoPath);
-          
-          // 在这里我们设置为相对路径，让processImagesInHtml函数处理成base64
-          settings.company_logo = 'public/uploads/setting/company-logo.png';
-        } else {
-          console.warn('[PDF生成] 找不到logo文件:', fixedLogoPath);
-        }
-      }
-
-      // 如果是采购订单，添加中文大写金额
       if (modelName.toLowerCase() === 'purchaseorder' && result.total) {
         result.totalInChinese = numberToChineseAmount(result.total);
-        console.log('[PDF生成] 添加中文大写金额:', result.totalInChinese);
       }
 
       const htmlContent = pug.renderFile('src/pdf/' + modelName + '.pug', {
@@ -389,7 +229,6 @@ exports.generatePdf = async (
         moment: moment,
       });
 
-      // 添加内联样式确保中文显示，同时确保logo路径包含完整路径
       const htmlWithFonts = `
         <style>
           @font-face {
@@ -400,15 +239,8 @@ exports.generatePdf = async (
             font-family: 'Noto Sans CJK SC', 'Noto Sans CJK', sans-serif !important;
           }
         </style>
-        ${htmlContent.replace(
-          new RegExp(`src="${settings.public_server_file}${settings.company_logo}"`, 'g'),
-          `src="${settings.company_logo}"`
-        )}
+        ${htmlContent}
       `;
-
-      console.log('[PDF生成] 处理后的图片路径:', 
-        htmlWithFonts.includes(settings.company_logo) ? 
-        '找到logo路径' : '未找到logo路径');
 
       try {
         console.log('使用Gotenberg生成PDF: ' + modelName);

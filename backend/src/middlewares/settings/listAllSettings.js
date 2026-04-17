@@ -2,12 +2,11 @@ const mongoose = require('mongoose');
 
 const Model = mongoose.model('Setting');
 
-const listAllSettings = async () => {
+const listAllSettings = async (createdBy = null) => {
   try {
-    //  Query the database for a list of all results
-    const result = await Model.find({
-      removed: false,
-    }).exec();
+    const filter = { removed: false };
+    if (createdBy) filter.createdBy = createdBy;
+    const result = await Model.find(filter).exec();
 
     if (result.length > 0) {
       return result;
