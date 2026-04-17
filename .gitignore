@@ -54,3 +54,7 @@ k8s-secrets.yaml
 
 # SDD per-task work doc — local only
 task.md
+
+# User-uploaded files — keep seed only
+backend/src/public/uploads/setting/*
+!backend/src/public/uploads/setting/company-logo.png

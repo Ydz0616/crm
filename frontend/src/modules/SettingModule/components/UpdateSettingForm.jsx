@@ -33,13 +33,14 @@ export default function UpdateSettingForm({ config, children, withUpload, upload
           console.log('Uploading file:', fieldsValue.file[0].originFileObj.name);
           console.log('Using direct upload endpoint');
           
-          // 直接调用上传接口而不是通过redux
-          const response = await axios.patch(`${API_BASE_URL}setting/upload_logo`, formData, {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-            },
-            withCredentials: true
-          });
+          const response = await axios.patch(
+            `${API_BASE_URL}setting/upload/${uploadSettingKey}`,
+            formData,
+            {
+              headers: { 'Content-Type': 'multipart/form-data' },
+              withCredentials: true,
+            }
+          );
           
           console.log('上传响应:', response.data);
           

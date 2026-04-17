@@ -4,6 +4,7 @@ import { GlobalOutlined } from '@ant-design/icons';
 import { request } from '@/request';
 import Loading from '@/components/Loading';
 import { COUNTRY_OPTIONS } from '@/utils/countryOptions';
+import CompanyLogoField from '@/modules/SettingModule/components/CompanyLogoField';
 
 export default function SettingsGeneral() {
   const [form] = Form.useForm();
@@ -70,6 +71,7 @@ export default function SettingsGeneral() {
 
       <Loading isLoading={fetching}>
         <div className="general-company-block">
+          <CompanyLogoField />
           <Form
             form={form}
             layout="vertical"
