@@ -31,23 +31,50 @@ const { getSystemAdmin } = require('../../bootstrap');
 // CN preferred, falls back to EN. Items where the Agent already provided
 // a description are left untouched. Items whose itemName doesn't match
 // any Merch are also left untouched (no silent failure, no fabrication).
+//
+// Returns `{items, warnings}`. `warnings[]` is non-empty whenever an item
+// ended up with a blank description that the salesperson will have to
+// back-fill manually — either because the serialNumber wasn't found or
+// because the Merch record itself has no description. The caller surfaces
+// these into the MCP envelope so the Agent can read them verbatim to the
+// salesperson (per SOUL.md). Never silent — see issue #58.
 async function enrichItemDescriptions(items) {
   const Merch = mongoose.model('Merch');
-  const serialNumbers = items
+  const warnings = [];
+
+  const serialNumbersToLookUp = items
     .filter((it) => !it.description && it.itemName)
     .map((it) => it.itemName);
-  if (serialNumbers.length === 0) return items;
+
+  if (serialNumbersToLookUp.length === 0) {
+    return { items, warnings };
+  }
+
   const merchDocs = await Merch.find({
-    serialNumber: { $in: serialNumbers },
+    serialNumber: { $in: serialNumbersToLookUp },
     removed: false,
   }).lean();
   const bySerial = new Map(merchDocs.map((m) => [m.serialNumber, m]));
-  return items.map((it) => {
+
+  const enriched = items.map((it) => {
     if (it.description) return it;
     const m = bySerial.get(it.itemName);
-    if (!m) return it;
-    return { ...it, description: m.description_cn || m.description_en || '' };
+    if (!m) {
+      warnings.push(
+        `${it.itemName}: 未在 Merch 中匹配到 serialNumber — 描述和单位均留空`,
+      );
+      return it;
+    }
+    const description = m.description_cn || m.description_en || '';
+    if (!description) {
+      warnings.push(
+        `${it.itemName}: 在 Merch 中找到，但 description_cn / description_en 均为空 — 描述字段留空`,
+      );
+    }
+    return { ...it, description };
   });
+
+  return { items: enriched, warnings };
 }
 
 async function call(method, input) {
@@ -132,7 +159,9 @@ const create = {
       unit_en: it.unit_en || '',
       unit_cn: it.unit_cn || '',
     }));
-    items = await enrichItemDescriptions(items);
+    const enrichResult = await enrichItemDescriptions(items);
+    items = enrichResult.items;
+    const warnings = enrichResult.warnings;
 
     const now = new Date();
     const body = {
@@ -152,7 +181,11 @@ const create = {
     };
     if (input.exchangeRate !== undefined) body.exchangeRate = input.exchangeRate;
 
-    return call(quoteController.create, { body });
+    const result = await call(quoteController.create, { body });
+    if (result.ok && warnings.length > 0) {
+      return { ...result, warnings };
+    }
+    return result;
   },
 };
 
@@ -194,7 +227,9 @@ const update = {
       unit_en: it.unit_en || '',
       unit_cn: it.unit_cn || '',
     }));
-    items = await enrichItemDescriptions(items);
+    const enrichResult = await enrichItemDescriptions(items);
+    items = enrichResult.items;
+    const warnings = enrichResult.warnings;
     const now = new Date();
     const body = {
       client: rest.client,
@@ -212,7 +247,11 @@ const update = {
       discount: rest.discount ?? 0,
     };
     if (rest.exchangeRate !== undefined) body.exchangeRate = rest.exchangeRate;
-    return call(quoteController.update, { params: { id }, body });
+    const result = await call(quoteController.update, { params: { id }, body });
+    if (result.ok && warnings.length > 0) {
+      return { ...result, warnings };
+    }
+    return result;
   },
 };
 
