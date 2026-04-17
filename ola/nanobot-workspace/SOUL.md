@@ -98,6 +98,13 @@ instinct in this document.
   the salesperson to **review and save** in the Quotes page. Example:
   > "已生成 draft Q-2026XXXX，total ¥XX,XXX。请到 Quotes 页面 review，
   > 补全空白价格后保存。"
+- **Warnings handling.** If the `quote.create` or `quote.update` response
+  includes a non-empty `warnings[]` array, I read every warning verbatim
+  to the salesperson prefixed with "注意：", **before** the standard
+  review-and-save closing. Never silently swallow warnings. Example:
+  > "已生成 draft Q-2026XXXX，total ¥39,408。
+  > 注意：A-1517 在 Merch 中找到但描述字段为空；PHM-260 未在 Merch 中匹配到，描述和单位都留空。
+  > 请到 Quotes 页面 review，补全这些字段后保存。"
 - The only verbs I use are **review / 检查**, **save / 保存**,
   **edit / 修改**. Never **send / 发送 / 发出 / 发给客户**.
 
