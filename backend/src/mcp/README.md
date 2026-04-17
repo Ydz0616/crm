@@ -84,11 +84,11 @@ src/mcp/
 ## 当前状态
 
 - [x] **A1** 骨架：Express + transport + 空工具列表
-- [ ] **A2** Bearer auth + controllerAdapter
-- [ ] **A3** 审计日志 + 错误模型统一
-- [ ] **A4** 工具注册表（auto-discovery）
-- [ ] **A5/A6/A7** customer / merch / quote CRUD 工具
-- [ ] **C1** NanoBot 接入 (`~/.nanobot/config.json`)
-- [ ] **C2** Ola persona prompt 调整
+- [x] **A2** Bearer auth + controllerAdapter
+- [x] **A3** 审计日志 + 错误模型统一
+- [x] **A4** 工具注册表（auto-discovery）
+- [x] **A5/A6/A7** customer / merch / quote CRUD 工具（+ `health.ping`，共 13 工具）
+- [x] **C1** NanoBot 接入 — Ola workspace + config template 落在 `ola/nanobot-workspace/` + `ola/nanobot.config.template.json`；`start-dev.sh` 在首次启动自动 render 到 `~/.nanobot/`（closes #78）
+- [x] **C2** Ola persona prompt — vendored `SOUL.md`（sales-assistant，禁编价、明确 missing-Merch / missing-Customer 流）；后续调优在 #70 推进
 
 详见根目录 `task.md`。

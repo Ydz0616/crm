@@ -94,6 +94,8 @@ Deploy:
 - `docker compose up -d --build` (frontend on 3000, backend on 8888, expects backend `.env`)
 - `./deploy.sh` — rsyncs to `DEPLOY_SERVER_IP:DEPLOY_REMOTE_DIR` (defaults `43.99.57.106:/app/crm`), then runs docker compose remotely and hits `GET /health`.
 
+**First-time setup on a fresh dev machine** → see [`ola/SETUP.md`](ola/SETUP.md). It covers the sibling `../nanobot` clone (SeekMi-Technologies fork, not upstream HKUDS), the 4 `backend/.env` variables, and the auto-provisioned `~/.nanobot/` workspace + config that makes Ask Ola behave as a tool-calling agent instead of a bare chat proxy.
+
 ## Architecture
 
 ### Backend (`backend/src`)
