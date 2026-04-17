@@ -221,7 +221,7 @@
       "extraHeaders": null
     },
     "gemini": {
-      "apiKey": "",
+      "apiKey": "${GEMINI_API_KEY}",
       "apiBase": null,
       "extraHeaders": null
     },

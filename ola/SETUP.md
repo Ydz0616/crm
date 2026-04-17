@@ -22,12 +22,14 @@ When you run `bash start-dev.sh` on a fresh mac:
 1. Sources `backend/.env` into the shell environment.
 2. If `~/.nanobot/config.json` does **not** exist → renders
    `ola/nanobot.config.template.json` by substituting `${MCP_SERVICE_TOKEN}`
-   from env, and writes the result to `~/.nanobot/config.json` (mode 600).
+   and `${GEMINI_API_KEY}` from env, and writes the result to
+   `~/.nanobot/config.json` (mode 600). Both secrets end up on disk in this
+   one file — nanobot v0.1.4.post6 requires `providers.gemini.apiKey` to be
+   present in config at startup (`_make_provider` raises `ValueError` on
+   empty key; no env fallback). The file is gitignored home-dir, owner-only.
 3. If `~/.nanobot/workspace/SOUL.md` does **not** exist → copies the 5 md
    files from `ola/nanobot-workspace/` into `~/.nanobot/workspace/`.
 4. Starts backend (8888), MCP server (8889), nanobot (8900), frontend (3000).
-   `GEMINI_API_KEY` is passed to the nanobot process via env — **never
-   written to any config file on disk**.
 
 On subsequent boots, steps 2 and 3 are **no-ops** if the files already
 exist — your local agent memory and session history under
@@ -89,4 +91,4 @@ provision with `rm ~/.nanobot/workspace/SOUL.md && bash start-dev.sh`.
 | `~/.nanobot/workspace/*.md` | no | provisioned copy (first-boot) — safe to edit locally |
 | `~/.nanobot/workspace/memory/` | no | runtime agent memory — per machine |
 | `~/.nanobot/workspace/sessions/` | no | chat session logs — per machine |
-| `~/.nanobot/config.json` | no | rendered config with real token — mode 600 |
+| `~/.nanobot/config.json` | no | rendered config with real `MCP_SERVICE_TOKEN` and `GEMINI_API_KEY` — mode 600 |
