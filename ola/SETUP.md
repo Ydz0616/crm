@@ -69,6 +69,18 @@ Optional: `GOTENBERG_URL`, `RESEND_API`, `OPENAI_API_KEY`, `ALLOWED_ORIGINS`
 Delete `~/.nanobot/config.json` and re-run `bash start-dev.sh` to re-render
 from template.
 
+**"Ask Ola says 'I'm nanobot' / behaves like a generic assistant"** (common
+on a machine where nanobot was installed and used standalone before)
+→ `~/.nanobot/` existed from prior use, so `start-dev.sh` skipped
+provisioning by design (idempotent — won't clobber local edits). Move the
+old directory aside and re-run:
+```
+mv ~/.nanobot ~/.nanobot.prior
+bash start-dev.sh
+```
+The script will render a fresh Ola config + workspace; your old state is
+preserved in `~/.nanobot.prior` if you want to restore sessions/memory later.
+
 **"MCP server connected, 0 tools registered" in nanobot log**
 → Auth failure. `MCP_SERVICE_TOKEN` in `backend/.env` doesn't match what got
 rendered into `~/.nanobot/config.json`. Easiest fix: delete
