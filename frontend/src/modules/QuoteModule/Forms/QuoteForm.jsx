@@ -355,7 +355,17 @@ function LoadQuoteForm({ subTotal = 0, current = null }) {
                     {fields.map((field, index) => (
                       <Row key={field.key} style={{ marginBottom: '8px' }}>
                         <Col span={22}>
-                          <Form.Item {...field} noStyle>
+                          <Form.Item
+                            {...field}
+                            rules={[
+                              {
+                                required: true,
+                                whitespace: true,
+                                message: '请填写交付条款或删除该行',
+                              },
+                            ]}
+                            style={{ marginBottom: 0 }}
+                          >
                             <Input
                               placeholder={`${translate('Terms of Delivery')} #${index + 1}`}
                               style={{ width: '100%' }}
@@ -399,7 +409,17 @@ function LoadQuoteForm({ subTotal = 0, current = null }) {
                     {fields.map((field, index) => (
                       <Row key={field.key} style={{ marginBottom: '8px' }}>
                         <Col span={22}>
-                          <Form.Item {...field} noStyle>
+                          <Form.Item
+                            {...field}
+                            rules={[
+                              {
+                                required: true,
+                                whitespace: true,
+                                message: '请填写付款条款或删除该行',
+                              },
+                            ]}
+                            style={{ marginBottom: 0 }}
+                          >
                             <Input
                               placeholder={`${translate('Payment Term')} #${index + 1}`}
                               style={{ width: '100%' }}
@@ -444,7 +464,17 @@ function LoadQuoteForm({ subTotal = 0, current = null }) {
                     {fields.map((field, index) => (
                       <Row key={field.key} style={{ marginBottom: '8px' }}>
                         <Col span={22}>
-                          <Form.Item {...field} noStyle>
+                          <Form.Item
+                            {...field}
+                            rules={[
+                              {
+                                required: true,
+                                whitespace: true,
+                                message: '请填写备注内容或删除该行',
+                              },
+                            ]}
+                            style={{ marginBottom: 0 }}
+                          >
                             <Input
                               placeholder={`${translate('Condition')} #${index + 1}`}
                               style={{ width: '100%' }}
