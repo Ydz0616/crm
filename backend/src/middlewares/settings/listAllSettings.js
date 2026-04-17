@@ -4,7 +4,7 @@ const Model = mongoose.model('Setting');
 
 const listAllSettings = async (createdBy = null) => {
   try {
-    const filter = { removed: false };
+    const filter = { removed: { $ne: true } };
     if (createdBy) filter.createdBy = createdBy;
     const result = await Model.find(filter).exec();
 

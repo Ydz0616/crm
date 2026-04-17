@@ -65,6 +65,27 @@ Copy `backend/.env.example` to `backend/.env` and fill these four:
 Optional: `GOTENBERG_URL`, `RESEND_API`, `OPENAI_API_KEY`, `ALLOWED_ORIGINS`
 (see `backend/.env.example`).
 
+## PDF 导出（可选 / 本地 Gotenberg）
+
+PDF 导出（Quote / Invoice / PO / Offer / Payment）通过 [Gotenberg](https://gotenberg.dev)
+微服务生成。本地跑起来：
+
+```bash
+docker run --rm -d -p 3030:3000 --name ola-gotenberg \
+  gotenberg/gotenberg:8 gotenberg --api-port=3000
+```
+
+然后在 `backend/.env` 里添加 / 取消注释：
+
+```
+GOTENBERG_URL=http://localhost:3030
+```
+
+说明：host 端口用 **3030** 是因为 Vite dev server 占了 3000；容器内部仍
+监听 3000。停止容器：`docker stop ola-gotenberg`（`--rm` 会自动清理）。
+
+验证：`curl http://localhost:3030/health` 应返 `{"status":"up"}`。
+
 ## Troubleshooting
 
 **"Ask Ola responds like a plain GPT — doesn't call any tools"**

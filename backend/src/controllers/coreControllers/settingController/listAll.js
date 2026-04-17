@@ -16,10 +16,13 @@ const listAll = async (req, res) => {
       });
     }
 
-    //  Query the database for a list of all results
+    //  Query the database for a list of all results.
+    //  Use `$ne: true` (not `=== false`) so documents missing `removed` /
+    //  `isPrivate` fields — which happens when older code inserted records
+    //  without applying Mongoose defaults — are still returned.
     const result = await Model.find({
-      removed: false,
-      isPrivate: false,
+      removed: { $ne: true },
+      isPrivate: { $ne: true },
       createdBy: req.admin._id
     }).sort({ created: sort });
 
