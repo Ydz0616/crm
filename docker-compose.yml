@@ -8,13 +8,18 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    # 只绑 loopback：nginx-in-frontend 通过 docker 网络连 backend:8888，
+    # 公网访问必须经 Caddy→nginx→/api→backend，不暴露裸 API 端口
     ports:
-      - "8888:8888"
+      - "127.0.0.1:8888:8888"
     env_file:
       - ./backend/.env
     environment:
       NODE_ENV: production
       PORT: "8888"
+    volumes:
+      # 上传文件持久化，避免 docker compose up -d --build 每次擦掉 logo 等资产
+      - crm-uploads:/usr/src/app/src/public/uploads
     restart: unless-stopped
 
   frontend:
@@ -30,8 +35,12 @@ services:
       - backend
     restart: unless-stopped
 
+volumes:
+  crm-uploads:
+
 # 注意：
 # - gotenberg 不再在本 compose 中，它在 Box3 独立运行
 #   Box3: docker run -d --name gotenberg --restart unless-stopped -p 3000:3000 gotenberg/gotenberg:8
 # - backend/.env 必须包含 GOTENBERG_URL=http://box3-pdf:3000 和 NANOBOT_HOST=box2-ai 等
 # - ALLOWED_ORIGINS / PUBLIC_SERVER_FILE 等也从 backend/.env 读取
+# - MCP_HOST 设为 Box1 Tailscale IP 才能让 Box2 nanobot 过 Tailscale 访问（backend/src/mcp/server.js）

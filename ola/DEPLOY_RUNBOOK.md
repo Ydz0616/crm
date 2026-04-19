@@ -188,7 +188,7 @@ curl http://box2-ai:8900/health  # 具体 endpoint 看 nanobot 文档
 
 ### Claude 操作
 
-1. 本地 `git checkout main && git pull origin main`
+1. **切到 main 分支后再 rsync** — `deploy.sh` 用的是当前工作区状态（rsync），所以必须先 `git checkout main && git pull origin main`。如果忘了这一步，会把 dev/feature 分支的代码推上生产
 2. 写 `backend/.env.production`：
 
 ```env
