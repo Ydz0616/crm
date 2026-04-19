@@ -146,14 +146,14 @@ cd frontend && npm run dev
 不启动本地后端，前端通过 Vite proxy 连接远程生产后端。
 
 ### 前提
-- 生产后端 `https://erp.olajob.cn` 正常运行
+- 生产后端 `https://app.olajob.cn` 正常运行
 - 不需要本地 MongoDB
 
 ### 步骤
 
 确认 `frontend/.env` 配置为远程模式：
 ```
-VITE_BACKEND_SERVER="https://erp.olajob.cn/"
+VITE_BACKEND_SERVER="https://app.olajob.cn/"
 VITE_DEV_REMOTE=remote
 VITE_DEV_BYPASS_AUTH=true
 ```
@@ -193,7 +193,7 @@ bash deploy.sh
 3. SSH 到服务器执行 `docker compose up -d --build`
 4. 等待 15 秒后健康检查（容器状态 + HTTP 连通性）
 
-**部署结果验证：** 访问 https://erp.olajob.cn
+**部署结果验证：** 访问 https://app.olajob.cn
 
 ---
 
@@ -205,7 +205,7 @@ bash deploy.sh
 浏览器 → http://localhost/api/quote/list
     ↓ Vite proxy
 本地模式 → http://localhost:8888/api/quote/list
-远程模式 → https://erp.olajob.cn/api/quote/list
+远程模式 → https://app.olajob.cn/api/quote/list
 ```
 
 **Proxy 目标由 `frontend/.env` 决定：**

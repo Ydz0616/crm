@@ -1,10 +1,10 @@
-# 服务器部署（erp.olajob.cn）
+# 服务器部署（app.olajob.cn）
 
 ## 前提
 
 - 服务器已装 Docker、Docker Compose
-- 网关已配置 erp.olajob.cn 反代到本机 3000（前端）、8888（后端）
-- 域名 erp.olajob.cn 已解析到服务器
+- 网关已配置 app.olajob.cn 反代到本机 3000（前端）、8888（后端）
+- 域名 app.olajob.cn 已解析到服务器
 
 ## 1. 克隆项目
 
@@ -21,7 +21,7 @@ cp backend/.env.production.example backend/.env
 nano backend/.env
 ```
 
-把 `DATABASE`、`JWT_SECRET` 改成你的真实值即可，其余生产项（如 `ALLOWED_ORIGINS`、`PUBLIC_SERVER_FILE`）已按 erp.olajob.cn 写好。
+把 `DATABASE`、`JWT_SECRET` 改成你的真实值即可，其余生产项（如 `ALLOWED_ORIGINS`、`PUBLIC_SERVER_FILE`）已按 app.olajob.cn 写好。
 
 ## 3. 构建并启动
 
@@ -33,7 +33,7 @@ docker compose up -d --build
 
 - 本机：`curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:3000` 应为 200  
 - 本机：`curl -s http://127.0.0.1:8888/health` 应有响应  
-- 浏览器打开 https://erp.olajob.cn 应看到登录页
+- 浏览器打开 https://app.olajob.cn 应看到登录页
 
 ## 5. 之后更新代码
 
