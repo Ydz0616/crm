@@ -4,7 +4,11 @@
 
 ## 架构
 
-独立 Node 进程，与主 backend / NanoBot **同机** 部署，仅监听 loopback：
+独立 Node 进程。**两种部署拓扑**：
+
+### 单机部署（dev + 早期 prod）— `MCP_HOST=127.0.0.1`（默认）
+
+NanoBot 和 backend 同机，MCP 只在 loopback 上监听：
 
 ```
 NanoBot (127.0.0.1:8900)  ──streamableHttp──▶  MCP server (127.0.0.1:8889/mcp)
@@ -16,9 +20,30 @@ NanoBot (127.0.0.1:8900)  ──streamableHttp──▶  MCP server (127.0.0.1:8
                                                  MongoDB (Atlas)
 ```
 
+### 分机部署（三箱拓扑）— `MCP_HOST=<Tailscale IP>` 或 `0.0.0.0`
+
+NanoBot 在独立机器（如 Box2=ai），通过 Tailscale 网络访问 Box1 的 MCP：
+
+```
+Box2 (ai)                             Box1 (app)
+NanoBot  ──streamableHttp over Tailscale──▶  MCP server
+                 Bearer token + ACL                │
+                                                   ▼
+                                          CRM controllers
+                                                   │
+                                                   ▼
+                                             MongoDB (Atlas)
+```
+
+**分机部署的安全模型（两道防线）：**
+1. `MCP_SERVICE_TOKEN` 强制 Bearer 鉴权（`auth.js` 启动时校验，缺失即拒启动）
+2. 网络层隔离（Tailscale ACL、host firewall、云厂商安全组）限制谁能到达端口
+
+两道防线任一失守不会立刻失陷；但绝不可设 `MCP_HOST=0.0.0.0` 又把端口暴露公网 — Bearer token 单独扛不住大规模暴破。
+
+### 共同约束
+
 - **Transport:** `streamableHttp`，stateless 模式（每次请求独立，无 session）
-- **Auth:** Bearer token（`MCP_SERVICE_TOKEN` env，A2 加）
-- **绑定:** `127.0.0.1` only — 永不出网卡，loopback 是唯一入口
 - **进程隔离:** 独立于主 backend，崩溃不影响 CRM web
 
 ## 启动
@@ -47,6 +72,7 @@ ps -o rss= -p $(pgrep -f 'src/mcp/server.js')  # RAM in KB，预算 < 80MB
 | Var | 必填 | 说明 |
 |---|---|---|
 | `MCP_PORT` | 否 | 默认 `8889` |
+| `MCP_HOST` | 否 | 绑定地址。默认 `127.0.0.1`（同机 loopback）。分机部署设为 Tailscale IP（如 `100.109.220.126`）或 `0.0.0.0`。非 loopback 时启动日志会打 ⚠ 提示，需人工确认网络层隔离已就位。 |
 | `MCP_SERVICE_TOKEN` | A2 起必填 | NanoBot 在 `Authorization: Bearer ...` 里发送的 service token |
 | `DATABASE` | A5 起必填 | MongoDB 连接串（A1-A4 不连 mongo） |
 

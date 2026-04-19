@@ -47,6 +47,8 @@ coverage
 !package*.json
 !dockerfile
 kubernetes/secrets.yaml
+.secrets/
+.local/
 
 # Local Kubernetes config
 kubernetes/local-*.yaml

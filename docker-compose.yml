@@ -1,30 +1,25 @@
-# Ola ERP CRM - 部署到服务器后由网关反代 erp.olajob.cn -> 3000/8888
-# 使用: 在服务器上 cd 到项目目录，配置 backend/.env 后执行 docker compose up -d --build
+# Ola ERP CRM — 生产部署 compose（Box1 = app）
+# 三箱拓扑：Box1 跑 backend+frontend，Box3 跑 gotenberg，Box2 跑 nanobot
+# 公网入口：Aliyun DNS → Box1:443 (caddy) → frontend:3000 → nginx proxy /api → backend:8888
+# 使用: 在 Box1 上 cd 到项目目录，配置 backend/.env 后执行 docker compose up -d --build
 
 services:
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    # 只绑 loopback：nginx-in-frontend 通过 docker 网络连 backend:8888，
+    # 公网访问必须经 Caddy→nginx→/api→backend，不暴露裸 API 端口
     ports:
-      - "8888:8888"
+      - "127.0.0.1:8888:8888"
     env_file:
       - ./backend/.env
     environment:
       NODE_ENV: production
       PORT: "8888"
-      ALLOWED_ORIGINS: "https://erp.olajob.cn"
-      GOTENBERG_URL: "http://gotenberg:3000"
     volumes:
+      # 上传文件持久化，避免 docker compose up -d --build 每次擦掉 logo 等资产
       - crm-uploads:/usr/src/app/src/public/uploads
-    depends_on:
-      - gotenberg
-    restart: unless-stopped
-
-  gotenberg:
-    image: gotenberg/gotenberg:8
-    ports:
-      - "3001:3000"
     restart: unless-stopped
 
   frontend:
@@ -32,8 +27,8 @@ services:
       context: ./frontend
       dockerfile: Dockerfile.prod
       args:
-        VITE_BACKEND_SERVER: "https://erp.olajob.cn/"
-        VITE_APP_API_URL: "https://erp.olajob.cn/api/"
+        VITE_BACKEND_SERVER: "https://app.olajob.cn/"
+        VITE_APP_API_URL: "https://app.olajob.cn/api/"
     ports:
       - "3000:80"
     depends_on:
@@ -42,3 +37,10 @@ services:
 
 volumes:
   crm-uploads:
+
+# 注意：
+# - gotenberg 不再在本 compose 中，它在 Box3 独立运行
+#   Box3: docker run -d --name gotenberg --restart unless-stopped -p 3000:3000 gotenberg/gotenberg:8
+# - backend/.env 必须包含 GOTENBERG_URL=http://box3-pdf:3000 和 NANOBOT_HOST=box2-ai 等
+# - ALLOWED_ORIGINS / PUBLIC_SERVER_FILE 等也从 backend/.env 读取
+# - MCP_HOST 设为 Box1 Tailscale IP 才能让 Box2 nanobot 过 Tailscale 访问（backend/src/mcp/server.js）
