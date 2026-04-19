@@ -31,8 +31,31 @@ const { bootstrap } = require('./bootstrap');
 let registry = null;
 let TOOL_COUNT = 0;
 
-const HOST = '127.0.0.1';
+// MCP_HOST controls the bind address.
+// - Default '127.0.0.1' — local-only, nanobot on the same machine (loopback).
+// - '0.0.0.0' — all interfaces. Use when nanobot runs on a DIFFERENT machine
+//   (e.g. 3-box Tailscale topology). Security still depends on:
+//     1. MCP_SERVICE_TOKEN bearer auth (mandatory, enforced by auth.js)
+//     2. Network-layer isolation (Tailscale ACL / host firewall / security group)
+//   Never set to 0.0.0.0 on a host without BOTH defenses active.
+// - Specific IP (e.g. Tailscale IP '100.109.220.126') — bind only that interface,
+//   strictest cross-box option.
+function resolveBindHost() {
+  const raw = process.env.MCP_HOST;
+  if (raw === undefined || raw === null) return '127.0.0.1';
+  const host = String(raw).trim();
+  if (host.length === 0) {
+    throw new Error(
+      '[mcp] MCP_HOST is set but empty/whitespace. Unset it to use default 127.0.0.1, ' +
+        'or provide a valid bind address (e.g. 127.0.0.1, 0.0.0.0, or a specific IP).'
+    );
+  }
+  return host;
+}
+
+const HOST = resolveBindHost();
 const PORT = Number(process.env.MCP_PORT) || 8889;
+const IS_LOOPBACK = HOST === '127.0.0.1' || HOST === 'localhost' || HOST === '::1';
 
 // 任何未捕获的异常都必须显式 log + 退出，绝不 silent error
 process.on('unhandledRejection', (reason) => {
@@ -172,6 +195,12 @@ async function main() {
   const httpServer = app.listen(PORT, HOST, () => {
     console.log(`[mcp] listening on http://${HOST}:${PORT}/mcp`);
     console.log(`[mcp] mode: stateless per-request, auth: bearer, audit: on, tools: ${TOOL_COUNT}`);
+    if (!IS_LOOPBACK) {
+      console.log(
+        `[mcp] ⚠ bind address "${HOST}" is non-loopback — network exposure depends on host firewall / ACL. ` +
+          'Service token auth is mandatory and enforced; ensure MCP_SERVICE_TOKEN is strong and network is restricted (Tailscale ACL / security group).'
+      );
+    }
   });
 
   // 优雅关闭，方便 nodemon / Ctrl+C 不留僵尸进程
