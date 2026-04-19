@@ -6,7 +6,7 @@ const read = async (req, res) => {
   // Find document by id
   const result = await Model.findOne({
     _id: req.params.id,
-    removed: false,
+    removed: false, createdBy: req.admin._id,
   })
     .populate('createdBy', 'name')
     .exec();

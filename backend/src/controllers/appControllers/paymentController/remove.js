@@ -7,7 +7,7 @@ const remove = async (req, res) => {
   // Find document by id and updates with the required fields
   const previousPayment = await Model.findOne({
     _id: req.params.id,
-    removed: false,
+    removed: false, createdBy: req.admin._id,
   });
 
   if (!previousPayment) {
@@ -27,7 +27,7 @@ const remove = async (req, res) => {
   };
   // Find the document by id and delete it
   const result = await Model.findOneAndUpdate(
-    { _id: req.params.id, removed: false },
+    { _id: req.params.id, removed: false, createdBy: req.admin._id },
     { $set: updates },
     {
       new: true, // return the new result instead of the old one

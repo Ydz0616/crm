@@ -21,6 +21,30 @@ const contextActions = (dispatch) => {
         dispatch({ type: actionTypes.DEFAULT_APP });
       },
     },
+    olaPanel: {
+      open: () => {
+        dispatch({ type: actionTypes.OPEN_OLA_PANEL });
+      },
+      close: () => {
+        dispatch({ type: actionTypes.CLOSE_OLA_PANEL });
+      },
+    },
+    historyModal: {
+      open: () => {
+        dispatch({ type: actionTypes.OPEN_HISTORY_MODAL });
+      },
+      close: () => {
+        dispatch({ type: actionTypes.CLOSE_HISTORY_MODAL });
+      },
+    },
+    chatSession: {
+      setActive: (sessionId) => {
+        dispatch({ type: actionTypes.SET_ACTIVE_SESSION, payload: sessionId });
+      },
+      setList: (sessions) => {
+        dispatch({ type: actionTypes.SET_SESSION_LIST, payload: sessions });
+      },
+    },
   };
 };
 

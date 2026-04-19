@@ -16,12 +16,19 @@ async function setupApp() {
 
     const salt = uniqueId();
 
-    const passwordHash = newAdminPassword.generateHash(salt, 'admin123');
+    const adminEmail = process.env.ADMIN_EMAIL;
+    const adminPassword = process.env.ADMIN_PASSWORD;
+
+    if (!adminEmail || !adminPassword) {
+      throw new Error('CRITICAL ERROR: Please define ADMIN_EMAIL and ADMIN_PASSWORD in your .env file before running setup.');
+    }
+
+    const passwordHash = newAdminPassword.generateHash(salt, adminPassword);
 
     const defaultAdmin = {
-      email: 'admin@admin.com',
-      name: 'andy',
-      surname: 'admin',
+      email: adminEmail,
+      name: 'Super',
+      surname: 'Admin',
       enabled: true,
       role: 'owner',
     };
@@ -35,7 +42,7 @@ async function setupApp() {
     };
     await new AdminPassword(AdminPasswordData).save();
 
-    console.log('👍 Admin created : Done!');
+    console.log(`👍 Admin created: ${adminEmail} : Done!`);
 
     const Setting = require('../models/coreModels/Setting');
 
@@ -45,7 +52,9 @@ async function setupApp() {
 
     for (const filePath of settingsFiles) {
       const file = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-      settingFiles.push(...file);
+      for (const setting of file) {
+        settingFiles.push({ ...setting, createdBy: result._id });
+      }
     }
 
     await Setting.insertMany(settingFiles);
@@ -55,7 +64,7 @@ async function setupApp() {
     const PaymentMode = require('../models/appModels/PaymentMode');
     const Taxes = require('../models/appModels/Taxes');
 
-    await Taxes.insertMany([{ taxName: 'Tax 0%', taxValue: '0', isDefault: true }]);
+    await Taxes.insertMany([{ taxName: 'Tax 0%', taxValue: '0', isDefault: true, createdBy: result._id }]);
     console.log('👍 Taxes created : Done!');
 
     await PaymentMode.insertMany([
@@ -63,6 +72,7 @@ async function setupApp() {
         name: 'Default Payment',
         description: 'Default Payment Mode (Cash , Wire Transfert)',
         isDefault: true,
+        createdBy: result._id,
       },
     ]);
     console.log('👍 PaymentMode created : Done!');

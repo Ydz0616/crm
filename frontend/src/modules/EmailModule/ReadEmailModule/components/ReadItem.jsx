@@ -50,10 +50,6 @@ export default function ReadItem({ config, selectedItem }) {
   return (
     <>
       <PageHeader
-        onBack={() => {
-          readPanel.close();
-          navigate(`/${entity.toLowerCase()}`);//navigate to previous page
-        }}
         title={`${ENTITY_NAME} # ${currentErp?.emailName}`}
         ghost={false}
         extra={[

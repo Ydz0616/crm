@@ -63,9 +63,6 @@ export default function CreateItem({ config, CreateForm }) {
   return (
     <>
       <PageHeader
-        onBack={() => {
-          navigate(`/${entity.toLowerCase()}`);
-        }}
         title={translate('New')}
         ghost={false}
         tags={<Tag>{translate('Draft')}</Tag>}

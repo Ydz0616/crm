@@ -5,6 +5,7 @@ const schema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  createdBy: { type: mongoose.Schema.ObjectId, ref: 'Admin' },
 
   serialNumber: {
     type: String,
@@ -14,9 +15,6 @@ const schema = new mongoose.Schema({
   serialNumberLong: {
     type: String, 
     required: true
-  },
-  serialNumberEasyWeld: {
-    type: String
   },
   description_en: {
     type: String,

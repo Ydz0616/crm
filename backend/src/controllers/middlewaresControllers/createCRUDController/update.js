@@ -5,6 +5,7 @@ const update = async (Model, req, res) => {
     {
       _id: req.params.id,
       removed: false,
+      createdBy: req.admin._id,
     },
     req.body,
     {

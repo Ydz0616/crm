@@ -1,10 +1,65 @@
-import { useState } from 'react';
-import { Select, Modal, Input } from 'antd';
-import { InfoCircleOutlined, CameraOutlined, CloseOutlined } from '@ant-design/icons';
+import { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Form, Input, Button, message } from 'antd';
+import { InfoCircleOutlined, UserOutlined, MailOutlined } from '@ant-design/icons';
+
+import { selectAuth } from '@/redux/auth/selectors';
+import * as actionTypes from '@/redux/auth/types';
+import { request } from '@/request';
 
 export default function SettingsProfile() {
-  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
-  const [newEmail, setNewEmail] = useState('');
+  const { current: currentUser } = useSelector(selectAuth);
+  const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (currentUser) {
+      form.setFieldsValue({
+        name: currentUser.name,
+        surname: currentUser.surname,
+        email: currentUser.email,
+      });
+    }
+  }, [currentUser, form]);
+
+  const onFinish = async (values) => {
+    try {
+      setLoading(true);
+      // 保持和旧接口一致的 payload (email, name, surname)
+      const payload = {
+        name: values.name,
+        surname: values.surname,
+        email: currentUser.email, // 确保 email 不能被表单欺骗修改
+      };
+
+      const { success, result, message: msg } = await request.patch({
+        entity: 'admin/profile/update',
+        jsonData: payload,
+      });
+
+      if (success) {
+        message.success('Profile updated successfully!');
+        
+        // 更新 localStorage 的 auth state
+        const storedAuth = JSON.parse(window.localStorage.getItem('auth'));
+        if (storedAuth) {
+          storedAuth.current = { ...storedAuth.current, ...payload };
+          window.localStorage.setItem('auth', JSON.stringify(storedAuth));
+        }
+
+        // 同步 Redux store
+        dispatch({ type: actionTypes.REQUEST_SUCCESS, payload: storedAuth.current });
+      } else {
+        message.error(msg || 'Failed to update profile');
+      }
+    } catch (error) {
+      console.error('Update profile error:', error);
+      message.error('An error occurred during update');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="profile-section">
@@ -18,130 +73,48 @@ export default function SettingsProfile() {
         <span>Changes to your profile will apply to all of your workspaces.</span>
       </div>
 
-      {/* Profile Picture */}
-      <div className="profile-picture-section">
-        <div className="profile-avatar">W</div>
-        <div className="profile-picture-info">
-          <span className="profile-picture-label">Profile Picture</span>
-          <span className="profile-picture-hint">
-            We only support PNGs, JPEGs and GIFs under 10MB
-          </span>
-          <button className="profile-upload-btn">
-            <CameraOutlined />
-            Upload Image
-          </button>
-        </div>
-      </div>
-
-      {/* Name fields */}
-      <div className="profile-form-row">
-        <div className="profile-form-group">
-          <label className="profile-form-label">First Name</label>
-          <input className="profile-form-input" type="text" defaultValue="Will" />
-        </div>
-        <div className="profile-form-group">
-          <label className="profile-form-label">Last Name</label>
-          <input className="profile-form-input" type="text" defaultValue="Wang" />
-        </div>
-      </div>
-
-      {/* Email */}
-      <div className="profile-email-row">
-        <div className="profile-form-group">
-          <label className="profile-form-label">Primary email address</label>
-          <input
-            className="profile-form-input"
-            type="email"
-            defaultValue="hi@seekmi.cn"
-            readOnly
-          />
-        </div>
-        <button className="profile-edit-btn" onClick={() => setIsEmailModalOpen(true)}>
-          Edit
-        </button>
-      </div>
-
-      {/* === MVP-HIDDEN: Time Preferences 本轮不需要 ===
-      <hr className="profile-divider" />
-
-      <h2 className="profile-time-title">Time preferences</h2>
-      <p className="profile-time-subtitle">Manage your time preferences</p>
-
-      <div className="profile-time-row">
-        <div className="profile-time-group">
-          <label className="profile-time-label">Preferred Timezone</label>
-          <Select
-            className="profile-time-select"
-            defaultValue="Asia/Shanghai"
-            popupClassName="profile-time-dropdown"
-            options={[
-              { value: 'Asia/Shanghai', label: 'Asia/Shanghai' },
-              { value: 'America/New_York', label: 'America/New_York' },
-              { value: 'Europe/London', label: 'Europe/London' },
-              { value: 'Asia/Tokyo', label: 'Asia/Tokyo' },
-            ]}
-          />
-        </div>
-        <div className="profile-time-group">
-          <label className="profile-time-label">Start week on</label>
-          <Select
-            className="profile-time-select"
-            defaultValue="Monday"
-            popupClassName="profile-time-dropdown"
-            options={[
-              { value: 'Monday', label: 'Monday' },
-              { value: 'Sunday', label: 'Sunday' },
-              { value: 'Saturday', label: 'Saturday' },
-            ]}
-          />
-        </div>
-      </div>
-      === END MVP-HIDDEN === */}
-
-      {/* Change Email Modal */}
-      <Modal
-        open={isEmailModalOpen}
-        onCancel={() => setIsEmailModalOpen(false)}
-        footer={null}
-        closable={false}
-        width={520}
-        centered
-        className="email-change-modal"
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={onFinish}
+        className="profile-form-container"
       >
-        <div className="email-modal-header">
-          <span className="email-modal-title">Change email address</span>
-          <button
-            className="email-modal-close"
-            onClick={() => setIsEmailModalOpen(false)}
+        <div className="profile-form-row">
+          <Form.Item
+            name="name"
+            label={<span className="profile-form-label">First Name</span>}
+            className="profile-form-group"
+            rules={[{ required: true, message: 'First name is required' }]}
           >
-            <CloseOutlined />
-          </button>
-        </div>
-        <div className="email-modal-divider" />
-        <div className="email-modal-body">
-          <label className="email-modal-label">New email address</label>
-          <Input
-            className="email-modal-input"
-            value={newEmail}
-            onChange={(e) => setNewEmail(e.target.value)}
-            placeholder=""
-          />
-        </div>
-        <div className="email-modal-divider" />
-        <div className="email-modal-footer">
-          <button
-            className="email-modal-cancel-btn"
-            onClick={() => setIsEmailModalOpen(false)}
+            <Input className="profile-form-input" prefix={<UserOutlined style={{color: '#bfbfbf', marginRight: 5}}/>} />
+          </Form.Item>
+
+          <Form.Item
+            name="surname"
+            label={<span className="profile-form-label">Last Name</span>}
+            className="profile-form-group"
           >
-            Cancel
-            <span className="email-modal-esc">ESC</span>
-          </button>
-          <button className="email-modal-submit-btn">
-            Change email address
-            <span className="email-modal-enter">↵</span>
-          </button>
+            <Input className="profile-form-input" prefix={<UserOutlined style={{color: '#bfbfbf', marginRight: 5}}/>} />
+          </Form.Item>
         </div>
-      </Modal>
+
+        <div className="profile-email-row" style={{ marginTop: '24px' }}>
+          <Form.Item
+            name="email"
+            label={<span className="profile-form-label">Primary email address</span>}
+            className="profile-form-group"
+            style={{ width: '100%' }}
+          >
+            <Input className="profile-form-input" disabled prefix={<MailOutlined style={{color: '#bfbfbf', marginRight: 5}}/>} />
+          </Form.Item>
+        </div>
+
+        <Form.Item style={{ marginTop: '32px' }}>
+          <Button type="primary" htmlType="submit" size="large" loading={loading}>
+            Save Changes
+          </Button>
+        </Form.Item>
+      </Form>
     </div>
   );
 }

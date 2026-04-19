@@ -10,21 +10,29 @@ async function addAdmin() {
     const Admin = require('../models/coreModels/Admin');
     const AdminPassword = require('../models/coreModels/AdminPassword');
 
-    const existing = await Admin.findOne({ email: 'admin@admin.com', removed: { $ne: true } });
+    const adminEmail = process.env.ADMIN_EMAIL;
+    const adminPassword = process.env.ADMIN_PASSWORD;
+
+    if (!adminEmail || !adminPassword) {
+      console.error('CRITICAL ERROR: Please define ADMIN_EMAIL and ADMIN_PASSWORD in your .env file.');
+      process.exit(1);
+    }
+
+    const existing = await Admin.findOne({ email: adminEmail, removed: { $ne: true } });
     if (existing) {
-      console.log('⚠️ admin@admin.com 已存在，无需重复添加。');
+      console.log(`⚠️ ${adminEmail} 已存在，无需重复添加。`);
       process.exit(0);
       return;
     }
 
     const newAdminPassword = new AdminPassword();
     const salt = uniqueId();
-    const passwordHash = newAdminPassword.generateHash(salt, 'admin123');
+    const passwordHash = newAdminPassword.generateHash(salt, adminPassword);
 
     const defaultAdmin = {
-      email: 'admin@admin.com',
-      name: 'Admin',
-      surname: 'Default',
+      email: adminEmail,
+      name: 'Super',
+      surname: 'Admin',
       enabled: true,
       role: 'owner',
     };
@@ -37,7 +45,7 @@ async function addAdmin() {
       user: result._id,
     }).save();
 
-    console.log('👍 已添加账号: admin@admin.com / admin123');
+    console.log(`👍 已安全添加系统管理员账户: ${adminEmail}`);
     process.exit(0);
   } catch (e) {
     console.error('添加失败:', e);

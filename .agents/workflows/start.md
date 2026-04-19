@@ -57,8 +57,40 @@ cd frontend && npm install
 | `VITE_DEV_BYPASS_AUTH` | 绕过登录墙 | `true`（仅开发用） |
 
 ---
+## 场景 D：一键启动本地环境（推荐）
 
-## 场景 A：全栈开发（zyd 日常模式）
+通过主目录的 Bash 脚本，一键启动后端、前端、MCP 和 NanoBot 服务。
+
+### 步骤
+
+```bash
+bash start-dev.sh
+```
+
+**脚本功能：**
+1. **服务并行启动**：后端 (8888)、MCP (8889)、NanoBot (8900)、前端 (3000) 将在后台运行。
+2. **统一日志管理**：所有服务日志输出到 `/tmp/ola-{service}.log`。
+3. **健康检查**：启动后自动检测各端口连通性。
+
+**预期输出：**
+```
+=== Status ===
+  Backend : running (port 8888)
+  MCP     : running (port 8889)
+  Frontend: running (port 3000)
+
+Logs: /tmp/ola-{backend,mcp,nanobot,frontend}.log
+Stop all: bash start-dev.sh
+```
+
+**停止服务：**
+```bash
+bash stop-dev.sh
+```
+
+---
+
+## 场景 A：全栈开发（手动控制模式）
 
 后端 + 前端都在本地运行，前端通过 Vite proxy 连接本地后端。
 
@@ -114,14 +146,14 @@ cd frontend && npm run dev
 不启动本地后端，前端通过 Vite proxy 连接远程生产后端。
 
 ### 前提
-- 生产后端 `https://erp.olajob.cn` 正常运行
+- 生产后端 `https://app.olajob.cn` 正常运行
 - 不需要本地 MongoDB
 
 ### 步骤
 
 确认 `frontend/.env` 配置为远程模式：
 ```
-VITE_BACKEND_SERVER="https://erp.olajob.cn/"
+VITE_BACKEND_SERVER="https://app.olajob.cn/"
 VITE_DEV_REMOTE=remote
 VITE_DEV_BYPASS_AUTH=true
 ```
@@ -161,7 +193,7 @@ bash deploy.sh
 3. SSH 到服务器执行 `docker compose up -d --build`
 4. 等待 15 秒后健康检查（容器状态 + HTTP 连通性）
 
-**部署结果验证：** 访问 https://erp.olajob.cn
+**部署结果验证：** 访问 https://app.olajob.cn
 
 ---
 
@@ -173,7 +205,7 @@ bash deploy.sh
 浏览器 → http://localhost/api/quote/list
     ↓ Vite proxy
 本地模式 → http://localhost:8888/api/quote/list
-远程模式 → https://erp.olajob.cn/api/quote/list
+远程模式 → https://app.olajob.cn/api/quote/list
 ```
 
 **Proxy 目标由 `frontend/.env` 决定：**

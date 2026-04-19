@@ -1,3 +1,4 @@
+include _logo.pug
 doctype html
 html
   head
@@ -55,17 +56,11 @@ html
       alignLeft :{
         text-align: left;
       }
-      .logo {
-        width: 250px;
+      .title-area {
         position: absolute;
         left: 15px;
         top: 10px;
-      }
-      .title-area {
-        position: absolute;
-        right: 15px;
-        top: 10px;
-        text-align: right;
+        text-align: left;
         width: 45%;
       }
       h1.invoice{
@@ -324,9 +319,8 @@ html
     
       header.clearfix
         .top-area
-          - const logoSrc = settings.company_logo.startsWith('http') ? settings.company_logo : (settings.public_server_file + settings.company_logo)
-          - console.log('Logo URL in template:', logoSrc)
-          img.logo(src=logoSrc)
+          //- Logo 暂时隐藏 — 位置还要让用户可调（见 task.md Phase I）
+          //- +companyLogo
           .title-area
             h1.invoice
               | 采购合同
@@ -338,10 +332,13 @@ html
         
         .info-row
           .info-column.company
-            p.strong 潍坊景程贸易有限公司
-            p 潍坊市奎文区东风东街360号泰华商务大厦1509号
-            p +86-536-8296032
-            p andy@plasmcut.com
+            p.strong #{settings.company_name || '请在设置中填写公司名称'}
+            if settings.company_address
+              p #{settings.company_address}
+            if settings.company_phone
+              p #{settings.company_phone}
+            if settings.company_email
+              p #{settings.company_email}
               
           .info-column.bill-to
             h3 供货方:

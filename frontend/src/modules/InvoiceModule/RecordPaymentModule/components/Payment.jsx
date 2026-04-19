@@ -52,7 +52,6 @@ export default function Payment({ config, currentItem }) {
           lg={{ span: 20, push: 2 }}
         >
           <PageHeader
-            onBack={() => navigate(`/${entity.toLowerCase()}`)}
             title={`Record Payment for ${ENTITY_NAME} # ${currentErp.number}/${
               currentErp.year || ''
             }`}

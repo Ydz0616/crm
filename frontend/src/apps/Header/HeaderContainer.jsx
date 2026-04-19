@@ -1,5 +1,7 @@
-import { Layout } from 'antd';
-import { useLocation } from 'react-router-dom';
+import { Layout, Tooltip } from 'antd';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useAppContext } from '@/context/appContext';
 
 import {
   QuestionCircleOutlined,
@@ -26,6 +28,9 @@ import {
   SettingOutlined,
   UserOutlined,
   CheckSquareOutlined,
+  HistoryOutlined,
+  EllipsisOutlined,
+  PlusOutlined,
 } from '@ant-design/icons';
 
 const PAGE_MAP = {
@@ -68,7 +73,18 @@ function getPageInfo(pathname) {
 export default function HeaderContent() {
   const { Header } = Layout;
   const location = useLocation();
+  const navigate = useNavigate();
   const pageInfo = getPageInfo(location.pathname);
+  const { state: stateApp, appContextAction } = useAppContext();
+  const { isOlaPanelOpen } = stateApp;
+  const { olaPanel } = appContextAction;
+
+  // Auto-close the side panel when navigating to the Ask Ola page
+  useEffect(() => {
+    if (location.pathname === '/askola' && isOlaPanelOpen) {
+      olaPanel.close();
+    }
+  }, [location.pathname, isOlaPanelOpen, olaPanel]);
 
   return (
     <Header
@@ -89,14 +105,40 @@ export default function HeaderContent() {
       </div>
 
       <div className="header-right-actions">
-        <button className="header-action-btn">
-          <QuestionCircleOutlined />
-          <span>Help</span>
-        </button>
-        <button className="header-action-btn header-action-btn--ola">
-          <SmileOutlined />
-          <span>Ask Ola</span>
-        </button>
+        {location.pathname === '/askola' ? (
+          <>
+            <button className="header-action-btn" onClick={() => { appContextAction.chatSession.setActive(null); }}>
+              <PlusOutlined />
+              <span>New Chat</span>
+            </button>
+            <button className="header-action-btn header-action-btn--ola" onClick={() => appContextAction.historyModal.open()}>
+              <HistoryOutlined />
+              <span>History</span>
+            </button>
+            <button
+              className="header-action-btn"
+              onClick={() => navigate('/settings/edit/ask_ola')}
+              style={{ padding: '0 8px', minWidth: 'auto', border: 'none', background: 'transparent', boxShadow: 'none' }}
+            >
+              <Tooltip title="Setting" placement="bottom">
+                <EllipsisOutlined rotate={90} style={{ fontSize: '18px', color: '#8c8c8c' }} />
+              </Tooltip>
+            </button>
+          </>
+        ) : (
+          <>
+            <button className="header-action-btn">
+              <QuestionCircleOutlined />
+              <span>Help</span>
+            </button>
+            {!isOlaPanelOpen && (
+              <button className="header-action-btn header-action-btn--ola" onClick={() => olaPanel.open()}>
+                <SmileOutlined />
+                <span>Ask Ola</span>
+              </button>
+            )}
+          </>
+        )}
       </div>
     </Header>
   );

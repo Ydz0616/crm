@@ -18,7 +18,7 @@ const create = async (req, res) => {
 
   const currentInvoice = await Invoice.findOne({
     _id: req.body.invoice,
-    removed: false,
+    removed: false, createdBy: req.admin._id,
   });
 
   const {
@@ -44,7 +44,7 @@ const create = async (req, res) => {
   const updatePath = await Model.findOneAndUpdate(
     {
       _id: result._id.toString(),
-      removed: false,
+      removed: false, createdBy: req.admin._id,
     },
     { pdf: fileId },
     {

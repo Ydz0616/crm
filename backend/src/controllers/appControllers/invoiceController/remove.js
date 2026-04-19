@@ -7,7 +7,7 @@ const remove = async (req, res) => {
   const deletedInvoice = await Model.findOneAndUpdate(
     {
       _id: req.params.id,
-      removed: false,
+      removed: false, createdBy: req.admin._id,
     },
     {
       $set: {

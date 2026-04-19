@@ -1,11 +1,13 @@
 import { useEffect } from 'react';
 
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 import useLanguage from '@/locale/useLanguage';
 
-import { Form, Button } from 'antd';
+import { Form, Button, Typography } from 'antd';
+
+const { Text } = Typography;
 
 import { login } from '@/redux/auth/actions';
 import { selectAuth } from '@/redux/auth/selectors';
@@ -52,6 +54,11 @@ const LoginPage = () => {
               {translate('Log in')}
             </Button>
           </Form.Item>
+
+          <div style={{ textAlign: 'center', marginTop: 10 }}>
+            <Text>Don't have an account? </Text>
+            <Link to="/register">Sign up</Link>
+          </div>
         </Form>
       </Loading>
     );

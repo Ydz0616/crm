@@ -2,7 +2,7 @@
   {
     "settingCategory": "company_settings",
     "settingKey": "company_name",
-    "settingValue": "WEIFANG ROYALROAD TRADING CO., LTD.",
+    "settingValue": "",
     "valueType": "string"
   },
   {
@@ -20,61 +20,62 @@
   {
     "settingCategory": "company_settings",
     "settingKey": "company_address",
-    "settingValue": "NO.360 DongFeng East Str, WeiFang City, 261041, P.R China",
+    "settingValue": "",
     "valueType": "string"
   },
   {
     "settingCategory": "company_settings",
     "settingKey": "company_state",
-    "settingValue": "Shandong",
+    "settingValue": "",
     "valueType": "string"
   },
   {
     "settingCategory": "company_settings",
     "settingKey": "company_country",
-    "settingValue": "China",
+    "settingValue": "",
     "valueType": "string"
   },
   {
     "settingCategory": "company_settings",
     "settingKey": "company_email",
-    "settingValue": "andy@plasmcut.com",
+    "settingValue": "",
     "valueType": "string"
   },
   {
     "settingCategory": "company_settings",
     "settingKey": "company_phone",
-    "settingValue": "+86 536 8296032",
+    "settingValue": "",
     "valueType": "string"
   },
   {
     "settingCategory": "company_settings",
     "settingKey": "company_website",
-    "settingValue": "www.plasmcut.com",
+    "settingValue": "",
     "valueType": "string"
   },
   {
     "settingCategory": "company_settings",
     "settingKey": "company_tax_number",
-    "settingValue": "91231255234",
+    "settingValue": "",
     "valueType": "string"
   },
   {
     "settingCategory": "company_settings",
     "settingKey": "company_vat_number",
-    "settingValue": "91231255234",
+    "settingValue": "",
     "valueType": "string"
   },
   {
     "settingCategory": "company_settings",
     "settingKey": "company_reg_number",
-    "settingValue": "00001231421",
+    "settingValue": "",
     "valueType": "string"
   },
   {
     "settingCategory": "company_settings",
     "settingKey": "company_bank_account",
-    "settingValue": "iban : 00001231421",
+    "settingValue": "",
     "valueType": "string"
   }
 ]
+

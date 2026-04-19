@@ -34,7 +34,7 @@ const getPurchasePrice = async (req, res) => {
       ETR = parseFloat(requestETR);
     } else {
       // Get merch details to calculate profit later
-      const merch = await Merch.findOne({ serialNumber: itemName, removed: false });
+      const merch = await Merch.findOne({ serialNumber: itemName, removed: false, createdBy: req.admin._id });
       if (!merch) {
         return res.status(404).json({
           success: false,
@@ -52,7 +52,7 @@ const getPurchasePrice = async (req, res) => {
     const clientInvoices = await Invoice.find({
       client: clientId,
       'items.itemName': itemName,
-      removed: false
+      removed: false, createdBy: req.admin._id
     }).sort({ date: -1 }); // Get most recent first
 
     let purchasePrice = null;
@@ -65,7 +65,7 @@ const getPurchasePrice = async (req, res) => {
         for (const poId of invoice.relatedPurchaseOrders) {
           const po = await PurchaseOrder.findOne({ 
             _id: poId, 
-            removed: false,
+            removed: false, createdBy: req.admin._id,
             'items.itemName': itemName
           });
           
@@ -100,7 +100,7 @@ const getPurchasePrice = async (req, res) => {
       const regionalClients = await Client.find({
         country: client.country,
         _id: { $ne: clientId }, // Exclude current client
-        removed: false
+        removed: false, createdBy: req.admin._id
       });
 
       const regionalClientIds = regionalClients.map(c => c._id);
@@ -109,7 +109,7 @@ const getPurchasePrice = async (req, res) => {
       const regionalInvoices = await Invoice.find({
         client: { $in: regionalClientIds },
         'items.itemName': itemName,
-        removed: false
+        removed: false, createdBy: req.admin._id
       }).sort({ date: -1 });
 
       // Check each invoice for purchase orders
@@ -118,7 +118,7 @@ const getPurchasePrice = async (req, res) => {
           for (const poId of invoice.relatedPurchaseOrders) {
             const po = await PurchaseOrder.findOne({ 
               _id: poId, 
-              removed: false,
+              removed: false, createdBy: req.admin._id,
               'items.itemName': itemName
             });
             

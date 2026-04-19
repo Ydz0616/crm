@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import {
   SettingOutlined,
@@ -16,9 +16,8 @@ import {
   MailOutlined,
   SmileOutlined,
   LeftOutlined,
-  SearchOutlined,
+  LogoutOutlined,
 } from '@ant-design/icons';
-import { Input } from 'antd';
 
 import useLanguage from '@/locale/useLanguage';
 
@@ -44,7 +43,14 @@ import MoneyFormatSettings from './MoneyFormatSettings';
 export default function Settings() {
   const translate = useLanguage();
   const navigate = useNavigate();
+  const { settingsKey } = useParams();
   const [activeKey, setActiveKey] = useState('profile');
+
+  useEffect(() => {
+    if (settingsKey) {
+      setActiveKey(settingsKey);
+    }
+  }, [settingsKey]);
 
   // Sidebar menu structure
   const sidebarSections = [
@@ -158,14 +164,6 @@ export default function Settings() {
       <div className="settings-body">
         {/* Sidebar */}
         <div className="settings-sidebar">
-          <div className="settings-sidebar-search">
-            <Input
-              prefix={<SearchOutlined />}
-              placeholder="Search settings..."
-              allowClear
-            />
-          </div>
-
           {sidebarSections.map((section) => (
             <div key={section.label} className="settings-sidebar-group">
               <div className="settings-sidebar-group-label">{section.label}</div>
@@ -181,6 +179,13 @@ export default function Settings() {
               ))}
             </div>
           ))}
+
+          <div className="settings-sidebar-logout-container">
+            <button className="settings-sidebar-logout-btn" onClick={() => navigate('/logout')}>
+              <LogoutOutlined />
+              <span>Log Out</span>
+            </button>
+          </div>
         </div>
 
         {/* Content area */}

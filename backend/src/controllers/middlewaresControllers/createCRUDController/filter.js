@@ -8,6 +8,7 @@ const filter = async (Model, req, res) => {
   }
   const result = await Model.find({
     removed: false,
+    createdBy: req.admin._id,
   })
     .where(req.query.filter)
     .equals(req.query.equal)

@@ -29,6 +29,7 @@ const paymentModeSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  createdBy: { type: mongoose.Schema.ObjectId, ref: 'Admin' },
 });
 
 module.exports = mongoose.model('PaymentMode', paymentModeSchema);

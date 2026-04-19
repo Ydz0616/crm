@@ -18,6 +18,9 @@ const authReducer = (state = INITIAL_STATE, action) => {
     case actionTypes.REQUEST_FAILED:
       return INITIAL_STATE;
 
+    case actionTypes.RESET_STATE:
+      return INITIAL_STATE;
+
     case actionTypes.REQUEST_SUCCESS:
       return {
         current: action.payload,
@@ -26,13 +29,6 @@ const authReducer = (state = INITIAL_STATE, action) => {
         isSuccess: true,
       };
 
-    case actionTypes.REGISTER_SUCCESS:
-      return {
-        current: null,
-        isLoggedIn: false,
-        isLoading: false,
-        isSuccess: true,
-      };
     case actionTypes.LOGOUT_SUCCESS:
       return INITIAL_STATE;
 

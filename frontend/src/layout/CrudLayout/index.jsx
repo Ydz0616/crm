@@ -38,12 +38,14 @@ const ContentBox = ({ children }) => {
   // }, [isNavMenuClose]);
   return (
     <Content
-      className="whiteBox shadow layoutPadding"
+      className="whiteBox"
       style={{
-        margin: '24px auto',
+        margin: '0 auto',
+        padding: '0 10px',
         width: '100%',
         maxWidth: '100%',
         flex: 'none',
+        borderRadius: 0,
       }}
     >
       {children}

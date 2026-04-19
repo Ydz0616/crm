@@ -12,10 +12,12 @@
     "setup": "node src/setup/setup.js",
     "add-admin": "node src/setup/addAdmin.js",
     "upgrade": "node src/setup/upgrade.js",
-    "reset": "node src/setup/reset.js"
+    "reset": "node src/setup/reset.js",
+    "mcp:dev": "node src/mcp/server.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.509.0",
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "axios": "^1.9.0",
     "bcryptjs": "^2.4.3",
     "compression": "^1.7.4",
@@ -42,7 +44,8 @@
     "pug": "^3.0.2",
     "resend": "^2.0.0",
     "shortid": "^2.2.16",
-    "transliteration": "^2.3.5"
+    "transliteration": "^2.3.5",
+    "zod": "^3.22.0"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",

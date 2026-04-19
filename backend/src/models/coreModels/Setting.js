@@ -35,6 +35,10 @@ const settingSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  createdBy: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'Admin',
+  },
 });
 
 module.exports = mongoose.model('Setting', settingSchema);

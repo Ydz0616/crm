@@ -32,14 +32,11 @@ const copy = async (req, res) => {
       notes: sourceQuote.notes,
       status: 'draft', // 新报价单的状态设置为草稿
       currency: sourceQuote.currency,
+      exchangeRate: sourceQuote.exchangeRate,
       shipping: sourceQuote.shipping,
       freight: sourceQuote.freight,
       termsOfDelivery: sourceQuote.termsOfDelivery,
-      shippingMark: sourceQuote.shippingMark,
-      packaging: sourceQuote.packaging,
-      shipmentDocuments: sourceQuote.shipmentDocuments,
       paymentTerms: sourceQuote.paymentTerms,
-      bankDetails: sourceQuote.bankDetails,
       createdBy: req.admin._id // 添加创建者ID
     });
 

@@ -48,6 +48,7 @@ const authUser = async (req, res, { user, databasePassword, password, UserPasswo
           role: user.role,
           email: user.email,
           photo: user.photo,
+          onboarded: user.onboarded,
         },
         message: 'Successfully login user',
       });

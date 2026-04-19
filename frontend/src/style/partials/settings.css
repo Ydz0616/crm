@@ -56,8 +56,8 @@
 /* ===== Settings Sidebar ===== */
 
 .settings-sidebar {
-  width: 240px;
-  min-width: 240px;
+  width: 220px;
+  min-width: 220px;
   border-right: 1px solid #f0f0f0;
   background: #fafafa;
   display: flex;
@@ -79,39 +79,20 @@
   background: #d9d9d9;
 }
 
-/* Search input in sidebar */
-.settings-sidebar-search {
-  margin-bottom: 16px;
-}
-
-.settings-sidebar-search .ant-input-affix-wrapper {
-  border-radius: 8px;
-  border: 1px solid #e8e8e8;
-  background: #ffffff;
-  height: 34px;
-  font-size: 13px;
-}
-
-.settings-sidebar-search .ant-input-affix-wrapper:hover,
-.settings-sidebar-search .ant-input-affix-wrapper:focus,
-.settings-sidebar-search .ant-input-affix-wrapper-focused {
-  border-color: #d9d9d9;
-  box-shadow: none;
-}
-
 /* Sidebar section groups */
 .settings-sidebar-group {
-  margin-bottom: 20px;
+  margin-bottom: 0;
 }
 
 .settings-sidebar-group-label {
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 500;
   color: #999;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  padding: 0 10px;
-  margin-bottom: 4px;
+  padding: 8px 0 8px 8px;
+  margin-top: 8px;
+  margin-bottom: 0;
 }
 
 /* Sidebar menu items */
@@ -119,17 +100,20 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 10px;
+  height: 36px;
+  margin: 2px 0;
+  padding: 0 12px;
   border-radius: 6px;
   cursor: pointer;
   font-size: 13px;
-  color: #333;
+  color: #555;
   transition: background 0.15s, color 0.15s;
   user-select: none;
 }
 
 .settings-sidebar-item:hover {
-  background: #eeeeee;
+  background: #f0f0f0;
+  color: #333;
 }
 
 .settings-sidebar-item.active {
@@ -139,7 +123,7 @@
 }
 
 .settings-sidebar-item .anticon {
-  font-size: 14px;
+  font-size: 15px;
   color: inherit;
   flex-shrink: 0;
 }
@@ -3431,4 +3415,34 @@
 .billing-cancel-btn:hover {
   background: #fafafa;
   border-color: #aaa;
+}
+
+/* ===== Sidebar Logout button ===== */
+.settings-sidebar-logout-container {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.settings-sidebar-logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #111;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.settings-sidebar-logout-btn:hover {
+  border-color: #d9d9d9;
+  background: #fdfdfd;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
 }

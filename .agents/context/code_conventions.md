@@ -11,7 +11,7 @@
 - 所有 TODO 标注 owner 和 deadline：`// TODO(zyd): description, by YYYY-MM-DD`
 - **不引入新 npm 依赖**，除非明确说明理由并获得用户同意
 - git commit message 格式：`type(scope): description`（type = feat/fix/refactor/docs/chore）
-- 遵循 idurar 上游的代码组织模式，不自创新架构
+- 遵循 Ola CRM 既有的代码组织模式，不自创新架构
 
 ---
 
