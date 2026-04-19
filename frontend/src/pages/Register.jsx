@@ -1,5 +1,6 @@
+import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import useLanguage from '@/locale/useLanguage';
 import { Form, Button, Typography } from 'antd';
@@ -14,17 +15,18 @@ const { Text } = Typography;
 
 const RegisterPage = () => {
   const translate = useLanguage();
-  const { isLoading } = useSelector(selectAuth);
+  const { isLoading, isSuccess } = useSelector(selectAuth);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const onFinish = (values) => {
-    // 剔除 confirmPassword，后端 API 需要 name, surname, email, password
     const { confirmPassword, ...registerData } = values;
     dispatch(register({ registerData }));
   };
 
-  // 注册成功后 Redux 自动设为 isLoggedIn=true（auto-login），
-  // OlaOs 会检测 onboarded===false 并显示上车表单。无需手动 navigate。
+  useEffect(() => {
+    if (isSuccess) navigate('/', { replace: true });
+  }, [isSuccess]);
 
   const FormContainer = () => {
     return (

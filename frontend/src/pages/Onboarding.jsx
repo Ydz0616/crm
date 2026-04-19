@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { Form, Input, Select, Button, Steps, message } from 'antd';
 import {
   UserOutlined,
@@ -23,6 +24,7 @@ export default function Onboarding() {
   const [form] = Form.useForm();
   const { current: currentUser } = useSelector(selectAuth);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const steps = [
     { title: 'About You', icon: <UserOutlined /> },
@@ -57,7 +59,6 @@ export default function Onboarding() {
       if (response.success) {
         message.success('Welcome to Ola! 🎉');
 
-        // 更新 localStorage
         const auth_state = {
           current: response.result,
           isLoggedIn: true,
@@ -66,7 +67,7 @@ export default function Onboarding() {
         };
         window.localStorage.setItem('auth', JSON.stringify(auth_state));
 
-        // 更新 Redux store — OlaOs 三层路由会自动切换到 DefaultApp
+        navigate('/', { replace: true });
         dispatch({ type: actionTypes.REQUEST_SUCCESS, payload: response.result });
       } else {
         setLoading(false);
