@@ -19,20 +19,14 @@ export default function UpdateSettingForm({ config, children, withUpload, upload
   const [uploading, setUploading] = useState(false);
 
   const onSubmit = async (fieldsValue) => {
-    console.log('🚀 ~ onSubmit ~ fieldsValue:', fieldsValue);
     if (withUpload) {
       if (fieldsValue.file && fieldsValue.file.length > 0) {
         try {
           setUploading(true);
-          
-          // 创建FormData对象
+
           const formData = new FormData();
           formData.append('file', fieldsValue.file[0].originFileObj);
-          
-          // 添加调试日志
-          console.log('Uploading file:', fieldsValue.file[0].originFileObj.name);
-          console.log('Using direct upload endpoint');
-          
+
           const response = await axios.patch(
             `${API_BASE_URL}setting/upload/${uploadSettingKey}`,
             formData,
@@ -41,9 +35,7 @@ export default function UpdateSettingForm({ config, children, withUpload, upload
               withCredentials: true,
             }
           );
-          
-          console.log('上传响应:', response.data);
-          
+
           if (response.data.success) {
             message.success('Logo uploaded successfully');
             // 重新加载设置
@@ -100,14 +92,6 @@ export default function UpdateSettingForm({ config, children, withUpload, upload
             <Button type="primary" htmlType="submit" loading={uploading}>
               {translate('Save')}
             </Button>
-          </Form.Item>
-          <Form.Item
-            style={{
-              display: 'inline-block',
-              paddingLeft: '5px',
-            }}
-          >
-            {/* <Button onClick={() => console.log('Cancel clicked')}>{translate('Cancel')}</Button> */}
           </Form.Item>
         </Form>
       </Loading>

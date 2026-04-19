@@ -5,5 +5,6 @@
 //- otherwise prefixed with settings.public_server_file.
 mixin companyLogo
   - const rawLogo = settings.company_logo || ''
-  - const logoSrc = rawLogo.startsWith('http') ? rawLogo : (settings.public_server_file + rawLogo)
-  img.company-logo(src=logoSrc style='position:absolute;left:15px;top:10px;width:240px;height:80px;object-fit:contain')
+  if rawLogo
+    - const logoSrc = rawLogo.startsWith('http') ? rawLogo : (settings.public_server_file + rawLogo)
+    img.company-logo(src=logoSrc style='position:absolute;left:15px;top:10px;width:240px;height:80px;object-fit:contain')
