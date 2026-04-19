@@ -69,13 +69,13 @@ else
 fi
 
 echo "🌐 [5/5] 接口连通性检查..."
-FRONTEND_CODE=$(ssh "$SERVER" "curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3000" || echo "000")
+FRONTEND_CODE=$(ssh "$SERVER" "curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:80" || echo "000")
 BACKEND_CODE=$(ssh "$SERVER" "curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8888/health" || echo "000")
 
 if [ "$FRONTEND_CODE" = "200" ]; then
-    echo "   ✅ 前端 3000: HTTP $FRONTEND_CODE"
+    echo "   ✅ 前端 :80: HTTP $FRONTEND_CODE"
 else
-    echo "   ⚠️ 前端 3000: HTTP $FRONTEND_CODE (预期 200)"
+    echo "   ⚠️ 前端 :80: HTTP $FRONTEND_CODE (预期 200)"
 fi
 if [ "$BACKEND_CODE" = "200" ]; then
     echo "   ✅ 后端 8888/health: HTTP $BACKEND_CODE"

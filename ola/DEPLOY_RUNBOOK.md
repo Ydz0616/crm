@@ -210,46 +210,31 @@ OPENAI_API_KEY=<key>
 
 ---
 
-## Phase 6 — 公网入口：Aliyun DNS + Caddy + Let's Encrypt（Duke + Claude，~20 min）
+## Phase 6 — 公网入口：Cloudflare Proxy（Duke + Claude，~10 min）
 
-**方案决策**：olajob.cn 目前托管在 Aliyun。迁到 CF 需要改 NS 等 1-24h 传播，赶不上明天 demo。本次用 Aliyun DNS + Box1 Caddy + LE 最简方案，CF Tunnel 迁移放 T+1 周 backlog（和 OSS 迁移一起做）。
+**方案决策**：olajob.cn 已迁到 Cloudflare（NS = elaine/gerald.ns.cloudflare.com，已全球传播）。用 CF 直接代理 Box1:80，不在 Box1 跑 caddy / LE。CF 终结 HTTPS，origin 走 HTTP。
 
 ### Duke 操作
 
-1. Aliyun 控制台 → 域名 → olajob.cn → DNS 解析：
-   - 添加 A 记录：`app` → `47.77.239.237`（Box1 IP），TTL 10min
-2. ECS 安全组确认 Box1 开放 443 和 80（安全组规则）
-3. 告诉 Claude：DNS 已配
+1. CF Dashboard → `olajob.cn` → DNS：
+   - A 记录 `app` → `47.77.239.237`，代理状态 = **橙云 (Proxied)**
+2. CF Dashboard → `olajob.cn` → SSL/TLS → Overview → Encryption mode = **Flexible**
+   - Box1 没跑 TLS，必须 Flexible（CF→origin 明文），Full/Full strict 会 526
+3. Aliyun ECS Box1 安全组入方向放开 TCP 80 源 `0.0.0.0/0`（CF 访问用）
+4. 告诉 Claude 配置完成
 
-### Claude 操作（SSH Box1 装 Caddy）
-
-```bash
-# Caddy 会自动申请 Let's Encrypt 证书、自动续期
-apt update && apt install -y debian-keyring debian-archive-keyring apt-transport-https curl
-curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
-curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | tee /etc/apt/sources.list.d/caddy-stable.list
-apt update && apt install -y caddy
-
-# 写 Caddyfile
-cat > /etc/caddy/Caddyfile <<'CADDY'
-app.olajob.cn {
-    reverse_proxy localhost:3000
-}
-CADDY
-
-systemctl reload caddy
-```
-
-Caddy 第一次启动会自动走 ACME challenge 申请证书（要求 DNS 已传播）。
-
-### 校验
+### 校验（Claude）
 
 ```bash
 curl -sI https://app.olajob.cn                    # 200
 curl -sI https://app.olajob.cn/api/setting/listAll # 401（说明 /api proxy 生效）
 ```
 
-### CF 迁移（T+1 周 backlog，不在今晚 scope）
+### 旧的 Caddy + LE 方案（不再使用）
+
+如需紧急切回直连：1) CF app 记录切灰云 2) Box1 装 caddy 3) Caddyfile 写 `app.olajob.cn { reverse_proxy localhost:80 }` 4) systemctl start caddy。
+
+### 未来升级：CF Tunnel
 
 届时：registrar 改 NS → CF → 建 Tunnel → 关 Caddy → DNS 切到 CF。老 Caddy 配置保留作为 fallback 文档。
 
