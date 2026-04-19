@@ -372,8 +372,9 @@ html
           .info-column.company
             p.strong #{settings.company_name || 'Your Company Name'}
             if settings.company_website
-              p 
-                a(href=settings.company_website) #{settings.company_website}
+              - const companyWebsiteUrl = settings.company_website.startsWith('http') ? settings.company_website : 'https://' + settings.company_website
+              p
+                a(href=companyWebsiteUrl target='_blank') #{settings.company_website}
             if settings.company_address
               p #{settings.company_address}
             if settings.company_phone
