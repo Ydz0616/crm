@@ -29,8 +29,10 @@ services:
       args:
         VITE_BACKEND_SERVER: "https://app.olajob.cn/"
         VITE_APP_API_URL: "https://app.olajob.cn/api/"
+    # Cloudflare proxy 只支持标准端口（80/443/8080/...），自定义 3000 不被代理
+    # 所以 host 端口直接用 80，CF → Box1:80 → nginx-in-frontend → backend:8888
     ports:
-      - "3000:80"
+      - "80:80"
     depends_on:
       - backend
     restart: unless-stopped
