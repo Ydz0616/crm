@@ -1,0 +1,10 @@
+//- Standardized company logo block.
+//- Renders a 240x80 box in the top-left; object-fit:contain lets any
+//- aspect ratio (square / wide wordmark / tall) sit cleanly without
+//- distortion. Uploaded raw URL (starts with http) passes through;
+//- otherwise prefixed with settings.public_server_file.
+mixin companyLogo
+  - const rawLogo = settings.company_logo || ''
+  if rawLogo
+    - const logoSrc = rawLogo.startsWith('http') ? rawLogo : (settings.public_server_file + rawLogo)
+    img.company-logo(src=logoSrc style='position:absolute;left:15px;top:10px;width:240px;height:80px;object-fit:contain')

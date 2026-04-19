@@ -15,7 +15,6 @@ const exportRoutes = require('./routes/exportRoutes');
 const errorHandlers = require('./handlers/errorHandlers');
 const erpApiRouter = require('./routes/appRoutes/appApi');
 
-const fileUpload = require('express-fileupload');
 // create our Express app
 const app = express();
 
@@ -55,9 +54,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(compression());
-
-// Use file upload middleware
-app.use(fileUpload());
 
 // Simple health check route
 app.get('/health', (req, res) => {
