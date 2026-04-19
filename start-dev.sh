@@ -6,7 +6,13 @@
 set -e
 
 CRM_DIR="$(cd "$(dirname "$0")" && pwd)"
-NANOBOT_DIR="$CRM_DIR/../nanobot"
+# Repo was renamed nanobot → Ola_bot on GitHub. Prefer the new name; fall
+# back to the old one so machines cloned before the rename still work.
+if [ -d "$CRM_DIR/../Ola_bot" ]; then
+  NANOBOT_DIR="$CRM_DIR/../Ola_bot"
+else
+  NANOBOT_DIR="$CRM_DIR/../nanobot"
+fi
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'

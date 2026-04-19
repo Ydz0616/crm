@@ -12,17 +12,20 @@ This directory is what makes **Ask Ola** behave as a real tool-calling agent
 
 - Node.js 20.x, npm 10.x
 - Python 3.11+
-- The CRM and nanobot repos cloned as **siblings** —
-  `start-dev.sh:9` expects `$CRM_DIR/../nanobot/` to exist and launches
-  `python -m nanobot serve` from there. Use the Ola fork, not upstream,
-  so future Ola-specific patches land in the right place:
+- The Ola CRM and Ola_bot repos cloned as **siblings** —
+  `start-dev.sh` expects `$CRM_DIR/../Ola_bot/` (or the legacy
+  `../nanobot/`) to exist and launches `python -m nanobot serve` from
+  there. Use the Ola fork, not upstream, so future Ola-specific patches
+  land in the right place:
 
   ```bash
   mkdir -p ~/dev && cd ~/dev
-  git clone git@github.com:SeekMi-Technologies/crm.git
-  git clone git@github.com:SeekMi-Technologies/nanobot.git
+  git clone git@github.com:SeekMi-Technologies/ola.git
+  git clone git@github.com:SeekMi-Technologies/Ola_bot.git
   # upstream is git@github.com:HKUDS/nanobot.git — already set as
   # `upstream` remote on zyd's main mac; add if you want upstream merges.
+  # Older clones may still be named `crm/` and `nanobot/` locally;
+  # start-dev.sh handles either name.
   ```
 - MongoDB connection string (Atlas shared cluster or your own)
 - Gemini API key (from [aistudio.google.com](https://aistudio.google.com))
