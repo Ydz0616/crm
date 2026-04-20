@@ -1,7 +1,13 @@
 # Ola ERP CRM — 生产部署 compose（Box1 = app）
-# 三箱拓扑：Box1 跑 backend+frontend，Box3 跑 gotenberg，Box2 跑 nanobot
-# 公网入口：Aliyun DNS → Box1:443 (caddy) → frontend:3000 → nginx proxy /api → backend:8888
+# 三箱拓扑：Box1 跑 backend + mcp + frontend，Box3 跑 gotenberg，Box2 跑 nanobot
+# 公网入口：CF Proxy (Flexible) → Box1:80 → nginx-in-frontend → backend:8888
+# Tailscale 跨机：Box2 nanobot → Box1 mcp (100.109.220.126:8889) → backend (MongoDB)
 # 使用: 在 Box1 上 cd 到项目目录，配置 backend/.env 后执行 docker compose up -d --build
+#
+# 环境变量（可选）：
+#   MCP_BIND_ADDR — MCP 对外暴露绑定地址。默认 127.0.0.1（本地只允许 loopback）。
+#                    分机部署必须设为 Box1 Tailscale IP，如 MCP_BIND_ADDR=100.109.220.126
+#                    可放 .env 文件（compose 自动读取）或 shell 环境变量
 
 services:
   backend:
@@ -9,7 +15,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     # 只绑 loopback：nginx-in-frontend 通过 docker 网络连 backend:8888，
-    # 公网访问必须经 Caddy→nginx→/api→backend，不暴露裸 API 端口
+    # 公网访问必须经 CF→nginx→/api→backend，不暴露裸 API 端口
     ports:
       - "127.0.0.1:8888:8888"
     env_file:
@@ -22,6 +28,27 @@ services:
       - crm-uploads:/usr/src/app/src/public/uploads
     restart: unless-stopped
 
+  # MCP server 独立容器（与 backend 同镜像，command 覆盖入口），
+  # 因为 backend Dockerfile CMD 是 `npm start` 只拉主 API 进程，
+  # MCP 需要独立 Node 进程。详见 backend/src/mcp/README.md
+  mcp:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: node src/mcp/server.js
+    # 绑定地址通过 MCP_BIND_ADDR 控制：
+    # - 本地 dev：默认 127.0.0.1（只 loopback，不跨机）
+    # - 生产分机：shell 或 .env 设 MCP_BIND_ADDR=<Box1 Tailscale IP>
+    ports:
+      - "${MCP_BIND_ADDR:-127.0.0.1}:8889:8889"
+    env_file:
+      - ./backend/.env
+    environment:
+      NODE_ENV: production
+      # 容器内部绑 0.0.0.0，由上面的 ports 映射决定对外暴露哪个宿主接口
+      MCP_HOST: "0.0.0.0"
+    restart: unless-stopped
+
   frontend:
     build:
       context: ./frontend
@@ -29,8 +56,10 @@ services:
       args:
         VITE_BACKEND_SERVER: "https://app.olajob.cn/"
         VITE_APP_API_URL: "https://app.olajob.cn/api/"
+    # Cloudflare proxy 只支持标准端口（80/443/8080/...），自定义 3000 不被代理
+    # 所以 host 端口直接用 80，CF → Box1:80 → nginx-in-frontend → backend:8888
     ports:
-      - "3000:80"
+      - "80:80"
     depends_on:
       - backend
     restart: unless-stopped
@@ -41,6 +70,6 @@ volumes:
 # 注意：
 # - gotenberg 不再在本 compose 中，它在 Box3 独立运行
 #   Box3: docker run -d --name gotenberg --restart unless-stopped -p 3000:3000 gotenberg/gotenberg:8
-# - backend/.env 必须包含 GOTENBERG_URL=http://box3-pdf:3000 和 NANOBOT_HOST=box2-ai 等
+# - backend/.env 必须包含 GOTENBERG_URL / NANOBOT_HOST / NANOBOT_PORT / MCP_SERVICE_TOKEN / GEMINI_API_KEY 等
 # - ALLOWED_ORIGINS / PUBLIC_SERVER_FILE 等也从 backend/.env 读取
-# - MCP_HOST 设为 Box1 Tailscale IP 才能让 Box2 nanobot 过 Tailscale 访问（backend/src/mcp/server.js）
+# - 分机部署时 shell 必须 export MCP_BIND_ADDR=<Box1 Tailscale IP>（例 100.109.220.126）否则 nanobot 连不上
