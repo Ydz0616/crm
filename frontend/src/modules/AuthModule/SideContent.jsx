@@ -32,8 +32,8 @@ export default function SideContent() {
           }}
         />
 
-        <Title level={1}>Ola ERP CRM</Title>
-        <Title level={4}>Accounting / Invoicing / Quote App</Title>
+        <Title level={1}>Ola — Lead to Quote, in Minutes</Title>
+        <Title level={4}>AI-native CRM/ERP for export teams.</Title>
 
         <div className="space20"></div>
       </div>
