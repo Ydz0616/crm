@@ -1,5 +1,5 @@
 import { Space, Layout, Divider, Typography } from 'antd';
-import logo from '@/style/images/logo.png';
+import logo from '@/style/images/OLA_LOGO.png';
 import useLanguage from '@/locale/useLanguage';
 import { useSelector } from 'react-redux';
 
@@ -32,8 +32,7 @@ export default function SideContent() {
           }}
         />
 
-        <Title level={1}>Ola ERP CRM</Title>
-        <Title level={4}>Accounting / Invoicing / Quote App</Title>
+        <Title level={1}>Lead to Quote, in Minutes</Title>
 
         <div className="space20"></div>
       </div>
