@@ -32,7 +32,7 @@ export default function SideContent() {
           }}
         />
 
-        <Title level={1}>Ola — Lead to Quote, in Minutes</Title>
+        <Title level={1}>Lead to Quote, in Minutes</Title>
 
         <div className="space20"></div>
       </div>
