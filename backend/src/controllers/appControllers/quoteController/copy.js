@@ -5,9 +5,13 @@ const copy = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // 查找要复制的报价单
-    const sourceQuote = await Quote.findById(id);
-    
+    // 查找要复制的报价单（严格限定为当前用户所有）
+    const sourceQuote = await Quote.findOne({
+      _id: id,
+      removed: false,
+      createdBy: req.admin._id,
+    });
+
     if (!sourceQuote) {
       return res.status(404).json({
         success: false,

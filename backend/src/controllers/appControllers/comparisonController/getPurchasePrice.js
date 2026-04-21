@@ -86,8 +86,12 @@ const getPurchasePrice = async (req, res) => {
 
     // CASE 2: Check region history if no direct client history
     if (!purchasePrice) {
-      // Get current client's country
-      const client = await Client.findById(clientId);
+      // Get current client's country (严格限定为当前用户所有)
+      const client = await Client.findOne({
+        _id: clientId,
+        removed: false,
+        createdBy: req.admin._id,
+      });
       if (!client || !client.country) {
         return res.status(400).json({
           success: false,

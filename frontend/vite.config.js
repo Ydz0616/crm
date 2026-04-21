@@ -25,30 +25,13 @@ export default ({ mode }) => {
     server: {
       port: port,
       host: '0.0.0.0',
+      // Same-origin 策略下 frontend 不再硬编码 backend 绝对 URL，所有 backend 调用
+      // 都走 /api /download /export /public 同源路径，dev 环境靠 vite 把它们 proxy 到后端
       proxy: {
-        '/api': {
-          target: proxy_url,
-          changeOrigin: true,
-          secure: false,
-          timeout: 30000,
-        },
-        '/export': {
-          target: proxy_url,
-          changeOrigin: true,
-          secure: false,
-          timeout: 30000,
-          configure: (proxy, options) => {
-            proxy.on('error', (err, req, res) => {
-              console.log('proxy error', err);
-            });
-            proxy.on('proxyReq', (proxyReq, req, res) => {
-              console.log('Sending Request to the Target:', req.method, req.url);
-            });
-            proxy.on('proxyRes', (proxyRes, req, res) => {
-              console.log('Received Response from the Target:', proxyRes.statusCode, req.url);
-            });
-          },
-        },
+        '/api': { target: proxy_url, changeOrigin: true, secure: false, timeout: 30000 },
+        '/download': { target: proxy_url, changeOrigin: true, secure: false, timeout: 30000 },
+        '/export': { target: proxy_url, changeOrigin: true, secure: false, timeout: 30000 },
+        '/public': { target: proxy_url, changeOrigin: true, secure: false, timeout: 30000 },
       },
     },
   };

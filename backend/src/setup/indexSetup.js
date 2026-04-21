@@ -9,7 +9,25 @@ const setupIndexes = async () => {
     const Invoice = mongoose.model('Invoice');
     const Client = mongoose.model('Client');
     const PurchaseOrder = mongoose.model('PurchaseOrder');
-    
+    const Admin = mongoose.model('Admin');
+    const AdminPassword = mongoose.model('AdminPassword');
+
+    // Admin 登录热路径：login 按 email 查、每次 /api 请求 isValidAuthToken
+    // 按 _id/user 查。之前缺索引，所有认证请求都扫全表
+    await Admin.collection.createIndex(
+      { email: 1 },
+      { name: 'admin_email_unique_idx', unique: true, background: true }
+    );
+    console.log('Admin.email 唯一索引创建成功');
+
+    // AdminPassword.user 在 schema 里已 unique，mongoose 在 dev 会自动建 user_1
+    // 这里显式 createIndex 用相同 name 保证幂等（避免 prod 禁 autoIndex 后漏建）
+    await AdminPassword.collection.createIndex(
+      { user: 1 },
+      { name: 'user_1', unique: true, background: true }
+    );
+    console.log('AdminPassword.user 唯一索引创建成功');
+
     // 为Invoice创建复合索引
     await Invoice.collection.createIndex(
       { 

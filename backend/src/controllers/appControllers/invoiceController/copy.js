@@ -5,9 +5,13 @@ const copy = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // 查找要复制的发票
-    const sourceInvoice = await Invoice.findById(id);
-    
+    // 查找要复制的发票（严格限定为当前用户所有）
+    const sourceInvoice = await Invoice.findOne({
+      _id: id,
+      removed: false,
+      createdBy: req.admin._id,
+    });
+
     if (!sourceInvoice) {
       return res.status(404).json({
         success: false,

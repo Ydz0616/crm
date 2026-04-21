@@ -5,9 +5,13 @@ const copy = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // 查找要复制的采购订单
-    const sourcePurchaseOrder = await PurchaseOrder.findById(id);
-    
+    // 查找要复制的采购订单（严格限定为当前用户所有）
+    const sourcePurchaseOrder = await PurchaseOrder.findOne({
+      _id: id,
+      removed: false,
+      createdBy: req.admin._id,
+    });
+
     if (!sourcePurchaseOrder) {
       return res.status(404).json({
         success: false,

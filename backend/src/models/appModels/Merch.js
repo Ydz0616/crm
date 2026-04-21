@@ -13,8 +13,7 @@ const schema = new mongoose.Schema({
     key: true
   },
   serialNumberLong: {
-    type: String, 
-    required: true
+    type: String
   },
   description_en: {
     type: String,
@@ -24,24 +23,20 @@ const schema = new mongoose.Schema({
     type: String
   },
   weight: {
-    type: Number,
-    required: true
+    type: Number
   },
   VAT: {
-    type: Number,
-    required: true
+    type: Number
   },
   ETR: {
-    type: Number,
-    required: true
+    type: Number
   },
   unit_en: {
     type: String,
     required: true
   },
   unit_cn: {
-    type: String,
-    required: true
+    type: String
   }
 });
 
