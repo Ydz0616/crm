@@ -10,6 +10,11 @@ npm-debug.log
 .env.production
 *.env
 
+# 例外：项目根 .env 仅含 docker-compose 编排所需的非敏感变量（如 MCP_BIND_ADDR）。
+# 真正的密钥（DATABASE / JWT_SECRET / GEMINI_API_KEY / MCP_SERVICE_TOKEN 等）
+# 仍只放在 backend/.env，不进 git。
+!/.env
+
 # Build files
 build/
 dist/
