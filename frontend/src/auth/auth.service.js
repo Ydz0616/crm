@@ -1,19 +1,18 @@
-import { API_BASE_URL } from '@/config/serverApiConfig';
-
 import axios from 'axios';
 import errorHandler from '@/request/errorHandler';
 import successHandler from '@/request/successHandler';
 
-// Debug log to check API_BASE_URL
-console.log('Debug - API_BASE_URL value:', API_BASE_URL);
+// 注意：这里所有请求用相对路径（不加 API_BASE_URL 前缀）。request.js 已经
+// 设置了 axios.defaults.baseURL = API_BASE_URL。再拼前缀会触发 axios 的
+// URL 合并 bug —— 形如 `${API_BASE_URL}login` = `/api/login`，axios 只把
+// 带 `://` 的字符串视为绝对，所以会把 `/api/` + `/api/login` 拼成
+// `/api/api/login`，backend 404 → fall-through → 401 "No auth token"。
+// 之前 API_BASE_URL 是 `https://app.olajob.cn/api/` 因为含 `://` 绝对模式被
+// 跳过 baseURL 合并才偶然能跑通；换 same-origin 相对路径后才暴露。
 
 export const login = async ({ loginData }) => {
   try {
-    const url = `${API_BASE_URL}login?timestamp=${new Date().getTime()}`;
-    // Debug log to check constructed URL
-    console.log('Debug - Login URL:', url);
-    
-    const response = await axios.post(url, loginData);
+    const response = await axios.post(`login?timestamp=${Date.now()}`, loginData);
 
     const { status, data } = response;
 
@@ -33,7 +32,7 @@ export const login = async ({ loginData }) => {
 
 export const register = async ({ registerData }) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}register`, registerData);
+    const response = await axios.post('register', registerData);
 
     const { status, data } = response;
 
@@ -52,7 +51,7 @@ export const register = async ({ registerData }) => {
 
 export const verify = async ({ userId, emailToken }) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}verify/${userId}/${emailToken}`);
+    const response = await axios.get(`verify/${userId}/${emailToken}`);
 
     const { status, data } = response;
 
@@ -71,7 +70,7 @@ export const verify = async ({ userId, emailToken }) => {
 
 export const resetPassword = async ({ resetPasswordData }) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}resetpassword`, resetPasswordData);
+    const response = await axios.post('resetpassword', resetPasswordData);
 
     const { status, data } = response;
 
@@ -91,7 +90,7 @@ export const logout = async () => {
   axios.defaults.withCredentials = true;
   try {
     // window.localStorage.clear();
-    const response = await axios.post(`${API_BASE_URL}logout?timestamp=${new Date().getTime()}`);
+    const response = await axios.post(`logout?timestamp=${Date.now()}`);
     const { status, data } = response;
 
     successHandler(
