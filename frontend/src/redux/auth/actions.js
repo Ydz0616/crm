@@ -116,33 +116,29 @@ export const resetPassword =
   };
 
 export const logout = () => async (dispatch) => {
+  // 先保留回滚用的快照，以防 authService.logout() 失败
+  const result = window.localStorage.getItem('auth');
+  const tmpAuth = result ? JSON.parse(result) : null;
+  const settings = window.localStorage.getItem('settings');
+  const tmpSettings = settings ? JSON.parse(settings) : null;
+
+  // 清空所有 localStorage 避免跨账号数据残留；同时派发 LOGOUT_SUCCESS 让 rootReducer 重置整棵 state 树
+  window.localStorage.clear();
+  window.localStorage.setItem('isLogout', JSON.stringify({ isLogout: true }));
   dispatch({
     type: actionTypes.LOGOUT_SUCCESS,
   });
-  const result = window.localStorage.getItem('auth');
-  const tmpAuth = JSON.parse(result);
-  const settings = window.localStorage.getItem('settings');
-  const tmpSettings = JSON.parse(settings);
-  window.localStorage.removeItem('auth');
-  window.localStorage.removeItem('settings');
-  window.localStorage.setItem('isLogout', JSON.stringify({ isLogout: true }));
+
   const data = await authService.logout();
   if (data.success === false) {
-    const auth_state = {
-      current: tmpAuth,
-      isLoggedIn: true,
-      isLoading: false,
-      isSuccess: true,
-    };
-    window.localStorage.setItem('auth', JSON.stringify(auth_state));
-    window.localStorage.setItem('settings', JSON.stringify(tmpSettings));
+    // 恢复登出前状态（比如 401 导致登出失败）
+    if (tmpAuth) window.localStorage.setItem('auth', JSON.stringify(tmpAuth));
+    if (tmpSettings) window.localStorage.setItem('settings', JSON.stringify(tmpSettings));
     window.localStorage.removeItem('isLogout');
     dispatch({
       type: actionTypes.LOGOUT_FAILED,
       payload: data.result,
     });
-  } else {
-    // on lgout success
   }
 };
 

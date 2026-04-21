@@ -137,7 +137,7 @@ nanobot/
 
 **项目名称：** Ola（Ola Technologies 自有产品，MERN Stack）  
 **历史问题：** 过去 5 个月因未做 spec 导致开发效果越做越差 — 这就是做 prompt 库的核心原因  
-**生产 URL：** `https://app.olajob.cn`
+**生产 URL：** `https://app.olatech.ai` (primary) · `https://app.olajob.cn` (过渡期并存，T+2 周后下架)
 
 **技术栈：**
 

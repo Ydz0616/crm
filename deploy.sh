@@ -89,5 +89,5 @@ if [ "$FRONTEND_CODE" != "200" ] || [ "$BACKEND_CODE" != "200" ]; then
 fi
 
 echo "========================================================"
-echo "🎉 部署流程结束。请访问 https://app.olajob.cn 验证。"
+echo "🎉 部署流程结束。请访问 https://app.olatech.ai (主域名) 或 https://app.olajob.cn (过渡期) 验证。"
 echo "========================================================"
