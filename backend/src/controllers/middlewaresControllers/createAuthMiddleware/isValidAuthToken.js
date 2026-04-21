@@ -65,13 +65,29 @@ const isValidAuthToken = async (req, res, next, { userModel, jwtSecret = 'JWT_SE
       next();
     }
   } catch (error) {
-    console.error('Auth error:', error);
+    // JWT lib 抛的错都是认证失败（invalid signature / expired / malformed），
+    // 返 401 + jwtExpired 让前端清 cookie 走登出流程；
+    // 503 会被 errorHandler 识别为 "Cannot connect to server" 假象，导致用户陷在
+    // "登录报 Invalid Signature" 而无法登录（issue #110 根因：JWT_SECRET 换过或
+    // 本地/生产环境不同，浏览器残留旧 cookie 签名验不过，永久卡住）。
+    if (
+      error.name === 'JsonWebTokenError' ||
+      error.name === 'TokenExpiredError' ||
+      error.name === 'NotBeforeError'
+    ) {
+      return res.status(401).json({
+        success: false,
+        result: null,
+        message: 'Authentication token invalid or expired. Please log in again.',
+        jwtExpired: true,
+      });
+    }
+    // 其他才是真 server error（DB 挂等）
+    console.error('Auth middleware error:', error);
     return res.status(503).json({
       success: false,
       result: null,
       message: error.message,
-      error: error,
-      controller: 'isValidAuthToken',
     });
   }
 };
