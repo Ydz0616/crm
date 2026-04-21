@@ -28,15 +28,9 @@ const isValidAuthToken = async (req, res, next, { userModel, jwtSecret = 'JWT_SE
         jwtExpired: true,
       });
 
+    // jwt.verify 要么返回解码的 payload，要么抛错；不存在返 falsy 的路径，所以老代码里
+    // if (!verified) 分支一直是 dead code，删掉
     const verified = jwt.verify(token, process.env[jwtSecret]);
-
-    if (!verified)
-      return res.status(401).json({
-        success: false,
-        result: null,
-        message: 'Token verification failed, authorization denied.',
-        jwtExpired: true,
-      });
 
     const userPasswordPromise = UserPassword.findOne({ user: verified.id, removed: false });
     const userPromise = User.findOne({ _id: verified.id, removed: false });
@@ -48,6 +42,16 @@ const isValidAuthToken = async (req, res, next, { userModel, jwtSecret = 'JWT_SE
         success: false,
         result: null,
         message: "User doesn't Exist, authorization denied.",
+        jwtExpired: true,
+      });
+
+    // Edge case: User 存在但 UserPassword 被删（数据异常）→ 直接当作 session 失效，
+    // 否则下一行解构 null 会抛 TypeError 被 catch 成 503
+    if (!userPassword)
+      return res.status(401).json({
+        success: false,
+        result: null,
+        message: 'Session credentials missing, please log in again.',
         jwtExpired: true,
       });
 
