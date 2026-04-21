@@ -34,11 +34,18 @@ server {
     root /usr/share/nginx/html;
     index index.html;
 
+    # proxy_pass 注意：当用变量 ($upstream_backend) 做 DNS 重解析时，
+    # URI 后缀（原本是 /api/）必须省略 —— nginx 文档：
+    # "If proxy_pass is specified with a URI and uses variables, the URI is
+    # not applied via rewrite; behavior is undefined." 实测会把请求截到
+    # location 前缀（如 /api/login → /api/），backend 看到错的 URL 返 404/401。
+    # 省略后缀 ⇒ nginx 自动透传 $request_uri 原样，路径不变。
+
     # /api/ola/* 走 NanoBot → Gemini，长链路 LLM 请求允许 3 分钟
     # 必须放在 /api/ 之前 —— nginx 最长前缀匹配优先
     location /api/ola/ {
         set $upstream_backend backend:8888;
-        proxy_pass http://$upstream_backend/api/ola/;
+        proxy_pass http://$upstream_backend;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -52,7 +59,7 @@ server {
     # 后端 API 反代（docker-compose 网络内用 service name "backend"）
     location /api/ {
         set $upstream_backend backend:8888;
-        proxy_pass http://$upstream_backend/api/;
+        proxy_pass http://$upstream_backend;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -64,7 +71,7 @@ server {
 
     location /download/ {
         set $upstream_backend backend:8888;
-        proxy_pass http://$upstream_backend/download/;
+        proxy_pass http://$upstream_backend;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -75,7 +82,7 @@ server {
 
     location /export/ {
         set $upstream_backend backend:8888;
-        proxy_pass http://$upstream_backend/export/;
+        proxy_pass http://$upstream_backend;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -86,7 +93,7 @@ server {
 
     location /public/ {
         set $upstream_backend backend:8888;
-        proxy_pass http://$upstream_backend/public/;
+        proxy_pass http://$upstream_backend;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -96,7 +103,7 @@ server {
 
     location /health {
         set $upstream_backend backend:8888;
-        proxy_pass http://$upstream_backend/health;
+        proxy_pass http://$upstream_backend;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Forwarded-Proto https;
