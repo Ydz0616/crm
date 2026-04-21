@@ -6,7 +6,7 @@ import axios from 'axios';
 
 import { settingsAction } from '@/redux/settings/actions';
 import { selectSettings } from '@/redux/settings/selectors';
-import { API_BASE_URL, FILE_BASE_URL } from '@/config/serverApiConfig';
+import { FILE_BASE_URL } from '@/config/serverApiConfig';
 import useLanguage from '@/locale/useLanguage';
 
 export default function CompanyLogoField() {
@@ -38,8 +38,9 @@ export default function CompanyLogoField() {
     try {
       const formData = new FormData();
       formData.append('file', file);
+      // 用相对路径避免 axios baseURL 双前缀 bug（详见 auth.service.js 注释）
       const response = await axios.patch(
-        `${API_BASE_URL}setting/upload/company_logo`,
+        'setting/upload/company_logo',
         formData,
         {
           headers: { 'Content-Type': 'multipart/form-data' },

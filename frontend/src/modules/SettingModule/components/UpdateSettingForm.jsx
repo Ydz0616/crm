@@ -8,7 +8,6 @@ import { Button, Form, message } from 'antd';
 import Loading from '@/components/Loading';
 import useLanguage from '@/locale/useLanguage';
 import axios from 'axios';
-import { API_BASE_URL } from '@/config/serverApiConfig';
 
 export default function UpdateSettingForm({ config, children, withUpload, uploadSettingKey }) {
   let { entity, settingsCategory } = config;
@@ -27,8 +26,9 @@ export default function UpdateSettingForm({ config, children, withUpload, upload
           const formData = new FormData();
           formData.append('file', fieldsValue.file[0].originFileObj);
 
+          // 用相对路径避免 axios baseURL 双前缀 bug（详见 auth.service.js 注释）
           const response = await axios.patch(
-            `${API_BASE_URL}setting/upload/${uploadSettingKey}`,
+            `setting/upload/${uploadSettingKey}`,
             formData,
             {
               headers: { 'Content-Type': 'multipart/form-data' },
