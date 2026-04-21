@@ -24,19 +24,15 @@ exports.catchErrors = (fn) => {
           success: false,
           result: null,
           message,
-          controller: fn.name,
-          error: error,
         });
       } else {
-        // Server Error
+        // Server Error — 仅在服务器侧记录详细信息，不回显给客户端
         console.log('Server Error in controller:', fn.name);
         console.log('Error details:', error);
         return res.status(500).json({
           success: false,
           result: null,
           message: error.message,
-          controller: fn.name,
-          error: error,
         });
       }
     });
