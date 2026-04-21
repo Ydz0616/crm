@@ -1,16 +1,18 @@
 export const fields = {
   serialNumber: {
     type: 'string',
+    required: true,
   },
   serialNumberLong: {
     type: 'string',
   },
   description_en: {
     type: 'string',
+    required: true,
   },
   description_cn: {
     type: 'string',
-  },    
+  },
   weight: {
     type: 'number',
   },
@@ -22,10 +24,9 @@ export const fields = {
   },
   unit_en: {
     type: 'string',
-    required: true
+    required: true,
   },
   unit_cn: {
     type: 'string',
-    required: true
-  }
+  },
 };

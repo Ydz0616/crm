@@ -1,8 +1,6 @@
 const mongoose = require('mongoose');
 const Invoice = mongoose.model('Invoice');
-const Client = mongoose.model('Client');
 const Merch = mongoose.model('Merch');
-const PurchaseOrder = mongoose.model('PurchaseOrder');
 
 /**
  * 全面比较功能
@@ -22,8 +20,12 @@ const fullComparison = async (req, res) => {
       });
     }
 
-    // 查询发票及其关联的采购订单
-    const invoice = await Invoice.findById(invoiceId)
+    // 查询发票及其关联的采购订单（严格限定为当前用户所有）
+    const invoice = await Invoice.findOne({
+      _id: invoiceId,
+      removed: false,
+      createdBy: req.admin._id,
+    })
       .populate({
         path: 'relatedPurchaseOrders',
         match: { removed: false, createdBy: req.admin._id }
@@ -81,6 +83,8 @@ const fullComparison = async (req, res) => {
       
       // 遍历关联的采购订单
       for (const po of invoice.relatedPurchaseOrders || []) {
+        // populate({ match }) 对不匹配的引用会留 null 而非移除 slot，必须 guard
+        if (!po) continue;
         // 查找采购订单中匹配的商品（只取第一个）
         const poItem = po.items.find(poItem => poItem.itemName === itemName);
         if (poItem) {
@@ -96,7 +100,8 @@ const fullComparison = async (req, res) => {
       
       // 如果找到采购信息并且有商品VAT/ETR信息
       if (purchaseInfo && merchInfo) {
-        const { VAT, ETR } = merchInfo;
+        // VAT/ETR 在 Merch 上为可选（#90），缺失时用默认值兜底避免 NaN
+        const { VAT = 1.13, ETR = 0.13 } = merchInfo;
         itemResult.purchasePrice = purchaseInfo.price;
         itemResult.purchaseOrderNumber = purchaseInfo.poNumber;
         itemResult.purchaseQuantity = purchaseInfo.quantity;
