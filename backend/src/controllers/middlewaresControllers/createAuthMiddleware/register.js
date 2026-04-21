@@ -110,10 +110,9 @@ const register = async (req, res, { userModel }) => {
       maxAge: 24 * 60 * 60 * 1000,
       sameSite: 'Lax',
       httpOnly: true,
-      secure: false,
-      domain: req.hostname,
+      secure: false,  // CF Flexible：CF→origin HTTP
       path: '/',
-      Partitioned: true,
+      // 不设 domain / Partitioned，原因见 authUser.js 注释
     })
     .json({
       success: true,

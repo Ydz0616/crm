@@ -34,10 +34,15 @@ const authUser = async (req, res, { user, databasePassword, password, UserPasswo
         maxAge: req.body.remember ? 365 * 24 * 60 * 60 * 1000 : null,
         sameSite: 'Lax',
         httpOnly: true,
-        secure: false,
-        domain: req.hostname,
+        secure: false,  // CF Flexible：CF→origin 是 HTTP，必须 false
         path: '/',
-        Partitioned: true,
+        // 不设 domain —— 浏览器走 host-only cookie，自动 scope 到当前域
+        //   设 domain 反而会踩坑：domain=app.olatech.ai 登录后切到 app.olajob.cn
+        //   浏览器不会带这个 cookie（预期行为），但更重要的是 req.hostname
+        //   在 CF 反代后未必可靠
+        // 不设 Partitioned —— 新 CHIPS attribute 要求配 secure=true + SameSite=None，
+        //   我们是 secure=false + SameSite=Lax，Partitioned 会让 Chrome 直接丢弃
+        //   整个 cookie —— 登录后下次请求没 cookie → 401 "No authentication token"
       })
       .json({
         success: true,
