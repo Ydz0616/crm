@@ -22,8 +22,12 @@ const fullComparison = async (req, res) => {
       });
     }
 
-    // 查询发票及其关联的采购订单
-    const invoice = await Invoice.findById(invoiceId)
+    // 查询发票及其关联的采购订单（严格限定为当前用户所有）
+    const invoice = await Invoice.findOne({
+      _id: invoiceId,
+      removed: false,
+      createdBy: req.admin._id,
+    })
       .populate({
         path: 'relatedPurchaseOrders',
         match: { removed: false, createdBy: req.admin._id }
