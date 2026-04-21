@@ -10,12 +10,8 @@ RUN npm ci
 
 COPY . .
 
-# 构建时注入后端地址（由 docker-compose build args 传入）
-ARG VITE_BACKEND_SERVER=https://app.olajob.cn/
-ARG VITE_APP_API_URL=https://app.olajob.cn/api/
-ENV VITE_BACKEND_SERVER=$VITE_BACKEND_SERVER
-ENV VITE_APP_API_URL=$VITE_APP_API_URL
-
+# 不再注入 VITE_BACKEND_SERVER / VITE_APP_API_URL —— frontend 走 same-origin 相对路径
+# 同一个 build 跨任意域名通用（app.olajob.cn / app.olatech.ai / …）
 RUN npm run build
 
 # 阶段2: 用 nginx 提供静态文件 + 反代 /api /download /export /public 到 backend 容器

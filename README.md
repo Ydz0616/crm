@@ -97,16 +97,16 @@ crm/
 | `JWT_SECRET` | Secret for JWT signing (required) |
 | `PORT` | Server port (default `8888`) |
 | `NODE_ENV` | `development` or `production` |
-| `ALLOWED_ORIGINS` | Comma-separated CORS origins (e.g. `https://app.olajob.cn`) |
-| `PUBLIC_SERVER_FILE` | Base URL for file links (e.g. `https://app.olajob.cn/`) |
+| `ALLOWED_ORIGINS` | Comma-separated CORS origins (e.g. `https://app.olatech.ai,https://app.olajob.cn`) |
+| `PUBLIC_SERVER_FILE` | Base URL for file links (e.g. `https://app.olatech.ai/`) |
 | `GOTENBERG_URL` | Gotenberg service URL (e.g. `http://gotenberg:3000`) |
 | `RESEND_API` | Optional: Resend API key for email |
 | `OPENAI_API_KEY` | Optional: OpenAI API key |
 
-**Frontend** (build-time for production):
+**Frontend** (build-time, all optional — defaults to same-origin relative paths):
 
-- `VITE_BACKEND_SERVER` — Backend base URL
-- `VITE_APP_API_URL` — API base URL (e.g. `https://app.olajob.cn/api/`)
+- `VITE_BACKEND_SERVER` — 默认 `/`，访问任何域名都打同源后端；仅当需要指向外部后端时覆盖
+- `VITE_APP_API_URL` — 默认 `/api/`
 
 ## Production deployment
 
@@ -122,7 +122,7 @@ crm/
    ```bash
    docker compose up -d --build
    ```
-4. Frontend is on port **3000**, backend on **8888**. Use a reverse proxy (e.g. Nginx) to expose them (e.g. `https://app.olajob.cn` → 3000/8888).
+4. Frontend is on port **3000**, backend on **8888**. Use a reverse proxy (e.g. Nginx) to expose them (e.g. `https://app.olatech.ai` → 3000/8888).
 
 ### Deploy script (`deploy.sh`)
 
@@ -136,7 +136,7 @@ The script syncs code to a remote server and runs Docker Compose there.
 # Prompts for confirmation, then: preflight → rsync → ssh "docker compose up -d --build" → health checks
 ```
 
-After deploy, the script runs basic health checks (containers up, frontend 3000, backend `GET /health`). Production URL used in comments: **https://app.olajob.cn**.
+After deploy, the script runs basic health checks (containers up, frontend 3000, backend `GET /health`). Production URL: **https://app.olatech.ai** (primary, `https://app.olajob.cn` 并存过渡期).
 
 ### Kubernetes
 

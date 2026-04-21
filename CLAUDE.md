@@ -73,7 +73,7 @@ WhatsApp inquiry → Agent extracts product needs → match `Merch` (by `serialN
 
 ## Project
 
-OlaCrm (forked from EasyCRM) — a CRM/ERP for clients, quotes, invoices, purchase orders, payments, comparisons, and reporting. Node.js 20 + Express + MongoDB backend, React 18 + Vite + Ant Design + Redux Toolkit frontend. Production target: `https://app.olajob.cn`.
+OlaCrm — Ola Technologies 自有 MERN product，CRM/ERP for clients, quotes, invoices, purchase orders, payments, comparisons, reporting. Node.js 20 + Express + MongoDB backend, React 18 + Vite + Ant Design + Redux Toolkit frontend. Production target: `https://app.olatech.ai` (primary). 过渡期 `https://app.olajob.cn` 并存，T+2 周后下架。
 
 ## Common commands
 

@@ -53,9 +53,9 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile.prod
-      args:
-        VITE_BACKEND_SERVER: "https://app.olajob.cn/"
-        VITE_APP_API_URL: "https://app.olajob.cn/api/"
+      # 不再传 VITE_BACKEND_SERVER / VITE_APP_API_URL build args —— frontend 走 same-origin
+      # 相对路径（/api、/download、/export、/public），访问任何域名都打同源 backend
+      # 这样一份 build 同时为 app.olajob.cn / app.olatech.ai / 未来新域名 服务，无需重新构建
     # Cloudflare proxy 只支持标准端口（80/443/8080/...），自定义 3000 不被代理
     # 所以 host 端口直接用 80，CF → Box1:80 → nginx-in-frontend → backend:8888
     ports:
