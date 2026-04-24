@@ -454,10 +454,10 @@
   flex-shrink: 0;
 }
 
-/* Popup menu */
+/* Popup menu — opens upward so it isn't clipped at page bottom */
 .askola-plus-menu {
   position: absolute;
-  top: calc(100% + 10px);
+  bottom: calc(100% + 10px);
   left: 0;
   min-width: 220px;
   background: #ffffff;
