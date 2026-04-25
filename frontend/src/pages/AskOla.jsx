@@ -87,7 +87,9 @@ export default function AskOla() {
           id: `msg_assistant_${Date.now()}`,
           role: 'assistant',
           timestamp: new Date().toISOString(),
-          blocks: [{ type: 'text', content: response.result.content }],
+          blocks: response.result.blocks?.length
+            ? response.result.blocks
+            : [{ type: 'text', content: response.result.content }],
         };
         setMessages((prev) => [...prev, assistantMessage]);
 
