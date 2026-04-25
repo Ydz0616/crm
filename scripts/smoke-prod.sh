@@ -24,6 +24,7 @@ set -uo pipefail
 DOMAINS="${DOMAINS:-app.olajob.cn app.olatech.ai}"
 TEST_EMAIL="${TEST_EMAIL:-test@test.com}"
 TEST_PASSWORD="${TEST_PASSWORD:-test1234}"
+# Box1 Tailscale IP —— 机器重装 / Tailscale key rotation 后需更新
 MCP_HOST="${MCP_HOST:-100.109.220.126}"
 MCP_PORT="${MCP_PORT:-8889}"
 MCP_SERVICE_TOKEN="${MCP_SERVICE_TOKEN:-}"
@@ -40,8 +41,10 @@ NC='\033[0m'
 PASS=0
 FAIL=0
 FAILED_TESTS=()
-TMPDIR=$(mktemp -d)
-trap 'rm -rf "$TMPDIR"' EXIT
+# 不要叫 TMPDIR —— 那是 POSIX 标准变量，子进程 mktemp/sort 会读，
+# trap EXIT 的 rm -rf 也可能误伤系统 temp。
+SMOKE_WORKDIR=$(mktemp -d)
+trap 'rm -rf "$SMOKE_WORKDIR"' EXIT
 
 # ---------- 工具函数 ----------
 pass() {
@@ -87,14 +90,15 @@ check_contains() {
 # ---------- 自动读取 MCP_SERVICE_TOKEN（仅当未通过 env 提供） ----------
 if [ -z "$MCP_SERVICE_TOKEN" ] && [ "$SKIP_MCP" != "1" ]; then
   if [ -f backend/.env ]; then
-    MCP_SERVICE_TOKEN=$(grep '^MCP_SERVICE_TOKEN=' backend/.env 2>/dev/null | cut -d= -f2- | tr -d '"' | tr -d "'" | tr -d '\r')
+    # -m1：.env 里若同名键重复（旧值忘了 # 注释掉），cut 会把多行拼成坏 token
+    MCP_SERVICE_TOKEN=$(grep -m1 '^MCP_SERVICE_TOKEN=' backend/.env 2>/dev/null | cut -d= -f2- | tr -d '"' | tr -d "'" | tr -d '\r')
   fi
 fi
 
 # ---------- Per-domain 测试 ----------
 for DOMAIN in $DOMAINS; do
   section "$DOMAIN"
-  JAR="$TMPDIR/jar-${DOMAIN//./_}"
+  JAR="$SMOKE_WORKDIR/jar-${DOMAIN//./_}"
 
   # 1. 健康检查：外层入口应通
   STATUS=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "https://$DOMAIN/health" 2>/dev/null || echo "000")
@@ -105,16 +109,16 @@ for DOMAIN in $DOMAINS; do
   check_status "unauthenticated /api/setting/listAll" "401" "$STATUS"
 
   # 3. 完整登录链：POST → success
-  LOGIN_HTTP=$(mktemp)
-  LOGIN_BODY=$(curl -s --max-time 15 -c "$JAR" -w '%{http_code}' -o "$LOGIN_HTTP" \
+  LOGIN_HTTP="$SMOKE_WORKDIR/login-${DOMAIN//./_}"
+  LOGIN_STATUS=$(curl -s --max-time 15 -c "$JAR" -w '%{http_code}' -o "$LOGIN_HTTP" \
     -X POST "https://$DOMAIN/api/login" \
     -H 'Content-Type: application/json' \
     -d "{\"email\":\"$TEST_EMAIL\",\"password\":\"$TEST_PASSWORD\"}" 2>/dev/null || echo "000")
-  if [ "$LOGIN_BODY" = "200" ]; then
+  if [ "$LOGIN_STATUS" = "200" ]; then
     BODY=$(cat "$LOGIN_HTTP")
     check_contains "login response success flag" '"success":true' "$BODY"
   else
-    fail "login HTTP status → expected 200, got $LOGIN_BODY"
+    fail "login HTTP status → expected 200, got $LOGIN_STATUS"
   fi
   rm -f "$LOGIN_HTTP"
 
@@ -126,8 +130,9 @@ for DOMAIN in $DOMAINS; do
   fi
 
   # 5. 带 cookie 再请求受保护 API → 200
+  # 注意：不能只匹配 '"success"'，401 body 是 {"success":false,...} 也含此串，会假阳性。
   AUTH_BODY=$(curl -s --max-time 10 -b "$JAR" "https://$DOMAIN/api/setting/listAll" 2>/dev/null || echo "{}")
-  check_contains "authenticated /api/setting/listAll" '"success"' "$AUTH_BODY"
+  check_contains "authenticated /api/setting/listAll" '"success":true' "$AUTH_BODY"
 
   # 6. logout
   STATUS=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 -b "$JAR" \
@@ -170,35 +175,41 @@ section "NanoBot E2E (chat + MCP tool path)"
 if [ "$SKIP_NANOBOT" = "1" ]; then
   skip "NanoBot E2E (SKIP_NANOBOT=1)"
 else
-  PRIMARY_DOMAIN=$(echo $DOMAINS | awk '{print $1}')
-  JAR="$TMPDIR/nb-jar"
+  PRIMARY_DOMAIN=$(echo "$DOMAINS" | awk '{print $1}')
+  JAR="$SMOKE_WORKDIR/nb-jar"
 
-  # 重新登录拿 cookie
-  curl -s --max-time 15 -c "$JAR" -X POST "https://$PRIMARY_DOMAIN/api/login" \
+  # 重新登录拿 cookie；登录失败必须 fail 并跳过 chat，
+  # 否则 chat 拿不到 cookie 返 401，会被误诊成 nanobot/MCP 故障。
+  NB_LOGIN_STATUS=$(curl -s --max-time 15 -c "$JAR" -w '%{http_code}' -o /dev/null \
+    -X POST "https://$PRIMARY_DOMAIN/api/login" \
     -H 'Content-Type: application/json' \
-    -d "{\"email\":\"$TEST_EMAIL\",\"password\":\"$TEST_PASSWORD\"}" > /dev/null 2>&1
+    -d "{\"email\":\"$TEST_EMAIL\",\"password\":\"$TEST_PASSWORD\"}" 2>/dev/null || echo "000")
 
-  # 发 tool-call prompt：让 nanobot 必须调 MCP 才能回答
-  CHAT_HTTP=$(mktemp)
-  CHAT_STATUS=$(curl -s --max-time "$NANOBOT_TIMEOUT" -b "$JAR" -w '%{http_code}' -o "$CHAT_HTTP" \
-    -X POST "https://$PRIMARY_DOMAIN/api/ola/chat" \
-    -H 'Content-Type: application/json' \
-    -d '{"message":"列出系统里前 3 个客户的名字"}' 2>/dev/null || echo "000")
-
-  if [ "$CHAT_STATUS" = "200" ]; then
-    BODY=$(cat "$CHAT_HTTP")
-    BODY_LEN=${#BODY}
-    if [ $BODY_LEN -lt 50 ]; then
-      fail "nanobot response too short (${BODY_LEN} bytes): $BODY"
-    elif echo "$BODY" | grep -qiE 'socket hang up|ECONNREFUSED|EHOSTUNREACH|MCP.*error|tool.*error'; then
-      fail "nanobot response contains tool/MCP error: $(echo "$BODY" | head -c 200)"
-    else
-      pass "nanobot chat returned ${BODY_LEN} bytes (no socket-hangup / MCP error)"
-    fi
+  if [ "$NB_LOGIN_STATUS" != "200" ]; then
+    fail "nanobot pre-login failed (HTTP $NB_LOGIN_STATUS) — 跳过 chat 测试"
   else
-    fail "nanobot chat HTTP → expected 200, got $CHAT_STATUS"
+    # 发 tool-call prompt：让 nanobot 必须调 MCP 才能回答
+    CHAT_HTTP="$SMOKE_WORKDIR/nb-chat"
+    CHAT_STATUS=$(curl -s --max-time "$NANOBOT_TIMEOUT" -b "$JAR" -w '%{http_code}' -o "$CHAT_HTTP" \
+      -X POST "https://$PRIMARY_DOMAIN/api/ola/chat" \
+      -H 'Content-Type: application/json' \
+      -d '{"message":"列出系统里前 3 个客户的名字"}' 2>/dev/null || echo "000")
+
+    if [ "$CHAT_STATUS" = "200" ]; then
+      BODY=$(cat "$CHAT_HTTP")
+      BODY_LEN=${#BODY}
+      if [ $BODY_LEN -lt 50 ]; then
+        fail "nanobot response too short (${BODY_LEN} bytes): $BODY"
+      elif echo "$BODY" | grep -qiE 'socket hang up|ECONNREFUSED|EHOSTUNREACH|MCP.*error|tool.*error'; then
+        fail "nanobot response contains tool/MCP error: $(echo "$BODY" | head -c 200)"
+      else
+        pass "nanobot chat returned ${BODY_LEN} bytes (no socket-hangup / MCP error)"
+      fi
+    else
+      fail "nanobot chat HTTP → expected 200, got $CHAT_STATUS"
+    fi
+    rm -f "$CHAT_HTTP"
   fi
-  rm -f "$CHAT_HTTP"
 fi
 
 # ---------- 汇总 ----------
@@ -215,7 +226,8 @@ if [ $FAIL -gt 0 ]; then
   echo ""
   echo -e "${RED}❌ DEPLOYMENT NOT VERIFIED${NC}"
   echo -e "${RED}   立即回滚，不要在生产 debug：${NC}"
-  echo "   git reset --hard <last-good-sha> && docker compose up -d"
+  PREV_SHA=$(git log --pretty=format:'%h' -2 2>/dev/null | tail -1)
+  echo "   git reset --hard ${PREV_SHA:-<last-good-sha>} && docker compose up -d --build"
   exit 1
 fi
 
