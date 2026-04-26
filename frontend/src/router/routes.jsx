@@ -6,17 +6,7 @@ const Logout = lazy(() => import('@/pages/Logout.jsx'));
 const NotFound = lazy(() => import('@/pages/NotFound.jsx'));
 
 const Dashboard = lazy(() => import('@/pages/Dashboard'));
-// === MVP-HIDDEN: 空壳页面，尚未实现 ===
-// const Notifications = lazy(() => import('@/pages/Notifications'));
-// === END MVP-HIDDEN ===
 const AskOla = lazy(() => import('@/pages/AskOla'));
-// === MVP-HIDDEN: 空壳页面，尚未实现 ===
-// const Agents = lazy(() => import('@/pages/Agents'));
-// const Sequences = lazy(() => import('@/pages/Sequences'));
-// const Workflows = lazy(() => import('@/pages/Workflows'));
-// const File = lazy(() => import('@/pages/File'));
-// const Messages = lazy(() => import('@/pages/Messages'));
-// === END MVP-HIDDEN ===
 const Customer = lazy(() => import('@/pages/Customer'));
 const Factory = lazy(() => import('@/pages/Factory'));  
 const Invoice = lazy(() => import('@/pages/Invoice'));
@@ -82,32 +72,6 @@ let routes = {
       path: '/askola',
       element: <AskOla />,
     },
-    // === MVP-HIDDEN: 空壳页面，尚未实现 ===
-    // {
-    //   path: '/notifications',
-    //   element: <Notifications />,
-    // },
-    // {
-    //   path: '/agents',
-    //   element: <Agents />,
-    // },
-    // {
-    //   path: '/sequences',
-    //   element: <Sequences />,
-    // },
-    // {
-    //   path: '/workflows',
-    //   element: <Workflows />,
-    // },
-    // {
-    //   path: '/file',
-    //   element: <File />,
-    // },
-    // {
-    //   path: '/messages',
-    //   element: <Messages />,
-    // },
-    // === END MVP-HIDDEN ===
     {
       path: '/customer',
       element: <Customer />,

@@ -28,11 +28,6 @@ import {
   // ShopOutlined,
   // FilterOutlined,
   // ReconciliationOutlined,
-  // BellOutlined,
-  MessageOutlined,
-  // RobotOutlined,
-  // ThunderboltOutlined,
-  // ApartmentOutlined,
   WalletOutlined,
   // DollarOutlined,
   // BarChartOutlined,
@@ -98,53 +93,8 @@ function Sidebar({ collapsible, isMobile = false }) {
           icon: <SmileOutlined />,
           label: <Link to={'/askola'}>Ask Ola</Link>,
         },
-        {
-          key: 'messages',
-          icon: <MessageOutlined />,
-          label: <Link to={'/messages'}>Messages</Link>,
-        },
-        // === MVP-HIDDEN: 空壳页面，尚未实现 ===
-        // {
-        //   key: 'notifications',
-        //   icon: <BellOutlined />,
-        //   label: <Link to={'/notifications'}>Notifications</Link>,
-        // },
-        // {
-        //   key: 'messages',
-        //   icon: <MessageOutlined />,
-        //   label: <Link to={'/messages'}>Messages</Link>,
-        // },
-        // {
-        //   key: 'file',
-        //   icon: <FileOutlined />,
-        //   label: <Link to={'/file'}>File</Link>,
-        // },
-        // === END MVP-HIDDEN ===
       ],
     },
-    // === MVP-HIDDEN: Automations 整组空壳，尚未实现 ===
-    // {
-    //   type: 'group',
-    //   label: 'Automations',
-    //   children: [
-    //     {
-    //       key: 'agents',
-    //       icon: <RobotOutlined />,
-    //       label: <Link to={'/agents'}>Agents</Link>,
-    //     },
-    //     {
-    //       key: 'sequences',
-    //       icon: <ThunderboltOutlined />,
-    //       label: <Link to={'/sequences'}>Sequences</Link>,
-    //     },
-    //     {
-    //       key: 'workflows',
-    //       icon: <ApartmentOutlined />,
-    //       label: <Link to={'/workflows'}>Workflows</Link>,
-    //     },
-    //   ],
-    // },
-    // === END MVP-HIDDEN ===
     {
       type: 'group',
       label: translate('Business'),
