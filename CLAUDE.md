@@ -144,6 +144,6 @@ Per-entity pages under `src/pages/` typically just compose one of those modules 
 
 ### Key env vars
 
-Backend: `DATABASE`, `JWT_SECRET`, `PORT` (8888), `ALLOWED_ORIGINS` (CSV; falls back to permissive regex), `PUBLIC_SERVER_FILE`, `GOTENBERG_URL`, optional `RESEND_API`, `OPENAI_API_KEY`.
+Backend: `DATABASE`, `JWT_SECRET`, `MCP_SERVICE_TOKEN`, `GEMINI_API_KEY`, `PORT` (8888), `ALLOWED_ORIGINS` (CSV; falls back to permissive regex), `PUBLIC_SERVER_FILE`, `GOTENBERG_URL`, optional `RESEND_API`.
 
-Frontend (build-time): `VITE_BACKEND_SERVER`, `VITE_APP_API_URL`, `VITE_FILE_BASE_URL`, `VITE_DEV_REMOTE` (set to `remote` to make `dev` proxy to `VITE_BACKEND_SERVER`), `VITE_PORT`/`PORT`.
+Frontend (build-time): `VITE_BACKEND_SERVER`, `VITE_APP_API_URL`, `VITE_FILE_BASE_URL`, `VITE_DEV_REMOTE` (set to `remote` to make `dev` proxy to `VITE_BACKEND_SERVER`), `VITE_PORT`/`PORT`, `VITE_DEV_BYPASS_AUTH` (dev-only mock interceptor toggle, tree-shaken in prod build).

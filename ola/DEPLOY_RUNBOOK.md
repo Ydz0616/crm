@@ -165,7 +165,7 @@ Duke SSH 到 Box2：
 
 Duke 告诉 Claude：
 - nanobot 监听端口（默认 8900）
-- 已在 Box2 `.env` 或 `~/.nanobot/config` 配好 `OPENAI_API_KEY`
+- 已在 Box2 `.env` 或 `~/.nanobot/config` 配好 `GEMINI_API_KEY`
 
 Claude 校验（从 Box1）：
 ```bash
@@ -184,7 +184,8 @@ curl http://box2-ai:8900/health  # 具体 endpoint 看 nanobot 文档
 - SSH key 路径（或 root 密码，Claude 用 ssh 连接）
 - Atlas connection string（mongodb+srv://...）
 - 要用的 JWT_SECRET（random 64-char，可用 `openssl rand -hex 32` 生成）
-- OPENAI_API_KEY（如果 CRM backend 里也要调 LLM；否则只给 NanoBot 用）
+- GEMINI_API_KEY（NanoBot 用；由 backend/.env 渲染到 `~/.nanobot/config.json`）
+- MCP_SERVICE_TOKEN（CRM ↔ NanoBot loopback service token，`openssl rand -hex 32`）
 
 ### Claude 操作
 
@@ -200,7 +201,8 @@ PUBLIC_SERVER_FILE=https://app.olajob.cn/
 GOTENBERG_URL=http://box3-pdf:3000
 NANOBOT_HOST=box2-ai
 NANOBOT_PORT=8900
-OPENAI_API_KEY=<key>
+GEMINI_API_KEY=<key>
+MCP_SERVICE_TOKEN=<32-hex>
 ```
 
 3. `DEPLOY_SERVER_IP=<Box1 IP> ./deploy.sh`（会 rsync → docker compose up -d --build → health check）
@@ -275,7 +277,7 @@ ssh <box> "free -m; uptime; docker stats --no-stream --format 'table {{.Name}}\t
 | `https://app.olajob.cn` 404 | Box1 caddy logs `journalctl -u caddy` + DNS 是否传播（`dig app.olajob.cn`） | 重启 caddy：`systemctl restart caddy` |
 | 登录 500 | Box1 backend logs | DB 连接？JWT_SECRET？`docker compose logs backend` |
 | PDF 下载失败 | Box3 gotenberg 状态 + Tailscale 连通性 | `tailscale ping box3-pdf`，重启 gotenberg 容器 |
-| Ask Ola 挂 | Box2 nanobot logs + NANOBOT_HOST env | 重启 nanobot，检查 OPENAI_API_KEY |
+| Ask Ola 挂 | Box2 nanobot logs + NANOBOT_HOST env | 重启 nanobot，检查 GEMINI_API_KEY |
 | GFW 阻 CF IP | 短期无解（罕见） | 临时用 Box1 公网 IP 加 caddy + LE（见 ola/DEPLOYMENT_FALLBACK.md，待写） |
 
 ---

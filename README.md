@@ -101,7 +101,8 @@ crm/
 | `PUBLIC_SERVER_FILE` | Base URL for file links (e.g. `https://app.olatech.ai/`) |
 | `GOTENBERG_URL` | Gotenberg service URL (e.g. `http://gotenberg:3000`) |
 | `RESEND_API` | Optional: Resend API key for email |
-| `OPENAI_API_KEY` | Optional: OpenAI API key |
+| `GEMINI_API_KEY` | Gemini API key — rendered into `~/.nanobot/config.json` for the AI agent |
+| `MCP_SERVICE_TOKEN` | Loopback service token between CRM ↔ NanoBot |
 
 **Frontend** (build-time, all optional — defaults to same-origin relative paths):
 

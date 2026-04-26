@@ -3,13 +3,19 @@ import { API_BASE_URL } from '@/config/serverApiConfig';
 import {notification} from 'antd';
 import errorHandler from './errorHandler';
 import successHandler from './successHandler';
-import { setupDevMockInterceptor } from './devMockInterceptor';
 
 axios.defaults.baseURL = API_BASE_URL;
 axios.defaults.withCredentials = true;
 
-// DEV ONLY: intercept all requests and return mock data
-setupDevMockInterceptor(axios);
+// DEV ONLY: dev mock interceptor is dynamically imported only in dev builds.
+// Vite resolves `import.meta.env.DEV` at build time → prod bundle drops this
+// branch and the entire devMockInterceptor module via tree-shaking.
+// Runtime activation still requires VITE_DEV_BYPASS_AUTH=true (gated inside).
+if (import.meta.env.DEV) {
+  import('./devMockInterceptor')
+    .then((m) => m.setupDevMockInterceptor(axios))
+    .catch((e) => console.error('[DEV] Failed to load mock interceptor:', e));
+}
 
 const request = {
   create: async ({ entity, jsonData }) => {

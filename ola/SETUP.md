@@ -88,7 +88,7 @@ Copy `backend/.env.example` to `backend/.env` and fill these four:
 | `MCP_SERVICE_TOKEN` | Loopback-only service token. Dev machines share the same value (ask zyd). Prod generates its own via `openssl rand -hex 32`. |
 | `GEMINI_API_KEY` | Personal key from [aistudio.google.com](https://aistudio.google.com) — do **not** share or commit. |
 
-Optional: `GOTENBERG_URL`, `RESEND_API`, `OPENAI_API_KEY`, `ALLOWED_ORIGINS`
+Optional: `GOTENBERG_URL`, `RESEND_API`, `ALLOWED_ORIGINS`
 (see `backend/.env.example`).
 
 ## PDF 导出（可选 / 本地 Gotenberg）
