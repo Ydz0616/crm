@@ -12,7 +12,9 @@ axios.defaults.withCredentials = true;
 // branch and the entire devMockInterceptor module via tree-shaking.
 // Runtime activation still requires VITE_DEV_BYPASS_AUTH=true (gated inside).
 if (import.meta.env.DEV) {
-  import('./devMockInterceptor').then((m) => m.setupDevMockInterceptor(axios));
+  import('./devMockInterceptor')
+    .then((m) => m.setupDevMockInterceptor(axios))
+    .catch((e) => console.error('[DEV] Failed to load mock interceptor:', e));
 }
 
 const request = {
