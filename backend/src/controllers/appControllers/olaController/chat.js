@@ -1,6 +1,7 @@
 const http = require('http');
 const mongoose = require('mongoose');
 const { v4: uuidv4 } = require('uuid');
+const { toolEventsToBlocks } = require('./toolResultToBlocks');
 
 const ChatSession = mongoose.model('ChatSession');
 const ChatMessage = mongoose.model('ChatMessage');
@@ -147,11 +148,18 @@ const chat = async (req, res) => {
             return resolve();
           }
 
+          // NanoBot 透出的 tool_events（issue #129）→ 前端 widget/file blocks。
+          // 没有 tool 调用时 toolEventsToBlocks 返 []，message 仍只含 text block。
+          const toolEvents = parsed.metadata?.tool_events;
+          const extraBlocks = toolEventsToBlocks(toolEvents);
+          const blocks = [{ type: 'text', content }, ...extraBlocks];
+
           // Return response to client first
           res.status(200).json({
             success: true,
             result: {
               content,
+              blocks,
               sessionId: session._id,
               model: parsed.model || null,
             },
@@ -172,7 +180,7 @@ const chat = async (req, res) => {
               sessionId: session._id,
               role: 'assistant',
               content,
-              blocks: [{ type: 'text', content }],
+              blocks,
               createdBy: userId,
             },
           ]).then(() => {
