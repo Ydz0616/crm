@@ -19,8 +19,7 @@ description: Identify the Ola CRM operator (Yuandong / Ziyue / Will / Angel), re
 | 殷子越 / Ziyue / 子越 | 🟢 全栈对等（**无 trivial 豁免**） | `ZIYUE_FEAT` | `/spec` 必走，任何改动都要 PLAN→APPROVE |
 | 王梓珩 / Will / Ziheng / wzh | 🟣 UI/UX | `WZH_UI` | `/ui-tweak` 微调；超出 UI 范围转 Yuandong |
 | 文怡力 / Yili / Angel | 🟣 UI/UX | `YILI_UI` | `/ui-tweak`；超出 UI 范围转 Yuandong |
-
-
+| 刘致远 / Zack / lzy / 致远 | 🔵 体验/反馈 | — (无 branch) | 不写代码、不动文件；把想法整理成一句话告诉 Yuandong / Ziyue |
 
 ## 2. 跑 repo 状态 — 报告给用户
 
@@ -74,7 +73,8 @@ gh issue list --repo SeekMi-Technologies/Ola --state open --limit 10
 - **Yuandong** 加新功能 / 改后端 → `/spec` 走 6 phase。trivial single-line fix → 直接动手（Phase 5 EXECUTE + Phase 6 TEST 仍要走，永不豁免）
 - **Ziyue** 任何改动（包括单行 typo）→ `/spec` 必走完 PLAN→APPROVE 才动手。**没有 trivial 豁免**，这是 zyd 明确给 Ziyue 的纪律
 - **Will / Angel** 想改 UI 颜色 / 文字 / 间距 / AntD props → `/ui-tweak` 一步步带。想改业务逻辑 / 加字段 / 动 state → 不能做，转 Yuandong 或 Ziyue
-- **改完、验证通过、想提交** → 任何身份都用 `/ship`
+- **lzy / Zack** 不写代码 — 听他描述需求 / bug，整理成一句话发给 Yuandong 或 Ziyue。**不要带他走 `/spec` 或 `/ui-tweak`**
+- **改完、验证通过、想提交** → 写代码的身份都用 `/ship`
 
 ## 6. 项目速查（用得上时引用）
 

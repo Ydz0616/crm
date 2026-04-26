@@ -212,4 +212,4 @@ git push origin "$(git branch --show-current)" --force-with-lease
 
 任一断言失败 → **立即回滚**，不在生产 debug。这条断言跑通之前，task.md 的 `[/]` 不能标 `[x]`。
 
-参考 [feedback_infra_change_curl_e2e](../../../../../.claude/projects/-Users-duke-Documents-GitHub-crm/memory/feedback_infra_change_curl_e2e.md) 和 [feedback_production_rigor_2026_04_21](../../../../../.claude/projects/-Users-duke-Documents-GitHub-crm/memory/feedback_production_rigor_2026_04_21.md)。
+历史教训：PR #111 的 nginx 截断 bug 就是缺这步 E2E 才漏到生产。

@@ -61,7 +61,7 @@ description: Spec-Driven Development loop for Ola CRM — runs the 6-phase cycle
 
 ### Phase 6: TEST — 永不豁免
 
-按 item 验收标准验证。Ola 没有 jest/vitest 配置（这是有意决定，见 [feedback_verification_pattern](../../../../../.claude/projects/-Users-duke-Documents-GitHub-crm/memory/feedback_verification_pattern.md)）。验证方式：
+按 item 验收标准验证。Ola 没配 `npm test` 脚本（有意决定）— jest 和 vitest 已装在 `backend/package.json` 和 `frontend/package.json`，需要时用 `npx jest` / `npx vitest` 直接跑。日常验证方式：
 
 - **后端逻辑：** 临时 `_verify.js` 紧挨改的文件，autoload 所有 model：
   ```javascript
@@ -70,7 +70,7 @@ description: Spec-Driven Development loop for Ola CRM — runs the 6-phase cycle
   // ... 断言 ...
   ```
   跑完 `rm` 掉。永远不 commit `_verify.js`。
-- **HTTP 接口：** curl **至少 3 条断言**（[feedback_acceptance_criteria_depth](../../../../../.claude/projects/-Users-duke-Documents-GitHub-crm/memory/feedback_acceptance_criteria_depth.md)）：
+- **HTTP 接口：** curl **至少 3 条断言**（不接受"endpoint 不 500 就算过"）：
   1. Happy path → `success: true` + 期望的 result shape
   2. Negative case → 400 / 404 / 409 + 具体中文 message
   3. **Protocol 入口之后的第二次调用** — 不是只测第一步就完事
@@ -129,7 +129,7 @@ description: Spec-Driven Development loop for Ola CRM — runs the 6-phase cycle
 2. `curl -sS https://<domain>/api/setting/listAll` → **401**（未带 cookie）
 3. 完整 login + cookie + 受保护接口 → 200 + 真数据
 
-任一断言失败 → **立即回滚**，不在生产 debug。参考 [feedback_infra_change_curl_e2e](../../../../../.claude/projects/-Users-duke-Documents-GitHub-crm/memory/feedback_infra_change_curl_e2e.md) 和 [feedback_production_rigor_2026_04_21](../../../../../.claude/projects/-Users-duke-Documents-GitHub-crm/memory/feedback_production_rigor_2026_04_21.md)（PR #111 nginx 截断 bug 就是这条缺失导致的）。
+任一断言失败 → **立即回滚**，不在生产 debug。历史教训：PR #111 的 nginx 截断 bug 就是缺这步 E2E 才漏到生产。
 
 ## 4. 出口
 
