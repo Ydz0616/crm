@@ -2,39 +2,62 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## ⚠️ Read this first — `.agents/` is the source of truth
+## ⚠️ Read this first — Dual workflow source
 
-Before doing any work, read these files in order. They are not optional — they define identity-gated permissions, the SDD development discipline, and the exact code patterns to use.
+Ola maintains **two parallel workflow doc sets** (as of 2026-04-26):
 
-1. `.agents/workflows/onboard.md` — entry-point ruleset, run every new conversation
-2. `.agents/context/understanding.md` — company / product / data model / tech decisions (the only authoritative source for product facts)
-3. `.agents/context/code_conventions.md` — controller/model/response templates, frontend rules
-4. `.agents/context/develop.md` — the SDD 6-phase loop (PLAN → REVISE → APPROVE → BACKLOG → EXECUTE → TEST), always-on
+| Tool | Source of truth | How loaded |
+|---|---|---|
+| **Claude Code** (Yuandong / Ziyue / Angel) | [`.claude/skills/`](.claude/skills/) — 4 skills: `onboard`, `spec`, `ship`, `ui-tweak` | Auto-loaded via skill `description` matching; or invoke explicitly: `/onboard` `/spec` `/ship` `/ui-tweak` |
+| **Antigravity** (Will, currently) | `.agents/workflows/*.md` + `.agents/context/*.md` | Antigravity reads `.agents/` directly |
+
+**Claude Code users — start here:**
+
+1. **`/onboard`** — identity gate (Yuandong / Ziyue / Will / Angel) + git/issue/task.md state report + routing
+2. **`/spec`** — for any non-trivial code work (6-phase SDD loop). Required for Ziyue on every change (no trivial 豁免)
+3. **`/ship`** — atomic commit + push (always asks first) + PR to dev (never main)
+4. **`/ui-tweak`** — for Will / Angel making small UI changes (color, copy, AntD prop, layout)
+
+**Skills are self-contained — they do NOT read `.agents/` at runtime.** All rules and identity tables are embedded in skill bodies, with pointers to live codebase for templates (e.g. `quoteController/index.js` is the canonical Controller pattern).
+
+**Maintenance discipline:** workflow changes that apply to all team members must be edited in BOTH the relevant skill AND the matching `.agents/` file (until Will migrates off Antigravity, at which point `.agents/workflows/*.md` collapse to pure pointers — deferred Phase J5/J6 in `task.md`).
+
+**Antigravity users (Will):** the legacy `.agents/` doc set is still canonical for you. Read in this order:
+
+1. `.agents/workflows/onboard.md` — entry-point ruleset
+2. `.agents/context/understanding.md` — company / product / data model
+3. `.agents/context/code_conventions.md` — controller/model/response templates
+4. `.agents/context/develop.md` — SDD 6-phase loop
 5. `.agents/workflows/{push,pr,start}.md` — invoked as `/push`, `/pr`, `/start`
 
 ### Identity gating (ask "你是谁?" at the start of a new conversation)
 
-| User | Mode | Allowed |
-|---|---|---|
-| **zyd / 张元东 / yuandong** | 🟢 peer | full-stack; trivial single-file fixes may skip Phase 1–3 |
-| **wzh / 王梓珩 / Will** | 🟡 protected | **frontend UI/style only** — `.css/.less/.scss`, JSX className/文案/layout, AntD props. ❌ Forbidden: anything in `backend/`, `models/`, API routes, `docker-compose.yml`, `.env`, `request/` config. Must walk all phases. |
-| **lzy / 刘致远 / zhiyuan** | 🔵 experience | no code; collect feedback for zyd |
+| User | Branch | Mode | Allowed |
+|---|---|---|---|
+| **Yuandong / 张元东 / zyd / Duke** | `ZYD_FEAT` | 🟢 peer | Full-stack; trivial single-file fixes may skip Phase 1–3 |
+| **Ziyue / 殷子越** | `ZIYUE_FEAT` | 🟢 peer (no trivial 豁免) | Full-stack; **must walk all 6 phases regardless of change size** (zyd's explicit decision) |
+| **Will / 王梓珩 / Ziheng / wzh** | `WZH_UI` | 🟣 UI/UX | `.css/.less/.scss`, JSX className/文案/layout, AntD props. ❌ Forbidden: `backend/`, `models/`, API routes, `docker-compose.yml`, `.env`, `request/` config |
+| **Angel / 文怡力 / Yili** | `YILI_UI` | 🟣 UI/UX | Same as Will. UT Dallas HCI PhD, UI/UX 专家 |
+| **lzy / 刘致远 / Zack / Zhiyuan** | — | 🔵 experience | No code; collects product feedback for Yuandong. Not in code-skill identity gates |
 
 ### SDD discipline (always-on after onboard)
 
 - **One backlog item at a time.** Track in `task.md`. Mark `[/]` in-progress, `[x]` done.
 - **No code before APPROVE.** Restate the plan, list affected files + their import/require deps, and wait for explicit "approved / 开始 / 可以".
 - **Test before advancing.** A failed item is fixed in place, never deferred. Out-of-scope discoveries → new backlog item, not an in-line fix.
-- **Done = pushed.** Each finished item → `/push` → mark `[x]` → next item. All items done → `/pr`.
-- **Trivial exemption (zyd only):** single-line typo / CSS / rename / unambiguous single-file fix may skip 1–3. Phase 5–6 are never skippable.
+- **Done = pushed.** Each finished item → `/ship` (Claude Code) or `/push` (Antigravity) → mark `[x]` → next item. All items done → `/pr` or `/ship`-PR.
+- **Trivial exemption (Yuandong only):** single-line typo / CSS / rename / unambiguous single-file fix may skip 1–3. **Ziyue does NOT get this exemption** — must walk all 6 phases. Phase 5–6 are never skippable for anyone.
+- **Push protocol:** before any `git push`, ask "可以 push 了吗?" and wait for explicit OK.
 
 ### Branch policy
 
 | User | Dev branch | Merge target |
 |---|---|---|
-| zyd | `ZYD_FEAT` | PR → `dev` |
-| wzh | `WZH_UI` | PR → `dev` |
-| — | `dev` → `main` | zyd-only, manually on GitHub |
+| Yuandong | `ZYD_FEAT` | PR → `dev` |
+| Ziyue | `ZIYUE_FEAT` | PR → `dev` |
+| Will (wzh) | `WZH_UI` | PR → `dev` |
+| Angel (Yili) | `YILI_UI` | PR → `dev` |
+| — | `dev` → `main` | Yuandong-only, manually on GitHub |
 
 Never commit on `main` or `dev`. PRs target **`dev`**, not `main`. Before pushing, rebase on `origin/dev`.
 
