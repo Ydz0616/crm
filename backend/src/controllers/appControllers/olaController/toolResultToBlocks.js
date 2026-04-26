@@ -5,22 +5,30 @@
 // into the `blocks[]` shape the frontend MessageBubble understands.
 //
 // Tool name conventions:
-//   - MCP tools registered via NanoBot are renamed `mcp_<server>_<tool>` —
-//     e.g. quote.create surfaces as `mcp_ola_crm_quote.create`.
-//   - We match the trailing `quote.create` so the mapper survives renames
-//     of the MCP server identifier.
+//   NanoBot prefixes every MCP tool as `mcp_<server>_<rawToolName>`.
+//   Source of truth for `<server>` is `ola/nanobot.config.template.json`
+//   under `nanobot.mcpServers.<server>` — currently `ola_crm`.
+//   We strip the full known prefix (not lastIndexOf/regex on `_`), so raw
+//   tool names with either dots (`quote.create`) or underscores
+//   (`customer_search`) survive untouched.
 //
 // Envelope:
 //   tool_events[].result is the MCP envelope JSON serialized as a string —
 //   `{"ok":true,"data":{...}}` — and must be JSON.parse'd before use.
 //
-// Adding a new widget = add another case to the switch. Unknown tool names
-// emit no block (the LLM's natural-language reply is still shown as text).
+// Adding a new widget for a tool:
+//   1. Write a `<tool>ToBlocks(envelopeData)` producer that returns Block[]
+//   2. Add one entry to TOOL_BLOCK_PRODUCERS keyed by raw tool name
+//   No changes elsewhere in this file are needed.
 
-function shortToolName(name) {
-  if (typeof name !== 'string') return '';
-  const idx = name.lastIndexOf('_');
-  return idx >= 0 ? name.slice(idx + 1) : name;
+const MCP_SERVER_NAME = 'ola_crm';
+const MCP_PREFIX = `mcp_${MCP_SERVER_NAME}_`;
+
+function rawToolName(eventName) {
+  if (typeof eventName !== 'string') return '';
+  return eventName.startsWith(MCP_PREFIX)
+    ? eventName.slice(MCP_PREFIX.length)
+    : eventName;
 }
 
 function parseEnvelope(raw) {
@@ -70,17 +78,17 @@ function quoteCreateToBlocks(quote) {
   ];
 }
 
+const TOOL_BLOCK_PRODUCERS = {
+  'quote.create': quoteCreateToBlocks,
+};
+
 function toolEventToBlocks(event) {
   if (!event || event.phase !== 'end') return [];
   const envelope = parseEnvelope(event.result);
   if (!envelope || envelope.ok !== true) return [];
 
-  switch (shortToolName(event.name)) {
-    case 'quote.create':
-      return quoteCreateToBlocks(envelope.data);
-    default:
-      return [];
-  }
+  const producer = TOOL_BLOCK_PRODUCERS[rawToolName(event.name)];
+  return producer ? producer(envelope.data) : [];
 }
 
 function toolEventsToBlocks(events) {
@@ -93,6 +101,9 @@ function toolEventsToBlocks(events) {
 module.exports = {
   toolEventToBlocks,
   toolEventsToBlocks,
-  shortToolName,
+  rawToolName,
   parseEnvelope,
+  MCP_SERVER_NAME,
+  MCP_PREFIX,
+  TOOL_BLOCK_PRODUCERS,
 };

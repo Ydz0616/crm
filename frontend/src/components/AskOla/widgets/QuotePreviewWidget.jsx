@@ -4,7 +4,7 @@ import { FileTextOutlined } from '@ant-design/icons';
 const CURRENCY_SYMBOL = { USD: '$', CNY: '¥' };
 
 function formatMoney(amount, currency) {
-  const symbol = CURRENCY_SYMBOL[currency] || '';
+  const symbol = CURRENCY_SYMBOL[currency] ?? (currency || '');
   if (amount == null || Number.isNaN(Number(amount))) return `${symbol}-`;
   return `${symbol}${Number(amount).toFixed(2)}`;
 }
