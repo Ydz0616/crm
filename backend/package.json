@@ -1,5 +1,5 @@
 {
-  "name": "easycrm-erp-crm",
+  "name": "ola-crm-backend",
   "version": "4.1.0",
   "engines": {
     "npm": "10.2.4",
@@ -11,7 +11,6 @@
     "production": "NODE_ENV=production",
     "setup": "node src/setup/setup.js",
     "add-admin": "node src/setup/addAdmin.js",
-    "upgrade": "node src/setup/upgrade.js",
     "reset": "node src/setup/reset.js",
     "mcp:dev": "node src/mcp/server.js"
   },
@@ -40,7 +39,6 @@
     "mongoose-autopopulate": "^1.1.0",
     "multer": "^1.4.4",
     "node-cache": "^5.1.2",
-    "openai": "^4.27.0",
     "pug": "^3.0.2",
     "resend": "^2.0.0",
     "shortid": "^2.2.16",
