@@ -27,8 +27,6 @@ mongoose.connect(process.env.DATABASE, {
   console.error('MongoDB connection error. Please make sure MongoDB is running:', err.message);
 });
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-
 mongoose.connection.on('error', (error) => {
   console.log(
     `1. 🔥 Common Error caused issue → : check your .env file first and add your mongodb url`

@@ -27,8 +27,30 @@ This directory is what makes **Ask Ola** behave as a real tool-calling agent
   # Older clones may still be named `crm/` and `nanobot/` locally;
   # start-dev.sh handles either name.
   ```
+
+### Python deps for nanobot
+Fresh clone 后必须装一次（之后改源码免重装）：
+
+```bash
+cd ../Ola_bot
+pip install -e .
+```
+
+Sync 上游后如果引入新 deps（例如 v0.1.4 → v0.1.5 引入 pypdf/filelock），重跑一次 `pip install -e .`。
+
 - MongoDB connection string (Atlas shared cluster or your own)
 - Gemini API key (from [aistudio.google.com](https://aistudio.google.com))
+
+## Frontend-only setup（wzh / UI-only 开发者）
+
+最小工作环境：
+
+```bash
+cd backend && npm install && npm run dev   # API on 8888
+cd frontend && npm install && npm run dev  # UI on 3000
+```
+
+跳过：MCP server、NanoBot、Gotenberg、Python 装包。Ask Ola tab 会因 NanoBot 没起报"无法连接"，但不影响 CSS/JSX 改动。
 
 ## First-boot flow (what `start-dev.sh` does for you)
 
@@ -40,9 +62,10 @@ When you run `bash start-dev.sh` on a fresh mac:
    is **not** polluted), reads `MCP_SERVICE_TOKEN` and `GEMINI_API_KEY`,
    substitutes them into `ola/nanobot.config.template.json`, and writes the
    result to `~/.nanobot/config.json` (mode 600). Both secrets end up on
-   disk in this one file — nanobot v0.1.4.post6 requires
-   `providers.gemini.apiKey` to be present in config at startup
-   (`_make_provider` raises `ValueError` on empty key; no env fallback).
+   disk in this one file — current pinned NanoBot (via `pip install -e .`
+   in sibling `../Ola_bot/`) requires `providers.gemini.apiKey` to be
+   present in config at startup (`_make_provider` raises `ValueError` on
+   empty key; no env fallback).
    The file is gitignored home-dir, owner-only.
 3. If `~/.nanobot/workspace/SOUL.md` does **not** exist → copies the 5 md
    files from `ola/nanobot-workspace/` into `~/.nanobot/workspace/`.
@@ -138,7 +161,7 @@ provision with `rm ~/.nanobot/workspace/SOUL.md && bash start-dev.sh`.
 | `ola/nanobot-workspace/*.md` | yes | persona template (source of truth) |
 | `ola/nanobot.config.template.json` | yes | nanobot config skeleton with placeholders |
 | `ola/SETUP.md` | yes | this file |
-| `backend/.env` | no (gitignored) | per-machine secrets |
+| `backend/.env` | no (gitignored, untracked via #144) | per-machine secrets — never stage |
 | `~/.nanobot/workspace/*.md` | no | provisioned copy (first-boot) — safe to edit locally |
 | `~/.nanobot/workspace/memory/` | no | runtime agent memory — per machine |
 | `~/.nanobot/workspace/sessions/` | no | chat session logs — per machine |
