@@ -85,9 +85,9 @@ else
 fi
 
 # 1. Backend
-echo -e "${GREEN}[2/5] Starting backend (port 8888)...${NC}"
+echo -e "${GREEN}[2/5] Starting backend (port 8888) with nodemon hot reload...${NC}"
 cd "$CRM_DIR/backend"
-node src/server.js > /tmp/ola-backend.log 2>&1 &
+npx nodemon src/server.js --ignore public/ > /tmp/ola-backend.log 2>&1 &
 BACKEND_PID=$!
 
 # Wait for backend to bind port before starting MCP (both need MongoDB)
@@ -104,9 +104,9 @@ for i in $(seq 1 15); do
 done
 
 # 2. MCP Server
-echo -e "${GREEN}[3/5] Starting MCP server (port 8889)...${NC}"
+echo -e "${GREEN}[3/5] Starting MCP server (port 8889) with nodemon hot reload...${NC}"
 cd "$CRM_DIR/backend"
-node src/mcp/server.js > /tmp/ola-mcp.log 2>&1 &
+npx nodemon --watch src/mcp src/mcp/server.js > /tmp/ola-mcp.log 2>&1 &
 MCP_PID=$!
 
 # 3. NanoBot

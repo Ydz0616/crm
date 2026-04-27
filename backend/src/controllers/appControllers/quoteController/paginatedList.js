@@ -8,7 +8,8 @@ const paginatedList = async (req, res) => {
   const skip = page * limit - limit;
 
   //  Query the database for a list of all results
-  const { sortBy = 'enabled', sortValue = -1, filter, equal } = req.query;
+  const { sortBy, sortValue = -1, filter, equal } = req.query;
+  const sortSpec = sortBy ? { [sortBy]: Number(sortValue) } : { created: -1, _id: -1 };
 
   const fieldsArray = req.query.fields ? req.query.fields.split(',') : [];
 
@@ -30,7 +31,7 @@ const paginatedList = async (req, res) => {
   })
     .skip(skip)
     .limit(limit)
-    .sort({ [sortBy]: sortValue })
+    .sort(sortSpec)
     .populate('createdBy', 'name')
     .exec();
 
