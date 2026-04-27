@@ -3,6 +3,7 @@ import FileBlock from './blocks/FileBlock';
 import ThinkingBlock from './blocks/ThinkingBlock';
 import ActionBlock from './blocks/ActionBlock';
 import WidgetBlock from './blocks/WidgetBlock';
+import ThinkingPanel from './ThinkingPanel';
 
 /**
  * Block component mapping table — extend here for new block types
@@ -19,6 +20,12 @@ const BLOCK_MAP = {
     />
   ),
   thinking: (block, i) => <ThinkingBlock key={i} content={block.content} />,
+  // thinking_trace: persistent record of the live progress steps captured
+  // during streaming (Issue #131). Renders as the collapsed `▶ View thinking
+  // process` panel — same component as the live mode, just always folded.
+  thinking_trace: (block, i) => (
+    <ThinkingPanel key={i} mode="collapsed" steps={block.steps || []} />
+  ),
   action: (block, i) => <ActionBlock key={i} actions={block.actions} />,
   widget: (block, i) => (
     <WidgetBlock key={i} widgetType={block.widgetType} data={block.data} />

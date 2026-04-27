@@ -5,19 +5,30 @@ import request from '@/request/request';
 import { useAppContext } from '@/context/appContext';
 import MessageBubble from '@/components/AskOla/MessageBubble';
 import ChatInput from '@/components/AskOla/ChatInput';
+import ThinkingPanel from '@/components/AskOla/ThinkingPanel';
+import TextBlock from '@/components/AskOla/blocks/TextBlock';
+import { consumeSSEStream } from '@/components/AskOla/consumeSSEStream';
 
 export default function AskOla() {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
+  // Live streaming UI state — replaces hardcoded "Ola is thinking..." placeholder.
+  // liveLabel: current friendly thinking-step label, or null when text is streaming
+  //            or the panel should not render. Cleared on stream end.
+  // streamingText: assistant reply accumulated token-by-token while the SSE stream
+  //                is in flight; replaced by the final blocks-based MessageBubble
+  //                when the `done` frame arrives.
+  const [liveLabel, setLiveLabel] = useState(null);
+  const [streamingText, setStreamingText] = useState('');
   const bottomRef = useRef(null);
   const { state: stateApp, appContextAction } = useAppContext();
   const { activeSessionId } = stateApp;
   const { chatSession } = appContextAction;
 
-  // Auto-scroll to bottom when messages change
+  // Auto-scroll to bottom on new messages or while streaming chunks arrive.
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, liveLabel, streamingText]);
 
   // Load messages when activeSessionId changes
   const loadMessages = useCallback(async (sessionId) => {
@@ -65,49 +76,88 @@ export default function AskOla() {
     };
     setMessages((prev) => [...prev, userMessage]);
     setLoading(true);
+    setLiveLabel('Ola is thinking...');  // STAGE_LABELS.__init__ (kept in sync with backend)
+    setStreamingText('');
 
     try {
-      const jsonData = { message: text };
-      if (activeSessionId) {
-        jsonData.sessionId = activeSessionId;
-      }
+      const body = { message: text };
+      if (activeSessionId) body.sessionId = activeSessionId;
 
-      const response = await request.post({
-        entity: 'ola/chat',
-        jsonData,
+      // EventSource doesn't support POST bodies, so we use fetch + manual SSE
+      // parsing. Same approach the OpenAI / Anthropic / Google JS SDKs use.
+      const resp = await fetch('/api/ola/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(body),
       });
 
-      if (response.success) {
-        // If this was the first message, set the returned sessionId as active
-        if (!activeSessionId && response.result.sessionId) {
-          chatSession.setActive(response.result.sessionId);
-        }
+      if (!resp.ok) {
+        // Non-SSE failure (validation 400, auth 401, session-not-found 404).
+        // Backend returned a JSON error envelope.
+        let errMsg = `HTTP ${resp.status}`;
+        try {
+          const j = await resp.json();
+          if (j && j.message) errMsg = j.message;
+        } catch { /* keep default */ }
+        notification.error({ message: 'Ola 响应失败', description: errMsg });
+        return;
+      }
 
+      let finalSessionId = null;
+      let finalBlocks = null;
+      let errored = false;
+
+      await consumeSSEStream(resp, {
+        thinking_step: (data) => {
+          if (data && data.label) setLiveLabel(data.label);
+        },
+        text_token: (data) => {
+          if (!data || typeof data.delta !== 'string') return;
+          // Once text starts streaming, hide the live thinking panel — the
+          // streaming text bubble takes over visually.
+          setLiveLabel(null);
+          setStreamingText((prev) => prev + data.delta);
+        },
+        done: (data) => {
+          if (!data) return;
+          finalSessionId = data.sessionId || null;
+          finalBlocks = Array.isArray(data.blocks) ? data.blocks : null;
+        },
+        error: (data) => {
+          errored = true;
+          notification.error({
+            message: 'Ola 响应失败',
+            description: (data && data.message) || '未知错误',
+          });
+        },
+      });
+
+      // Commit final assistant message from `done` payload (which has
+      // thinking_trace + text + widget blocks already assembled by the backend).
+      if (!errored && finalBlocks) {
         const assistantMessage = {
           id: `msg_assistant_${Date.now()}`,
           role: 'assistant',
           timestamp: new Date().toISOString(),
-          blocks: response.result.blocks?.length
-            ? response.result.blocks
-            : [{ type: 'text', content: response.result.content }],
+          blocks: finalBlocks,
         };
         setMessages((prev) => [...prev, assistantMessage]);
 
-        // Refresh session list (new session may have been created)
+        if (!activeSessionId && finalSessionId) {
+          chatSession.setActive(finalSessionId);
+        }
         refreshSessionList();
-      } else {
-        notification.error({
-          message: 'Ola 响应失败',
-          description: response.message || '未知错误',
-        });
       }
     } catch (err) {
       notification.error({
         message: '无法连接 Ola',
-        description: '请确认后端服务和 NanoBot 是否正常运行',
+        description: err.message || '请确认后端服务和 NanoBot 是否正常运行',
       });
     } finally {
       setLoading(false);
+      setLiveLabel(null);
+      setStreamingText('');
     }
   };
 
@@ -131,12 +181,13 @@ export default function AskOla() {
               {messages.map((msg) => (
                 <MessageBubble key={msg.id} message={msg} />
               ))}
-              {loading && (
+              {loading && (liveLabel || streamingText) && (
                 <div className="askola-message askola-message--assistant">
                   <div className="askola-message-blocks">
-                    <div className="askola-block-text">
-                      <p className="askola-typing-indicator">Ola is thinking...</p>
-                    </div>
+                    {liveLabel && (
+                      <ThinkingPanel mode="live" currentLabel={liveLabel} />
+                    )}
+                    {streamingText && <TextBlock content={streamingText} />}
                   </div>
                 </div>
               )}
