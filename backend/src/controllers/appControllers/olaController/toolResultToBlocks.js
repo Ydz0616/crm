@@ -21,15 +21,9 @@
 //   2. Add one entry to TOOL_BLOCK_PRODUCERS keyed by raw tool name
 //   No changes elsewhere in this file are needed.
 
-const MCP_SERVER_NAME = 'ola_crm';
-const MCP_PREFIX = `mcp_${MCP_SERVER_NAME}_`;
-
-function rawToolName(eventName) {
-  if (typeof eventName !== 'string') return '';
-  return eventName.startsWith(MCP_PREFIX)
-    ? eventName.slice(MCP_PREFIX.length)
-    : eventName;
-}
+// Naming constants + rawToolName() shared via mcpUtils.js — single source
+// of truth for MCP server name (PR #171 review feedback).
+const { MCP_SERVER_NAME, MCP_PREFIX, rawToolName } = require('./mcpUtils');
 
 function parseEnvelope(raw) {
   if (raw == null) return null;

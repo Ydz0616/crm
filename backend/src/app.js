@@ -53,7 +53,11 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use(compression());
+// SSE-aware compression: never compress text/event-stream responses, otherwise
+// the gzip middleware buffers all chunks until res.end() and breaks live
+// streaming (Issue #131 — Ask Ola thinking panel + token streaming).
+const { sseAwareCompressionFilter } = require('@/utils/sseCompression');
+app.use(compression({ filter: sseAwareCompressionFilter }));
 
 // Simple health check route
 app.get('/health', (req, res) => {
