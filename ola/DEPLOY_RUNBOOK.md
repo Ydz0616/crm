@@ -69,7 +69,7 @@ Mongo 在 Atlas（不占本地资源）。三台都是 Aliyun HK 2C/2GB。
    - `DEPLOY.md`（legacy 保留）
    - `README.md`
    - `CLAUDE.md`
-   - `backend/.env.production.example`
+   - `backend/.env.box1.example`
    - `backend/.env.example`
    - `.agents/workflows/start.md`
    - `.agents/workflows/onboard.md`
