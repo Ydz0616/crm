@@ -43,6 +43,14 @@ server {
 
     # /api/ola/* 走 NanoBot → Gemini，长链路 LLM 请求允许 3 分钟
     # 必须放在 /api/ 之前 —— nginx 最长前缀匹配优先
+    #
+    # SSE streaming (Issue #131): /api/ola/chat returns text/event-stream and
+    # writes thinking_step / text_token chunks LIVE as the agent loop runs.
+    # Default nginx behavior buffers the full upstream response before
+    # forwarding (and may gzip it) — that would queue every chunk until the
+    # backend res.end() and silently break the streaming UX. proxy_buffering
+    # off + proxy_cache off makes nginx pass each chunk through immediately.
+    # The backend also sets X-Accel-Buffering: no defensively (chat.js).
     location /api/ola/ {
         set $upstream_backend backend:8888;
         proxy_pass http://$upstream_backend;
@@ -53,6 +61,8 @@ server {
         proxy_set_header X-Forwarded-Proto https;
         proxy_read_timeout 180s;
         proxy_send_timeout 180s;
+        proxy_buffering off;
+        proxy_cache off;
         client_max_body_size 20M;
     }
 
