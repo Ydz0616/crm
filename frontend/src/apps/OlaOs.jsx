@@ -26,8 +26,6 @@ export default function OlaOs() {
   // DEV ONLY: bypass login wall for UI development
   const bypassAuth = import.meta.env.VITE_DEV_BYPASS_AUTH === 'true';
 
-  console.log('🚀 Welcome to Ola ERP CRM!');
-
   // 三层路由拦截:
   // 1. 未登录 → AuthRouter（Login / Register）
   // 2. 已登录 + 未上车 → Onboarding wizard

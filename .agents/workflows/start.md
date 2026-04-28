@@ -46,7 +46,8 @@ cd frontend && npm install
 | `JWT_SECRET` | JWT 签名密钥 | 任意随机字符串 |
 | `NODE_ENV` | 环境 | `development` |
 
-可选变量：`OPENAI_API_KEY`、`RESEND_API`、`GOTENBERG_URL`
+必填：`GEMINI_API_KEY`（rendered into `~/.nanobot/config.json`）、`MCP_SERVICE_TOKEN`
+可选：`RESEND_API`、`GOTENBERG_URL`
 
 **前端 `frontend/.env`：**
 

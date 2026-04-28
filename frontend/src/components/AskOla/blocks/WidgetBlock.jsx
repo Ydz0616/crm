@@ -1,9 +1,11 @@
 import MerchMatchWidget from '../widgets/MerchMatchWidget';
 import QuoteDraftWidget from '../widgets/QuoteDraftWidget';
+import QuotePreviewWidget from '../widgets/QuotePreviewWidget';
 
 const WIDGET_MAP = {
   merch_match: MerchMatchWidget,
   quote_draft: QuoteDraftWidget,
+  quote_preview: QuotePreviewWidget,
 };
 
 export default function WidgetBlock({ widgetType, data }) {
