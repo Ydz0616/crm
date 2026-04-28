@@ -7,30 +7,55 @@
  *
  * Usage:
  *
- *   const response = await fetch('/api/ola/chat', { method: 'POST', ... });
+ *   const ac = new AbortController();
+ *   const response = await fetch('/api/ola/chat', { signal: ac.signal, ... });
  *   await consumeSSEStream(response, {
  *     thinking_step: (data) => { ... },
  *     text_token:    (data) => { ... },
  *     done:          (data) => { ... },
  *     error:         (data) => { ... },
- *   });
+ *   }, ac.signal);
  *
  * Frame format follows the SSE spec: lines `event: NAME\n` and `data: JSON\n`,
  * frames separated by blank line. JSON-decoded `data` is passed to the
  * matching handler. Unknown events are silently dropped (forward-compat).
+ *
+ * Pass an AbortSignal (3rd arg) to cancel mid-stream — when aborted, the
+ * reader is cancelled and the function returns cleanly without throwing.
+ * Caller should also pass the same signal to fetch() so the upstream
+ * connection is torn down too.
  */
-export async function consumeSSEStream(response, handlers) {
+export async function consumeSSEStream(response, handlers, signal) {
   if (!response || !response.body) {
     throw new Error('consumeSSEStream: response.body is missing');
   }
+  if (signal && signal.aborted) return;
 
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let buffer = '';
 
+  // Cancelling the reader on abort makes the in-flight read() resolve to
+  // {done: true} (or reject in some impls — handled below), so the loop
+  // terminates promptly instead of blocking on a stalled stream.
+  const onAbort = () => {
+    reader.cancel().catch(() => { /* already closed */ });
+  };
+  if (signal) signal.addEventListener('abort', onAbort, { once: true });
+
   try {
     while (true) {
-      const { done, value } = await reader.read();
+      if (signal && signal.aborted) break;
+      let chunk;
+      try {
+        chunk = await reader.read();
+      } catch (err) {
+        // reader.cancel() can surface here as AbortError / TypeError depending
+        // on the platform. Treat any error as abort if the signal fired.
+        if (signal && signal.aborted) break;
+        throw err;
+      }
+      const { done, value } = chunk;
       if (done) break;
       buffer += decoder.decode(value, { stream: true });
 
@@ -65,8 +90,7 @@ export async function consumeSSEStream(response, handlers) {
       }
     }
   } finally {
-    // Make sure we don't leave the underlying reader locked if the caller
-    // bails out (e.g. handler throws).
+    if (signal) signal.removeEventListener('abort', onAbort);
     try { reader.releaseLock(); } catch { /* already released */ }
   }
 }

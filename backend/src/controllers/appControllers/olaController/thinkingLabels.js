@@ -8,12 +8,11 @@
 // v1 is English-only; i18n / Chinese is tracked as a separate follow-up
 // (idurar_app_language is application-level not user-level — tech debt).
 //
-// NanoBot prefixes every MCP tool as `mcp_<server>_<rawToolName>`. The
-// MCP server name `ola_crm` is the same constant used in toolResultToBlocks.js.
 // labelFor() handles prefix stripping + skip-list + fallback in one call.
+// Naming constants + rawToolName() are shared with toolResultToBlocks.js
+// via mcpUtils.js (single source of truth for MCP naming).
 
-const MCP_SERVER_NAME = 'ola_crm';
-const MCP_PREFIX = `mcp_${MCP_SERVER_NAME}_`;
+const { MCP_SERVER_NAME, MCP_PREFIX, rawToolName } = require('./mcpUtils');
 
 // Raw tool name (after stripping mcp_ola_crm_ prefix) → in-progress label.
 // All labels carry an "Ola is X..." subject for warmth + clarity (zyd).
@@ -53,13 +52,6 @@ const STAGE_LABELS = {
   __compose__: 'Ola is composing the reply...',
   __unknown__: 'Ola is working on it...',      // fallback for unregistered tools
 };
-
-function rawToolName(eventName) {
-  if (typeof eventName !== 'string') return '';
-  return eventName.startsWith(MCP_PREFIX)
-    ? eventName.slice(MCP_PREFIX.length)
-    : eventName;
-}
 
 // Resolve a NanoBot tool event name (with or without mcp_ola_crm_ prefix)
 // to the user-facing label. Returns null for skip-list tools (caller should

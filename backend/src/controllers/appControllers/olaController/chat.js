@@ -12,7 +12,7 @@ const NANOBOT_TIMEOUT_MS = 120000;
 function nanobotEndpoint() {
   return {
     host: process.env.NANOBOT_HOST || '127.0.0.1',
-    port: process.env.NANOBOT_PORT || 8900,
+    port: parseInt(process.env.NANOBOT_PORT, 10) || 8900,
   };
 }
 
@@ -22,6 +22,10 @@ function nanobotEndpoint() {
 // ---------------------------------------------------------------------------
 
 function writeSSE(res, eventName, data) {
+  // No backpressure handling: res.write() can return false on a full TCP
+  // send buffer, but for a single chat session with short SSE frames the
+  // queue stays small. If we ever fan out one stream to many slow clients,
+  // revisit (likely use res.flush() + drain event).
   res.write(`event: ${eventName}\ndata: ${JSON.stringify(data)}\n\n`);
 }
 
@@ -167,6 +171,9 @@ const chat = async (req, res) => {
   res.flushHeaders();
 
   // Accumulators for stream-end persistence + final `done` frame payload.
+  // Each step's `ts` is reserved for future relative-timing UI (e.g. "step 2
+  // took 320ms"); not yet rendered, but persisted so we don't have to
+  // backfill schema later. Drop only if we decide that surface stays out.
   const thinkingSteps = []; // [{label, ts}] — drives thinking_trace block
   const finalToolEvents = []; // phase==='end' payloads → toolEventsToBlocks → widgets
   let streamedText = '';

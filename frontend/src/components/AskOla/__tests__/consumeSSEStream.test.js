@@ -122,4 +122,63 @@ describe('consumeSSEStream', () => {
     );
     expect(handler).toHaveBeenCalledWith({ x: 1 });
   });
+
+  test('returns immediately if signal is already aborted', async () => {
+    const handler = vi.fn();
+    const ac = new AbortController();
+    ac.abort();
+    await consumeSSEStream(
+      makeMockResponse(['event: x\ndata: {}\n\n']),
+      { x: handler },
+      ac.signal,
+    );
+    expect(handler).not.toHaveBeenCalled();
+  });
+
+  test('aborting mid-stream stops handler dispatch and exits cleanly', async () => {
+    // Build a stream that emits 3 frames but pauses after the first via a
+    // controlled async iterator so we can abort between frames.
+    const encoder = new TextEncoder();
+    let releaseSecond;
+    const secondReady = new Promise((r) => { releaseSecond = r; });
+    const body = new ReadableStream({
+      async start(controller) {
+        controller.enqueue(encoder.encode('event: a\ndata: {"i":1}\n\n'));
+        await secondReady;  // wait until test signals the second chunk can flow
+        controller.enqueue(encoder.encode('event: a\ndata: {"i":2}\n\n'));
+        controller.close();
+      },
+    });
+
+    const ac = new AbortController();
+    const seen = [];
+    const handler = (d) => seen.push(d.i);
+
+    const consumePromise = consumeSSEStream(
+      { body },
+      { a: handler },
+      ac.signal,
+    );
+    // Yield so the first chunk is processed.
+    await new Promise((r) => setTimeout(r, 10));
+    expect(seen).toEqual([1]);
+    // Abort BEFORE letting the second chunk flow.
+    ac.abort();
+    // Now allow the second chunk — it should NOT be dispatched (consumer aborted).
+    releaseSecond();
+    await consumePromise;  // must resolve, not throw
+    expect(seen).toEqual([1]);
+  });
+
+  test('aborting before reader.read resolves does not throw', async () => {
+    // Stream that hangs forever on the first read.
+    const body = new ReadableStream({
+      start() { /* never enqueue, never close */ },
+    });
+    const ac = new AbortController();
+    const consumePromise = consumeSSEStream({ body }, {}, ac.signal);
+    setTimeout(() => ac.abort(), 10);
+    // Should resolve cleanly (no throw) within reasonable time.
+    await consumePromise;
+  });
 });

@@ -33,7 +33,11 @@ export default function ThinkingPanel({
 
   if (mode === 'live') {
     return (
-      <div className="askola-thinking-panel askola-thinking-panel--live">
+      <div
+        className="askola-thinking-panel askola-thinking-panel--live"
+        role="status"
+        aria-live="polite"
+      >
         <LoadingOutlined spin style={{ fontSize: 13, color: '#8c8c8c' }} />
         <span className="askola-thinking-panel-label">
           {currentLabel || 'Ola is working on it...'}
