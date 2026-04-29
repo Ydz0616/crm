@@ -45,14 +45,17 @@ export default function SettingsProfile() {
 
         // Refresh auth cache from the server response (canonical post-write
         // shape — picks up language fallback default + any backend normalization).
+        // localStorage may be missing (private browsing, cache cleared,
+        // mid-token-refresh) — guard before reading .current to avoid TypeError.
         const storedAuth = JSON.parse(window.localStorage.getItem('auth'));
         if (storedAuth) {
           storedAuth.current = { ...storedAuth.current, ...result };
           window.localStorage.setItem('auth', JSON.stringify(storedAuth));
+          dispatch({ type: actionTypes.REQUEST_SUCCESS, payload: storedAuth.current });
+        } else {
+          // No localStorage cache — sync Redux directly from server response.
+          dispatch({ type: actionTypes.REQUEST_SUCCESS, payload: result });
         }
-
-        // 同步 Redux store
-        dispatch({ type: actionTypes.REQUEST_SUCCESS, payload: storedAuth.current });
       } else {
         message.error(msg || 'Failed to update profile');
       }
