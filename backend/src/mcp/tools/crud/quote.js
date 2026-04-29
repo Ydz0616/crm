@@ -61,14 +61,14 @@ async function enrichItemDescriptions(items) {
     const m = bySerial.get(it.itemName);
     if (!m) {
       warnings.push(
-        `${it.itemName}: 未在 Merch 中匹配到 serialNumber — 描述和单位均留空`,
+        `${it.itemName}: serialNumber not matched in Merch — description and unit left blank`,
       );
       return it;
     }
-    const description = m.description_cn || m.description_en || '';
+    const description = m.description_en || m.description_cn || '';
     if (!description) {
       warnings.push(
-        `${it.itemName}: 在 Merch 中找到，但 description_cn / description_en 均为空 — 描述字段留空`,
+        `${it.itemName}: found in Merch but both description_cn and description_en are empty — description left blank`,
       );
     }
     return { ...it, description };
@@ -113,7 +113,7 @@ const search = {
     if (res.ok && Array.isArray(res.data) && res.data.length > 0) {
       return { ok: true, data: { found: true, results: res.data } };
     }
-    return { ok: true, data: { found: false, message: '未找到匹配报价' } };
+    return { ok: true, data: { found: false, message: 'No matching quote' } };
   },
 };
 
@@ -255,4 +255,11 @@ const update = {
   },
 };
 
-module.exports = { tools: [search, read, create, update] };
+module.exports = {
+  tools: [search, read, create, update],
+  // Test-only export — enrichItemDescriptions is the auto-fill helper that
+  // populates `description` from Merch.description_en (preferred) or
+  // description_cn (fallback). Surfaced so backend/test/language.test.js can
+  // assert the en-first ordering without spinning the full quote.create stack.
+  __forTesting: { enrichItemDescriptions },
+};
