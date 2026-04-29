@@ -6,8 +6,11 @@ const updateProfile = async (userModel, req, res) => {
   const reqUserName = userModel.toLowerCase();
   const userProfile = req[reqUserName];
 
-  // Validate language if provided (Admin schema enum: ['zh', 'en'])
-  if (req.body.language && !['zh', 'en'].includes(req.body.language)) {
+  // Validate language if provided (Admin schema enum: ['zh', 'en']).
+  // Use !== undefined (not truthy check) so we explicitly reject null /
+  // empty string / 0 — leaving them out preserves "omit = no overwrite"
+  // semantics while still rejecting an explicit invalid value.
+  if (req.body.language !== undefined && !['zh', 'en'].includes(req.body.language)) {
     return res.status(400).json({
       success: false,
       result: null,

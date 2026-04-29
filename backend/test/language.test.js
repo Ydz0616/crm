@@ -203,6 +203,26 @@ describe('updateProfile — language enum validation', () => {
     expect(persisted.language).toBe('zh');
   });
 
+  test('explicit null language → 400 (must not silently corrupt enum)', async () => {
+    // Reason: a truthy `if (req.body.language)` check would let null bypass
+    // validation and `$set: { language: null }` would write null to Mongo,
+    // breaking the schema enum invariant. Verifies the !== undefined guard.
+    const Admin = mongoose.model('Admin');
+    const admin = await Admin.create({ name: 'Test', email: 'test_null@test.com' });
+    const app = buildProfileApp(admin._id);
+
+    const res = await request(app)
+      .patch('/api/admin/profile/update')
+      .send({ name: 'Test', surname: 'X', email: 'test_null@test.com', language: null });
+
+    expect(res.status).toBe(400);
+    expect(res.body.success).toBe(false);
+    expect(res.body.message).toMatch(/Invalid language/);
+
+    const persisted = await Admin.findById(admin._id).lean();
+    expect(persisted.language).toBe('zh'); // schema default unchanged, NOT null
+  });
+
   test('omitted language (existing field flow) → 200, language not overwritten', async () => {
     const Admin = mongoose.model('Admin');
     const admin = await Admin.create({ name: 'Test', email: 'test3@test.com', language: 'en' });
