@@ -28,9 +28,12 @@ const { getSystemAdmin } = require('../../bootstrap');
 // Auto-fill `items[].description` from the Merch master record (by
 // serialNumber) so the generated Quote shows meaningful descriptions in
 // the UI even when the Agent only passed itemName/quantity/price.
-// CN preferred, falls back to EN. Items where the Agent already provided
-// a description are left untouched. Items whose itemName doesn't match
-// any Merch are also left untouched (no silent failure, no fabrication).
+// EN preferred, falls back to CN (Phase N en-first default; Ola serves
+// both US and CN markets, salesperson sets quote-document language at
+// the consolidating step, default English). Items where the Agent
+// already provided a description are left untouched. Items whose itemName
+// doesn't match any Merch are also left untouched (no silent failure,
+// no fabrication).
 //
 // Returns `{items, warnings}`. `warnings[]` is non-empty whenever an item
 // ended up with a blank description that the salesperson will have to
