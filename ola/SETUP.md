@@ -314,15 +314,21 @@ When you run `bash start-dev.sh` on a fresh mac:
    present in config at startup (`_make_provider` raises `ValueError` on
    empty key; no env fallback).
    The file is gitignored home-dir, owner-only.
-3. If `~/.nanobot/workspace/SOUL.md` does **not** exist → copies the 5 md
-   files from `ola/nanobot-workspace/` into `~/.nanobot/workspace/`.
+3. Syncs Ola workspace md files into `~/.nanobot/workspace/`:
+   - **Always overwrite** (canonical system prompts we own):
+     `SOUL.md`, `AGENTS.md`, `TOOLS.md`. Any local edits get clobbered
+     on next `start-dev.sh` — edit `ola/nanobot-workspace/<file>` in
+     the repo and commit instead.
+   - **First-boot only** (per-user files): `USER.md`, `HEARTBEAT.md`.
+     Skipped on subsequent boots so your personal customizations survive.
 4. Starts backend (8888), MCP server (8889), nanobot (8900), frontend (3000).
    Each service reads `backend/.env` via its own `dotenv` call at startup.
 
-On subsequent boots, steps 2 and 3 are **no-ops** if the files already
-exist — your local agent memory and session history under
-`~/.nanobot/workspace/memory/` and `~/.nanobot/workspace/sessions/` are
-preserved across restarts.
+On subsequent boots, step 2 is a no-op if `~/.nanobot/config.json` already
+exists. Step 3's USER/HEARTBEAT pieces are no-ops if those files exist;
+SOUL/AGENTS/TOOLS are re-copied every time. Your local agent memory and
+session history under `~/.nanobot/workspace/memory/` and
+`~/.nanobot/workspace/sessions/` are preserved across restarts.
 
 ## backend/.env — required variables
 
@@ -388,10 +394,11 @@ rendered into `~/.nanobot/config.json`. Easiest fix: delete
 
 **Local persona customizations (edited SOUL.md in `~/.nanobot/workspace/`)
 got wiped**
-→ They shouldn't have — step 3 only copies if `SOUL.md` is missing. If you
-want persona changes to ship to everyone, edit
-`ola/nanobot-workspace/SOUL.md` in the repo instead, commit, and re-
-provision with `rm ~/.nanobot/workspace/SOUL.md && bash start-dev.sh`.
+→ Working as designed. `SOUL.md`, `AGENTS.md`, `TOOLS.md` are canonical
+files we own — `start-dev.sh` overwrites them on every boot so prompt
+updates ship to everyone via `git pull`. If you want a persona change,
+edit `ola/nanobot-workspace/SOUL.md` in the repo and commit. For per-
+machine personalization, use `USER.md` (first-boot only, never clobbered).
 
 ## Regenerating secrets
 
@@ -412,7 +419,8 @@ provision with `rm ~/.nanobot/workspace/SOUL.md && bash start-dev.sh`.
 | `backend/.env.box1.example` | yes | Box1 prod env template (14 keys) — the file on Box1 is named `.env`, not `.env.production` |
 | `.env` (project root) | **yes** (`!/.env` exception) | docker-compose orchestration vars — `MCP_BIND_ADDR=<Box1 Tailscale IP>`. Local override via shell env, not by editing this file. |
 | `.secrets/SERVERS.env` | no (gitignored) | **single source of truth** for prod secrets + SSH passwords + canonical Tailscale IPs |
-| `~/.nanobot/workspace/*.md` | no | provisioned copy (first-boot) — safe to edit locally |
+| `~/.nanobot/workspace/{SOUL,AGENTS,TOOLS}.md` | no | **overwritten on every `start-dev.sh`** — do not hand-edit; edit `ola/nanobot-workspace/` in the repo and commit |
+| `~/.nanobot/workspace/{USER,HEARTBEAT}.md` | no | per-user files — first-boot only, safe to edit locally |
 | `~/.nanobot/workspace/memory/` | no | runtime agent memory — per machine |
 | `~/.nanobot/workspace/sessions/` | no | chat session logs — per machine |
 | `~/.nanobot/config.json` | no (mode 600) | rendered config with real `MCP_SERVICE_TOKEN` + `GEMINI_API_KEY` substituted in |

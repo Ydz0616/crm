@@ -74,15 +74,26 @@ else
   echo -e "     ${YELLOW}~/.nanobot/config.json already exists, skipping${NC}"
 fi
 
-# First-boot: copy Ola workspace prompts into ~/.nanobot/workspace/.
-# Same idempotency — won't clobber a locally edited SOUL.md.
-if [ ! -f "$HOME/.nanobot/workspace/SOUL.md" ]; then
-  mkdir -p "$HOME/.nanobot/workspace"
-  cp "$CRM_DIR/ola/nanobot-workspace/"*.md "$HOME/.nanobot/workspace/"
-  echo -e "     ${GREEN}Copied Ola workspace md files to ~/.nanobot/workspace/${NC}"
-else
-  echo -e "     ${YELLOW}~/.nanobot/workspace/SOUL.md already exists, skipping${NC}"
-fi
+# Sync Ola workspace prompts into ~/.nanobot/workspace/.
+# Two categories with different sync rules:
+#   - Canonical system prompts (SOUL/AGENTS/TOOLS) — we own them, ALWAYS
+#     overwrite so every operator picks up prompt updates on next start.
+#     Any local edit to ~/.nanobot/workspace/SOUL.md will be clobbered;
+#     edit ola/nanobot-workspace/SOUL.md in the repo instead.
+#   - Per-user files (USER/HEARTBEAT) — first-boot only, never clobber.
+mkdir -p "$HOME/.nanobot/workspace"
+for f in SOUL.md AGENTS.md TOOLS.md; do
+  if [ -f "$CRM_DIR/ola/nanobot-workspace/$f" ]; then
+    cp "$CRM_DIR/ola/nanobot-workspace/$f" "$HOME/.nanobot/workspace/$f"
+  fi
+done
+echo -e "     ${GREEN}Synced canonical prompts (SOUL/AGENTS/TOOLS) → ~/.nanobot/workspace/${NC}"
+for f in USER.md HEARTBEAT.md; do
+  if [ ! -f "$HOME/.nanobot/workspace/$f" ] && [ -f "$CRM_DIR/ola/nanobot-workspace/$f" ]; then
+    cp "$CRM_DIR/ola/nanobot-workspace/$f" "$HOME/.nanobot/workspace/$f"
+    echo -e "     ${GREEN}Provisioned $f (first boot)${NC}"
+  fi
+done
 
 # 1. Backend
 echo -e "${GREEN}[2/5] Starting backend (port 8888) with nodemon hot reload...${NC}"
