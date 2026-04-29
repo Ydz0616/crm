@@ -5,12 +5,12 @@ export default function QuoteDraftWidget({ data }) {
   const { quoteNumber, clientName, items } = data;
 
   const columns = [
-    { title: '编号', dataIndex: 'serialNumber', key: 'serialNumber', width: 110 },
-    { title: '商品名称', dataIndex: 'name', key: 'name' },
-    { title: '数量', dataIndex: 'quantity', key: 'quantity', width: 80, render: (val, row) => `${val} ${row.unit || ''}` },
-    { title: '单价 (¥)', dataIndex: 'price', key: 'price', width: 100, render: (val) => `¥${val.toFixed(2)}` },
+    { title: 'S/N', dataIndex: 'serialNumber', key: 'serialNumber', width: 110 },
+    { title: 'Product', dataIndex: 'name', key: 'name' },
+    { title: 'Qty', dataIndex: 'quantity', key: 'quantity', width: 80, render: (val, row) => `${val} ${row.unit || ''}` },
+    { title: 'Unit price', dataIndex: 'price', key: 'price', width: 100, render: (val) => `¥${val.toFixed(2)}` },
     {
-      title: '小计 (¥)',
+      title: 'Subtotal',
       key: 'subtotal',
       width: 110,
       render: (_, row) => `¥${(row.quantity * row.price).toFixed(2)}`,
@@ -23,11 +23,11 @@ export default function QuoteDraftWidget({ data }) {
     <div className="askola-widget-card">
       <div className="askola-widget-header">
         <FileTextOutlined style={{ color: '#1890ff' }} />
-        <span>报价单草稿</span>
+        <span>Quote Draft</span>
       </div>
       <div className="askola-widget-meta">
-        <span>报价单号: <strong>{quoteNumber}</strong></span>
-        <span>客户: <strong>{clientName}</strong></span>
+        <span>Quote #: <strong>{quoteNumber}</strong></span>
+        <span>Customer: <strong>{clientName}</strong></span>
       </div>
       <Table
         dataSource={items}
@@ -37,7 +37,7 @@ export default function QuoteDraftWidget({ data }) {
         size="small"
       />
       <div className="askola-widget-total">
-        合计：<strong>¥{total.toFixed(2)}</strong>
+        Total: <strong>¥{total.toFixed(2)}</strong>
       </div>
     </div>
   );

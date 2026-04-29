@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Form, Input, Button, message } from 'antd';
+import { Form, Input, Button, Select, message } from 'antd';
 import { InfoCircleOutlined, UserOutlined, MailOutlined } from '@ant-design/icons';
 
 import { selectAuth } from '@/redux/auth/selectors';
@@ -19,6 +19,7 @@ export default function SettingsProfile() {
         name: currentUser.name,
         surname: currentUser.surname,
         email: currentUser.email,
+        language: currentUser.language || 'zh',
       });
     }
   }, [currentUser, form]);
@@ -26,11 +27,12 @@ export default function SettingsProfile() {
   const onFinish = async (values) => {
     try {
       setLoading(true);
-      // 保持和旧接口一致的 payload (email, name, surname)
+      // 保持和旧接口一致的 payload (email, name, surname) + language
       const payload = {
         name: values.name,
         surname: values.surname,
         email: currentUser.email, // 确保 email 不能被表单欺骗修改
+        language: values.language,
       };
 
       const { success, result, message: msg } = await request.patch({
@@ -40,16 +42,20 @@ export default function SettingsProfile() {
 
       if (success) {
         message.success('Profile updated successfully!');
-        
-        // 更新 localStorage 的 auth state
+
+        // Refresh auth cache from the server response (canonical post-write
+        // shape — picks up language fallback default + any backend normalization).
+        // localStorage may be missing (private browsing, cache cleared,
+        // mid-token-refresh) — guard before reading .current to avoid TypeError.
         const storedAuth = JSON.parse(window.localStorage.getItem('auth'));
         if (storedAuth) {
-          storedAuth.current = { ...storedAuth.current, ...payload };
+          storedAuth.current = { ...storedAuth.current, ...result };
           window.localStorage.setItem('auth', JSON.stringify(storedAuth));
+          dispatch({ type: actionTypes.REQUEST_SUCCESS, payload: storedAuth.current });
+        } else {
+          // No localStorage cache — sync Redux directly from server response.
+          dispatch({ type: actionTypes.REQUEST_SUCCESS, payload: result });
         }
-
-        // 同步 Redux store
-        dispatch({ type: actionTypes.REQUEST_SUCCESS, payload: storedAuth.current });
       } else {
         message.error(msg || 'Failed to update profile');
       }
@@ -108,6 +114,22 @@ export default function SettingsProfile() {
             <Input className="profile-form-input" disabled prefix={<MailOutlined style={{color: '#bfbfbf', marginRight: 5}}/>} />
           </Form.Item>
         </div>
+
+        <Form.Item
+          name="language"
+          label={<span className="profile-form-label">Ask Ola language</span>}
+          className="profile-form-group"
+          style={{ width: '100%', marginTop: '24px' }}
+          tooltip="Drives the language Ola uses to talk to you. Quote document language is asked separately at quote-creation time."
+        >
+          <Select
+            className="profile-time-select"
+            options={[
+              { value: 'zh', label: '中文' },
+              { value: 'en', label: 'English' },
+            ]}
+          />
+        </Form.Item>
 
         <Form.Item style={{ marginTop: '32px' }}>
           <Button type="primary" htmlType="submit" size="large" loading={loading}>

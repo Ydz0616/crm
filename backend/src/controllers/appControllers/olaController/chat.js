@@ -180,8 +180,18 @@ const chat = async (req, res) => {
   let upstreamFinished = false;
   let upstreamErrored = false;
 
+  // Per-salesperson language directive prepended to user content. SOUL.md
+  // teaches the agent to honor [SESSION_LANG=xx] as an overriding system
+  // signal and never echo it. NanoBot's API only accepts a single user-role
+  // message (api/server.py:128-132), so we cannot use a separate role:'system'
+  // message; prepending is the MVP workaround. ChatMessage persistence below
+  // (line ~252) intentionally stores the RAW user text without the directive
+  // so the chat history UI never displays the marker.
+  const sessionLang = req.admin?.language === 'en' ? 'en' : 'zh';
+  const directedContent = `[SESSION_LANG=${sessionLang}]\n\n${message.trim()}`;
+
   const proxyPayload = JSON.stringify({
-    messages: [{ role: 'user', content: message.trim() }],
+    messages: [{ role: 'user', content: directedContent }],
     session_id: session.nanobotSessionId,
     stream: true,
   });

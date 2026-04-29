@@ -4,7 +4,7 @@
 // search / read / create / update. NO delete in v1 (tracked as TD).
 //
 // Search semantics: never returns an empty array. On no matches we surface
-// `{ found: false, message: '未找到匹配客户' }` so the Agent has an explicit
+// `{ found: false, message: 'No matching customer' }` so the Agent has an explicit
 // signal to ask the user for more details (CLAUDE.md MVP rule).
 //
 // All tools impersonate the cached system admin (see ../../bootstrap.js).
@@ -39,7 +39,7 @@ const search = {
     if (!res.ok || (Array.isArray(res.data) && res.data.length === 0)) {
       return {
         ok: true,
-        data: { found: false, message: '未找到匹配客户' },
+        data: { found: false, message: 'No matching customer' },
       };
     }
     return res;

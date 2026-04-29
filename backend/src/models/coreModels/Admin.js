@@ -35,6 +35,12 @@ const adminSchema = new Schema({
   // 上车状态（注册时 false，完成上车表单后 true）
   onboarded: { type: Boolean, default: false },
 
+  // Per-salesperson Ask Ola language preference. Drives the SESSION_LANG
+  // directive prepended to NanoBot user content (see olaController/chat.js).
+  // Existing docs without this field read undefined; consumers fall back to
+  // 'zh' via `|| 'zh'`. No migration needed.
+  language: { type: String, enum: ['zh', 'en'], default: 'zh' },
+
   created: {
     type: Date,
     default: Date.now,

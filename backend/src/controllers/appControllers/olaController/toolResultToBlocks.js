@@ -44,7 +44,7 @@ function quoteCreateToBlocks(quote) {
     itemName: it.itemName || '',
     description: it.description || '',
     quantity: it.quantity,
-    unit: it.unit_cn || it.unit_en || '',
+    unit: it.unit_en || it.unit_cn || '',
     subTotal: it.total,
   }));
 

@@ -15,7 +15,7 @@ const merchController = require('@/controllers/appControllers/merchController');
 const { runController } = require('../../adapters/controllerAdapter');
 const { getSystemAdmin } = require('../../bootstrap');
 
-// description_cn first so 中文 partial match wins for Chinese inquiries
+// description_cn first so partial match wins for both zh and en inquiries
 const SEARCH_FIELDS = 'serialNumber,description_cn,description_en,serialNumberLong';
 
 function projectMerch(m) {
@@ -42,7 +42,7 @@ async function call(method, input) {
 const search = {
   name: 'merch.search',
   description:
-    'Search merchandise by serialNumber or bilingual description (case-insensitive partial). Returns {found:true, results:[{serialNumber, description_en, description_cn, unit_en, unit_cn, ...}]} or {found:false, message:"未找到 [产品名]，请在 Merchandise 添加"}. Never returns an empty array.',
+    'Search merchandise by serialNumber or bilingual description (case-insensitive partial). Returns {found:true, results:[{serialNumber, description_en, description_cn, unit_en, unit_cn, ...}]} or {found:false, message:"No match for [product name]; please add it in Merchandise"}. Never returns an empty array.',
   inputSchema: {
     q: z
       .string()
@@ -60,7 +60,7 @@ const search = {
       ok: true,
       data: {
         found: false,
-        message: `未找到 ${q}，请在 Merchandise 添加`,
+        message: `No match for ${q}; please add it in Merchandise`,
       },
     };
   },
@@ -82,15 +82,15 @@ const create = {
   description:
     'Create a new merchandise item. ALL fields are required by the schema. The Agent MUST collect every field from the user and read them back verbally for confirmation before calling (human-in-the-loop). Numeric fields (weight/VAT/ETR) must be numbers, not strings.',
   inputSchema: {
-    serialNumber: z.string().min(1).describe('SKU / 序列号 (required, key)'),
+    serialNumber: z.string().min(1).describe('SKU / serial number (required, key)'),
     serialNumberLong: z.string().min(1).describe('Long form serial number (required)'),
     description_en: z.string().min(1).describe('English description (required)'),
-    description_cn: z.string().min(1).describe('中文描述 (required)'),
+    description_cn: z.string().min(1).describe('Chinese description (required)'),
     weight: z.number().describe('Unit weight, kg (required)'),
     VAT: z.number().describe('VAT rate (required)'),
     ETR: z.number().describe('ETR rate (required)'),
     unit_en: z.string().min(1).describe('English unit, e.g. PCS (required)'),
-    unit_cn: z.string().min(1).describe('中文单位, e.g. 个 (required)'),
+    unit_cn: z.string().min(1).describe('Chinese unit, e.g. 个 (required)'),
   },
   handler: async (input) => call(merchController.create, { body: input }),
 };
