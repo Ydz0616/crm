@@ -54,6 +54,7 @@ const authUser = async (req, res, { user, databasePassword, password, UserPasswo
           email: user.email,
           photo: user.photo,
           onboarded: user.onboarded,
+          language: user.language || 'zh',
         },
         message: 'Successfully login user',
       });

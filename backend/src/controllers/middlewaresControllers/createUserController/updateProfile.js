@@ -5,18 +5,23 @@ const updateProfile = async (userModel, req, res) => {
 
   const reqUserName = userModel.toLowerCase();
   const userProfile = req[reqUserName];
-  let updates = req.body.photo
-    ? {
-        email: req.body.email,
-        name: req.body.name,
-        surname: req.body.surname,
-        photo: req.body.photo,
-      }
-    : {
-        email: req.body.email,
-        name: req.body.name,
-        surname: req.body.surname,
-      };
+
+  // Validate language if provided (Admin schema enum: ['zh', 'en'])
+  if (req.body.language && !['zh', 'en'].includes(req.body.language)) {
+    return res.status(400).json({
+      success: false,
+      result: null,
+      message: 'Invalid language; must be one of zh, en',
+    });
+  }
+
+  const updates = {
+    email: req.body.email,
+    name: req.body.name,
+    surname: req.body.surname,
+    language: req.body.language,
+  };
+
   // Find document by id and updates with the required fields
   const result = await User.findOneAndUpdate(
     { _id: userProfile._id, removed: false },
@@ -43,6 +48,7 @@ const updateProfile = async (userModel, req, res) => {
       surname: result?.surname,
       photo: result?.photo,
       role: result?.role,
+      language: result?.language || 'zh',
     },
     message: 'we update this profile by this id: ' + userProfile._id,
   });
