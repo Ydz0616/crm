@@ -129,7 +129,7 @@ crm/
 
 The script syncs code to a remote server and runs Docker Compose there.
 
-- **Requires:** `backend/.env.production` or `backend/.env` (used to generate `.env` on the server).
+- **Requires:** `backend/.env` (the canonical production env file lives on Box1 directly; secrets sourced from `.secrets/SERVERS.env`).
 - **Config:** `DEPLOY_SERVER_IP`, `DEPLOY_REMOTE_DIR` (defaults: `43.99.57.106`, `/app/crm`).
 
 ```bash

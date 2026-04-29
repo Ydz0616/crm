@@ -58,8 +58,10 @@ bootstrap correctly:
 - `~/.nanobot/` is in the user's home dir (not inside either repo). It
   persists across `git pull`s — your local agent memory + chat history
   outlive code updates.
-- `backend/.env` is **gitignored, never commit**. `.env` (project root) is
-  also gitignored as of #144.
+- `backend/.env` is **gitignored, never commit** — secrets only. `.env`
+  (project root) IS committed via `!/.env` exception in `.gitignore`; it
+  holds non-secret docker-compose orchestration vars (e.g. `MCP_BIND_ADDR`).
+  See §Project-root `.env` below.
 
 ---
 
@@ -415,4 +417,3 @@ provision with `rm ~/.nanobot/workspace/SOUL.md && bash start-dev.sh`.
 | `~/.nanobot/workspace/sessions/` | no | chat session logs — per machine |
 | `~/.nanobot/config.json` | no (mode 600) | rendered config with real `MCP_SERVICE_TOKEN` + `GEMINI_API_KEY` substituted in |
 | `../nanobot/` (sibling) | (separate repo) | NanoBot Python AI backbone — `SeekMi-Technologies/Ola_bot` fork, branch `ola-dev` |
-| `~/.nanobot/config.json` | no | rendered config with real `MCP_SERVICE_TOKEN` and `GEMINI_API_KEY` — mode 600 |
