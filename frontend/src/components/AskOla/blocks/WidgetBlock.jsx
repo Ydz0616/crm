@@ -14,7 +14,7 @@ export default function WidgetBlock({ widgetType, data }) {
   if (!WidgetComponent) {
     return (
       <div className="askola-block-unknown">
-        [未知组件: {widgetType}]
+        [Unknown widget: {widgetType}]
       </div>
     );
   }

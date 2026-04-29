@@ -14,16 +14,16 @@ export default function QuotePreviewWidget({ data }) {
 
   const columns = [
     { title: 'S/N', dataIndex: 'itemName', key: 'itemName', width: 120 },
-    { title: '描述', dataIndex: 'description', key: 'description', ellipsis: true },
+    { title: 'Description', dataIndex: 'description', key: 'description', ellipsis: true },
     {
-      title: '数量',
+      title: 'Qty',
       dataIndex: 'quantity',
       key: 'quantity',
       width: 90,
       render: (val, row) => (row.unit ? `${val} ${row.unit}` : val),
     },
     {
-      title: '小计',
+      title: 'Subtotal',
       dataIndex: 'subTotal',
       key: 'subTotal',
       width: 110,
@@ -35,11 +35,11 @@ export default function QuotePreviewWidget({ data }) {
     <div className="askola-widget-card">
       <div className="askola-widget-header">
         <FileTextOutlined style={{ color: '#1890ff' }} />
-        <span>报价单预览</span>
+        <span>Quote Preview</span>
       </div>
       <div className="askola-widget-meta">
-        <span>报价单号: <strong>{quoteNumber || '-'}</strong></span>
-        <span>币种: <strong>{currency || '-'}</strong></span>
+        <span>Quote #: <strong>{quoteNumber || '-'}</strong></span>
+        <span>Currency: <strong>{currency || '-'}</strong></span>
       </div>
       <Table
         dataSource={items}
@@ -49,7 +49,7 @@ export default function QuotePreviewWidget({ data }) {
         size="small"
       />
       <div className="askola-widget-total">
-        合计：<strong>{formatMoney(total != null ? total : subTotal, currency)}</strong>
+        Total: <strong>{formatMoney(total != null ? total : subTotal, currency)}</strong>
       </div>
     </div>
   );
