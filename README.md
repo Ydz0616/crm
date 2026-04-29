@@ -35,7 +35,7 @@ crm/
 │   │   ├── models/
 │   │   └── server.js
 │   ├── .env.example
-│   ├── .env.production.example
+│   ├── .env.box1.example
 │   ├── Dockerfile
 │   └── package.json
 ├── frontend/                # React SPA
@@ -89,7 +89,7 @@ crm/
 
 ### Environment variables
 
-**Backend** (see `backend/.env.example` and `backend/.env.production.example`):
+**Backend** (see `backend/.env.example` and `backend/.env.box1.example`):
 
 | Variable | Description |
 |----------|-------------|
@@ -116,7 +116,7 @@ crm/
 1. On the server, clone or copy the repo and go to project root.
 2. Configure backend env:
    ```bash
-   cp backend/.env.production.example backend/.env
+   cp backend/.env.box1.example backend/.env
    # Edit backend/.env: DATABASE, JWT_SECRET, ALLOWED_ORIGINS, PUBLIC_SERVER_FILE
    ```
 3. Build and start:
@@ -129,7 +129,7 @@ crm/
 
 The script syncs code to a remote server and runs Docker Compose there.
 
-- **Requires:** `backend/.env.production` or `backend/.env` (used to generate `.env` on the server).
+- **Requires:** `backend/.env` (the canonical production env file lives on Box1 directly; secrets sourced from `.secrets/SERVERS.env`).
 - **Config:** `DEPLOY_SERVER_IP`, `DEPLOY_REMOTE_DIR` (defaults: `43.99.57.106`, `/app/crm`).
 
 ```bash

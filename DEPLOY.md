@@ -18,7 +18,7 @@ cd crm
 ## 2. 配置后端环境变量
 
 ```bash
-cp backend/.env.production.example backend/.env
+cp backend/.env.box1.example backend/.env
 nano backend/.env
 ```
 
