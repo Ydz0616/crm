@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const { v4: uuidv4 } = require('uuid');
 const { toolEventsToBlocks } = require('./toolResultToBlocks');
 const { labelFor, STAGE_LABELS } = require('./thinkingLabels');
+const recordUsage = require('@/controllers/appControllers/llmUsageController/recordUsage');
 
 const ChatSession = mongoose.model('ChatSession');
 const ChatMessage = mongoose.model('ChatMessage');
@@ -179,6 +180,13 @@ const chat = async (req, res) => {
   let streamedText = '';
   let upstreamFinished = false;
   let upstreamErrored = false;
+  // Captured usage frame from NanoBot's SSE stream (Ola issue #98). Stays null
+  // when running against an older nanobot that doesn't emit `event: usage` —
+  // recordUsage() short-circuits on null so the chat path stays functional.
+  let capturedUsage = null;
+  // Per-request trace ids — used for log correlation + LLMUsage.requestId.
+  const requestId = uuidv4();
+  const startTs = Date.now();
 
   // Per-salesperson language directive prepended to user content. SOUL.md
   // teaches the agent to honor [SESSION_LANG=xx] as an overriding system
@@ -226,6 +234,14 @@ const chat = async (req, res) => {
       }
       return;
     }
+    if (eventName === 'usage') {
+      // Real per-turn token counts from NanoBot (Ola issue #98). Capture only
+      // — write to LLMUsage happens in finishStream() so it cannot delay the
+      // user-visible SSE response. Older nanobot versions never send this
+      // frame; capturedUsage stays null and recordUsage skips silently.
+      try { capturedUsage = JSON.parse(dataStr); } catch { /* drop malformed */ }
+      return;
+    }
     // Default event = OpenAI chat.completion.chunk
     if (dataStr === '[DONE]') return;
     let chunk;
@@ -252,7 +268,10 @@ const chat = async (req, res) => {
     writeSSE(res, 'done', { sessionId: session._id, blocks });
     res.end();
 
-    // Fire-and-forget persistence.
+    // Fire-and-forget persistence. ChatMessage and LLMUsage are independent
+    // writes (no shared lock, no upsert on a hot doc) — running them in
+    // parallel keeps the post-stream tail short and avoids any write
+    // serializing on the other.
     if (streamedText.length > 0 || blocks.length > 0) {
       ChatMessage.insertMany([
         {
@@ -270,13 +289,56 @@ const chat = async (req, res) => {
           createdBy: userId,
         },
       ])
-        .then(() => maybeAutoTitle(session, message.trim(), streamedText))
+        .then((docs) => {
+          // Plumb the assistant message _id into the LLMUsage row so the
+          // dashboard can deep-link cost → original message. Best-effort:
+          // if docs[1] is missing for any reason, recordUsage tolerates
+          // null messageId.
+          const assistantMsgId = docs && docs[1] && docs[1]._id;
+          if (capturedUsage) {
+            recordUsage({
+              userId,
+              session,
+              messageId: assistantMsgId || null,
+              usage: capturedUsage,
+              latencyMs: Date.now() - startTs,
+              requestId,
+              errored: upstreamErrored,
+            });
+          }
+          return maybeAutoTitle(session, message.trim(), streamedText);
+        })
         .catch((err) => {
           console.error(
             `[ChatMessage] Persist failed for session ${session._id}:`,
             err.message,
           );
+          // ChatMessage persist failed — still record LLMUsage so cost
+          // tracking isn't lost. messageId stays null.
+          if (capturedUsage) {
+            recordUsage({
+              userId,
+              session,
+              messageId: null,
+              usage: capturedUsage,
+              latencyMs: Date.now() - startTs,
+              requestId,
+              errored: true,
+            });
+          }
         });
+    } else if (capturedUsage) {
+      // No content to persist (rare — empty stream) but we still saw a usage
+      // frame, so a real LLM call happened. Track it.
+      recordUsage({
+        userId,
+        session,
+        messageId: null,
+        usage: capturedUsage,
+        latencyMs: Date.now() - startTs,
+        requestId,
+        errored: upstreamErrored,
+      });
     }
   };
 
