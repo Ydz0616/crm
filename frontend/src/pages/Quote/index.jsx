@@ -86,10 +86,10 @@ export default function Quote() {
   ];
 
   const Labels = {
-    PANEL_TITLE: translate('proforma invoice'),
-    DATATABLE_TITLE: translate('proforma invoice_list'),
-    ADD_NEW_ENTITY: translate('add_new_proforma invoice'),
-    ENTITY_NAME: translate('proforma invoice'),
+    PANEL_TITLE: translate('quote'),
+    DATATABLE_TITLE: translate('quote_list'),
+    ADD_NEW_ENTITY: translate('add_new_quote'),
+    ENTITY_NAME: translate('quote'),
   };
 
   const configPage = {
