@@ -28,9 +28,12 @@ const { getSystemAdmin } = require('../../bootstrap');
 // Auto-fill `items[].description` from the Merch master record (by
 // serialNumber) so the generated Quote shows meaningful descriptions in
 // the UI even when the Agent only passed itemName/quantity/price.
-// CN preferred, falls back to EN. Items where the Agent already provided
-// a description are left untouched. Items whose itemName doesn't match
-// any Merch are also left untouched (no silent failure, no fabrication).
+// EN preferred, falls back to CN (Phase N en-first default; Ola serves
+// both US and CN markets, salesperson sets quote-document language at
+// the consolidating step, default English). Items where the Agent
+// already provided a description are left untouched. Items whose itemName
+// doesn't match any Merch are also left untouched (no silent failure,
+// no fabrication).
 //
 // Returns `{items, warnings}`. `warnings[]` is non-empty whenever an item
 // ended up with a blank description that the salesperson will have to
@@ -61,14 +64,14 @@ async function enrichItemDescriptions(items) {
     const m = bySerial.get(it.itemName);
     if (!m) {
       warnings.push(
-        `${it.itemName}: 未在 Merch 中匹配到 serialNumber — 描述和单位均留空`,
+        `${it.itemName}: serialNumber not matched in Merch — description and unit left blank`,
       );
       return it;
     }
-    const description = m.description_cn || m.description_en || '';
+    const description = m.description_en || m.description_cn || '';
     if (!description) {
       warnings.push(
-        `${it.itemName}: 在 Merch 中找到，但 description_cn / description_en 均为空 — 描述字段留空`,
+        `${it.itemName}: found in Merch but both description_cn and description_en are empty — description left blank`,
       );
     }
     return { ...it, description };
@@ -113,7 +116,7 @@ const search = {
     if (res.ok && Array.isArray(res.data) && res.data.length > 0) {
       return { ok: true, data: { found: true, results: res.data } };
     }
-    return { ok: true, data: { found: false, message: '未找到匹配报价' } };
+    return { ok: true, data: { found: false, message: 'No matching quote' } };
   },
 };
 
@@ -255,4 +258,11 @@ const update = {
   },
 };
 
-module.exports = { tools: [search, read, create, update] };
+module.exports = {
+  tools: [search, read, create, update],
+  // Test-only export — enrichItemDescriptions is the auto-fill helper that
+  // populates `description` from Merch.description_en (preferred) or
+  // description_cn (fallback). Surfaced so backend/test/language.test.js can
+  // assert the en-first ordering without spinning the full quote.create stack.
+  __forTesting: { enrichItemDescriptions },
+};

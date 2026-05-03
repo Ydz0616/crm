@@ -40,7 +40,7 @@ Mongo 在 Atlas（不占本地资源）。三台都是 Aliyun HK 2C/2GB。
 | Phase 2 Tailscale | 3 台 SSH 装 tailscale + up | 校验 ping 通 |
 | Phase 3 Box3 gotenberg | SSH Box3 docker run | 校验 curl |
 | Phase 4 Box2 nanobot | SSH Box2 clone + 起服务 | 校验 health |
-| Phase 5 Box1 部署 | 给 IP + SSH key + Atlas string + OpenAI key | 写 .env.production + 跑 deploy.sh |
+| Phase 5 Box1 部署 | 给 IP + SSH key + Atlas string + OpenAI key | SSH Box1 编辑 backend/.env（值取自 .secrets/SERVERS.env）+ docker compose up -d --build |
 | Phase 6 公网入口 | Aliyun DNS 加 A 记录 + 确认 443/80 开放 | SSH Box1 装 caddy + LE |
 | Phase 7 冒烟 | 浏览器操作走 D1 | 看三台 logs 兜底 |
 
@@ -69,7 +69,7 @@ Mongo 在 Atlas（不占本地资源）。三台都是 Aliyun HK 2C/2GB。
    - `DEPLOY.md`（legacy 保留）
    - `README.md`
    - `CLAUDE.md`
-   - `backend/.env.production.example`
+   - `backend/.env.box1.example`
    - `backend/.env.example`
    - `.agents/workflows/start.md`
    - `.agents/workflows/onboard.md`
@@ -189,24 +189,32 @@ curl http://box2-ai:8900/health  # 具体 endpoint 看 nanobot 文档
 
 ### Claude 操作
 
-1. **切到 main 分支后再 rsync** — `deploy.sh` 用的是当前工作区状态（rsync），所以必须先 `git checkout main && git pull origin main`。如果忘了这一步，会把 dev/feature 分支的代码推上生产
-2. 写 `backend/.env.production`：
+1. **切到 main 分支** — `git checkout main && git pull origin main`，确保部署的代码是 main HEAD
+2. **SSH Box1 直接编辑 `backend/.env`**（不再用 `.env.production` — 那是已废弃的 drift trap，见 PR #174）：
 
+```bash
+ssh box1
+cd /app/crm
+nano backend/.env  # 值从本地 .secrets/SERVERS.env 拷贝过来
+```
+
+`backend/.env` 需要的字段（参照 `backend/.env.box1.example`）：
 ```env
 DATABASE=<Atlas URI>
 JWT_SECRET=<64-char random>
 PORT=8888
-ALLOWED_ORIGINS=https://app.olajob.cn
-PUBLIC_SERVER_FILE=https://app.olajob.cn/
+ALLOWED_ORIGINS=https://app.olatech.ai
+PUBLIC_SERVER_FILE=https://app.olatech.ai/
 GOTENBERG_URL=http://box3-pdf:3000
-NANOBOT_HOST=box2-ai
+NANOBOT_HOST=<Box2 Tailscale IP>
 NANOBOT_PORT=8900
 GEMINI_API_KEY=<key>
-MCP_SERVICE_TOKEN=<32-hex>
+MCP_SERVICE_TOKEN=<32-hex, 必须与 .secrets/SERVERS.env + Box2 ~/.nanobot/config.json 一致>
 ```
 
-3. `DEPLOY_SERVER_IP=<Box1 IP> ./deploy.sh`（会 rsync → docker compose up -d --build → health check）
-4. 预期：frontend:3000 + backend:8888/health 都 200
+3. **指纹核对**：`sha256sum backend/.env | cut -c1-8` 必须与本地 `.secrets/SERVERS.env` 的 MCP_SERVICE_TOKEN fingerprint 一致（见 ola/SETUP.md §Secrets management）
+4. `git pull && docker compose up -d --build`
+5. 预期：frontend:3000 + backend:8888/health 都 200
 
 如果 health check 失败，抓 `docker compose logs --tail=50` 排查。
 

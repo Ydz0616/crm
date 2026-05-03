@@ -25,6 +25,7 @@ const read = async (userModel, req, res) => {
       surname: tmpResult.surname,
       photo: tmpResult.photo,
       role: tmpResult.role,
+      language: tmpResult.language || 'zh',
     };
 
     return res.status(200).json({

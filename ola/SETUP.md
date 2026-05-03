@@ -58,8 +58,10 @@ bootstrap correctly:
 - `~/.nanobot/` is in the user's home dir (not inside either repo). It
   persists across `git pull`s — your local agent memory + chat history
   outlive code updates.
-- `backend/.env` is **gitignored, never commit**. `.env` (project root) is
-  also gitignored as of #144.
+- `backend/.env` is **gitignored, never commit** — secrets only. `.env`
+  (project root) IS committed via `!/.env` exception in `.gitignore`; it
+  holds non-secret docker-compose orchestration vars (e.g. `MCP_BIND_ADDR`).
+  See §Project-root `.env` below.
 
 ---
 
@@ -216,21 +218,84 @@ Same as the wzh/yili 8-step quickstart above, plus:
 
 ## Project-root `.env` — only for docker compose
 
-The project root `.env` (gitignored, separate from `backend/.env`) carries
-**docker-compose orchestration variables**, not application secrets. Most
-developers never create this file. Required values:
+The project-root `.env` is **committed to git** (one of the few exceptions
+to our `.env*` gitignore — see `.gitignore` line 16, `!/.env`). It carries
+**docker-compose orchestration variables only — never secrets**. Currently:
 
-| Variable | When required | Value |
-|---|---|---|
-| `MCP_BIND_ADDR` | Whenever you run `docker compose up` | `127.0.0.1` for local; `<Box1 Tailscale IP>` for prod (e.g. `100.109.220.126`) |
-
-If you're only running `start-dev.sh` (the host-mode dev launcher), you
-don't need this file. `start-dev.sh` doesn't read it.
-
-If you do create it for local docker testing:
-```bash
-echo 'MCP_BIND_ADDR=127.0.0.1' > .env
 ```
+MCP_BIND_ADDR=100.109.220.126   # Box1 Tailscale IP (production)
+```
+
+This works as-is on Box1 (the host has that interface). **For local Mac
+docker testing, override via shell env** — docker-compose's variable
+substitution priority is `shell env > .env file`, so:
+
+```bash
+MCP_BIND_ADDR=127.0.0.1 docker compose up -d --build
+# or export once per shell session:
+export MCP_BIND_ADDR=127.0.0.1
+```
+
+Do NOT edit the committed `.env` to point to `127.0.0.1` locally — that
+would break Box1 on the next `git pull`. Use the shell override instead.
+
+If you're only running `start-dev.sh` (host-mode dev launcher), you can
+ignore `.env` entirely — `start-dev.sh` doesn't read it.
+
+---
+
+## Secrets management — `.secrets/SERVERS.env` is the source of truth
+
+All canonical prod secrets live in `.secrets/SERVERS.env` (gitignored).
+This is **the single source of truth** — do not duplicate values into
+other local files. Box1 `backend/.env` and Box2 `~/.nanobot/config.json`
+are derivative; they must be kept in sync with `.secrets/SERVERS.env`.
+
+### Rotation SOP
+
+When rotating any secret (`MCP_SERVICE_TOKEN`, `JWT_SECRET`, `GEMINI_API_KEY`):
+
+```bash
+# 1. Update .secrets/SERVERS.env locally with the new value.
+nano .secrets/SERVERS.env
+
+# 2. Propagate to Box1 backend/.env via SSH.
+#    (Edit just the affected key — don't touch the rest.)
+ssh root@<box1-ip> 'cd /app/crm && nano backend/.env'
+ssh root@<box1-ip> 'cd /app/crm && docker compose restart backend mcp'
+
+# 3. If MCP_SERVICE_TOKEN or GEMINI_API_KEY rotated, also propagate to
+#    Box2 nanobot config (NanoBot uses both; JWT_SECRET is CRM-only).
+ssh root@<box2-ip> 'nano ~/.nanobot/config.json'
+ssh root@<box2-ip> 'systemctl restart nanobot'
+
+# 4. Verify alignment with fingerprints — all three sides must match.
+printf '%s' "$NEW_VALUE" | sha256sum | cut -c1-8
+# Compare against:
+ssh root@<box1-ip> 'grep ^MCP_SERVICE_TOKEN= /app/crm/backend/.env | sed s/^[^=]*=// | tr -d "\""'\''"' | sha256sum | cut -c1-8
+ssh root@<box2-ip> 'python3 -c "import json,hashlib; c=json.load(open(\"/root/.nanobot/config.json\")); a=c[\"tools\"][\"mcpServers\"][\"ola_crm\"][\"headers\"][\"Authorization\"].replace(\"Bearer \",\"\"); print(hashlib.sha256(a.encode()).hexdigest()[:8])"'
+```
+
+Why this matters (incident 2026-04-27): Box1 `backend/.env` and Box2
+`~/.nanobot/config.json` had silently drifted to different
+`MCP_SERVICE_TOKEN` values — Box2 was sending a Bearer that Box1's MCP
+rejected with 401. Production Ask Ola could chat in plain text but every
+tool call (merch.search, quote.create, etc.) silently failed. The drift
+was caught by fingerprint comparison; see memory
+`feedback_secrets_single_source_of_truth.md` for the full story.
+
+### File naming clarification
+
+| Local path | Purpose |
+|---|---|
+| `.secrets/SERVERS.env` | Canonical prod secrets — **single source of truth** |
+| `backend/.env` | Per-machine: dev secrets (locally) OR prod secrets (on Box1, where the file is **just `.env`** — docker-compose convention, not `.env.production`) |
+| `backend/.env.example` | Dev template — minimal subset (4 required keys) |
+| `backend/.env.box1.example` | Box1 prod template — full key set (14 keys including ALLOWED_ORIGINS, MCP_HOST, NANOBOT_HOST, etc.) |
+
+**`backend/.env.production` no longer exists locally.** It used to be a
+duplicate of `.secrets/SERVERS.env` and caused the 2026-04-27 drift; was
+removed in cleanup.
 
 ---
 
@@ -249,15 +314,21 @@ When you run `bash start-dev.sh` on a fresh mac:
    present in config at startup (`_make_provider` raises `ValueError` on
    empty key; no env fallback).
    The file is gitignored home-dir, owner-only.
-3. If `~/.nanobot/workspace/SOUL.md` does **not** exist → copies the 5 md
-   files from `ola/nanobot-workspace/` into `~/.nanobot/workspace/`.
+3. Syncs Ola workspace md files into `~/.nanobot/workspace/`:
+   - **Always overwrite** (canonical system prompts we own):
+     `SOUL.md`, `AGENTS.md`, `TOOLS.md`. Any local edits get clobbered
+     on next `start-dev.sh` — edit `ola/nanobot-workspace/<file>` in
+     the repo and commit instead.
+   - **First-boot only** (per-user files): `USER.md`, `HEARTBEAT.md`.
+     Skipped on subsequent boots so your personal customizations survive.
 4. Starts backend (8888), MCP server (8889), nanobot (8900), frontend (3000).
    Each service reads `backend/.env` via its own `dotenv` call at startup.
 
-On subsequent boots, steps 2 and 3 are **no-ops** if the files already
-exist — your local agent memory and session history under
-`~/.nanobot/workspace/memory/` and `~/.nanobot/workspace/sessions/` are
-preserved across restarts.
+On subsequent boots, step 2 is a no-op if `~/.nanobot/config.json` already
+exists. Step 3's USER/HEARTBEAT pieces are no-ops if those files exist;
+SOUL/AGENTS/TOOLS are re-copied every time. Your local agent memory and
+session history under `~/.nanobot/workspace/memory/` and
+`~/.nanobot/workspace/sessions/` are preserved across restarts.
 
 ## backend/.env — required variables
 
@@ -323,10 +394,11 @@ rendered into `~/.nanobot/config.json`. Easiest fix: delete
 
 **Local persona customizations (edited SOUL.md in `~/.nanobot/workspace/`)
 got wiped**
-→ They shouldn't have — step 3 only copies if `SOUL.md` is missing. If you
-want persona changes to ship to everyone, edit
-`ola/nanobot-workspace/SOUL.md` in the repo instead, commit, and re-
-provision with `rm ~/.nanobot/workspace/SOUL.md && bash start-dev.sh`.
+→ Working as designed. `SOUL.md`, `AGENTS.md`, `TOOLS.md` are canonical
+files we own — `start-dev.sh` overwrites them on every boot so prompt
+updates ship to everyone via `git pull`. If you want a persona change,
+edit `ola/nanobot-workspace/SOUL.md` in the repo and commit. For per-
+machine personalization, use `USER.md` (first-boot only, never clobbered).
 
 ## Regenerating secrets
 
@@ -344,10 +416,12 @@ provision with `rm ~/.nanobot/workspace/SOUL.md && bash start-dev.sh`.
 | `ola/nanobot.config.template.json` | yes | nanobot config skeleton with placeholders |
 | `ola/SETUP.md` | yes | this file |
 | `backend/.env` | no (gitignored via #144) | per-machine app secrets — never stage |
-| `.env` (project root) | no (gitignored) | docker-compose orchestration vars only — `MCP_BIND_ADDR=...` |
-| `~/.nanobot/workspace/*.md` | no | provisioned copy (first-boot) — safe to edit locally |
+| `backend/.env.box1.example` | yes | Box1 prod env template (14 keys) — the file on Box1 is named `.env`, not `.env.production` |
+| `.env` (project root) | **yes** (`!/.env` exception) | docker-compose orchestration vars — `MCP_BIND_ADDR=<Box1 Tailscale IP>`. Local override via shell env, not by editing this file. |
+| `.secrets/SERVERS.env` | no (gitignored) | **single source of truth** for prod secrets + SSH passwords + canonical Tailscale IPs |
+| `~/.nanobot/workspace/{SOUL,AGENTS,TOOLS}.md` | no | **overwritten on every `start-dev.sh`** — do not hand-edit; edit `ola/nanobot-workspace/` in the repo and commit |
+| `~/.nanobot/workspace/{USER,HEARTBEAT}.md` | no | per-user files — first-boot only, safe to edit locally |
 | `~/.nanobot/workspace/memory/` | no | runtime agent memory — per machine |
 | `~/.nanobot/workspace/sessions/` | no | chat session logs — per machine |
 | `~/.nanobot/config.json` | no (mode 600) | rendered config with real `MCP_SERVICE_TOKEN` + `GEMINI_API_KEY` substituted in |
 | `../nanobot/` (sibling) | (separate repo) | NanoBot Python AI backbone — `SeekMi-Technologies/Ola_bot` fork, branch `ola-dev` |
-| `~/.nanobot/config.json` | no | rendered config with real `MCP_SERVICE_TOKEN` and `GEMINI_API_KEY` — mode 600 |

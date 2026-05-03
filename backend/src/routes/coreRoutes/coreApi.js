@@ -16,10 +16,7 @@ router.route('/admin/password-update/:id').patch(catchErrors(adminController.upd
 router.route('/admin/profile/password').patch(catchErrors(adminController.updateProfilePassword));
 router
   .route('/admin/profile/update')
-  .patch(
-    singleStorageUpload({ entity: 'admin', fieldName: 'photo', fileType: 'image' }),
-    catchErrors(adminController.updateProfile)
-  );
+  .patch(catchErrors(adminController.updateProfile));
 
 //_______________________________ Admin Onboarding _______________________________
 
