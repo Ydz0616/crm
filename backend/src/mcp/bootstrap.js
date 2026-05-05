@@ -119,8 +119,15 @@ async function resolveActingAdmin(adminId) {
     ACTING_AS_CACHE.delete(trimmed);
   }
 
+  // PR #193 follow-up: project to a minimal safe shape — controllers only
+  // ever need _id (createdBy filter), and we keep email/role for audit log
+  // surface area. Anything else (incl. any future sensitive field added to
+  // Admin schema) stays out of the in-memory cache by construction.
   const Admin = mongoose.model('Admin');
-  const admin = await Admin.findById(trimmed).exec();
+  const admin = await Admin.findById(trimmed)
+    .select('_id email role enabled removed')
+    .lean()
+    .exec();
   if (!admin) {
     return { ok: false, code: 'NOT_FOUND', message: `admin not found: ${trimmed}` };
   }
