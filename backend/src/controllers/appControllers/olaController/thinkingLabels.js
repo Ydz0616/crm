@@ -32,10 +32,14 @@ const TOOL_LABELS = {
   'merch.update':    'Ola is updating product info...',
 
   // Quote
-  'quote.search':    'Ola is searching quotes...',
-  'quote.read':      'Ola is loading quote...',
-  'quote.create':    'Ola is drafting your quote...',
-  'quote.update':    'Ola is updating quote...',
+  'quote.search':           'Ola is searching quotes...',
+  'quote.read':             'Ola is loading quote...',
+  'quote.create':           'Ola is drafting your quote...',
+  'quote.update':           'Ola is updating quote...',
+  'quote.generate_pdf_url': 'Ola is preparing the PDF link...',
+
+  // Salesperson (system-scope; mainly invoked by email channel)
+  'salesperson.lookup_by_email': 'Ola is identifying the salesperson...',
 };
 
 // Tools that should NOT surface a thinking step to the end user.
