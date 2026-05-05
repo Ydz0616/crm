@@ -25,6 +25,8 @@ const {
 const requireAuth = require('./auth');
 const { auditLog, hashInput } = require('./logger');
 const { bootstrap } = require('./bootstrap');
+const { runWithContext } = require('./context');
+const { decideActingAdmin } = require('./headerResolver');
 // NOTE: do NOT require('./tools/registry') at top-level — it transitively
 // requires controllers which call mongoose.model('Client'/...), which
 // throws unless bootstrap() has run first. Lazy-load inside main().
@@ -133,6 +135,22 @@ async function main() {
       });
     };
 
+    // ISO1/3/4 (issue #185): X-Acting-As header → acting-as admin decision.
+    // Pure helper in ./headerResolver.js so jest can cover the full path.
+    const decision = await decideActingAdmin(req.headers['x-acting-as']);
+    if (!decision.ok) {
+      logOnce(false, decision.code, decision.message);
+      if (!res.headersSent) {
+        res.status(decision.status).json({
+          ok: false,
+          code: decision.code,
+          message: decision.message,
+        });
+      }
+      return;
+    }
+    const { actingAdmin, isSystemFallback } = decision;
+
     // Stateless: per-request server + transport，确保每个 HTTP POST 是一个独立完整的 MCP 生命周期
     const server = createMcpServer();
     const transport = new StreamableHTTPServerTransport({
@@ -148,8 +166,13 @@ async function main() {
     });
 
     try {
-      await server.connect(transport);
-      await transport.handleRequest(req, res, req.body);
+      // Wrap transport handling in AsyncLocalStorage so tool handlers (loaded
+      // by the SDK during transport.handleRequest) can read the resolved
+      // acting-as admin via getCurrentActingAdmin().
+      await runWithContext({ actingAdmin, isSystemFallback }, async () => {
+        await server.connect(transport);
+        await transport.handleRequest(req, res, req.body);
+      });
       // transport 把 status 写进 res；handler 走到这里说明协议层没抛，按 res.statusCode 判断结果
       const ok = res.statusCode < 400;
       logOnce(ok, ok ? null : mapStatusToCode(res.statusCode));

@@ -13,7 +13,6 @@
 const { z } = require('zod');
 const merchController = require('@/controllers/appControllers/merchController');
 const { runController } = require('../../adapters/controllerAdapter');
-const { getSystemAdmin } = require('../../bootstrap');
 
 // description_cn first so partial match wins for both zh and en inquiries
 const SEARCH_FIELDS = 'serialNumber,description_cn,description_en,serialNumberLong';
@@ -36,7 +35,8 @@ function projectMerch(m) {
 }
 
 async function call(method, input) {
-  return runController(method, { ...input, admin: getSystemAdmin() });
+  // ISO3 (issue #185): admin injected by server.js → context → buildReq.
+  return runController(method, input);
 }
 
 const search = {
