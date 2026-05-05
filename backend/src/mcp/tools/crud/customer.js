@@ -19,10 +19,6 @@ const { runController } = require('../../adapters/controllerAdapter');
 
 const SEARCH_FIELDS = 'name,email,phone,country';
 
-async function call(method, input) {
-  return runController(method, input);
-}
-
 const search = {
   name: 'customer.search',
   description:
@@ -31,7 +27,7 @@ const search = {
     q: z.string().min(1).describe('Search query — partial match across name/email/phone/country'),
   },
   handler: async ({ q }) => {
-    const res = await call(clientController.search, {
+    const res = await runController(clientController.search, {
       query: { q, fields: SEARCH_FIELDS },
     });
     if (res.ok && Array.isArray(res.data) && res.data.length > 0) {
@@ -55,7 +51,7 @@ const read = {
   inputSchema: {
     id: z.string().min(1).describe('Customer _id'),
   },
-  handler: async ({ id }) => call(clientController.read, { params: { id } }),
+  handler: async ({ id }) => runController(clientController.read, { params: { id } }),
 };
 
 const create = {
@@ -69,7 +65,7 @@ const create = {
     country: z.string().optional(),
     address: z.string().optional(),
   },
-  handler: async (input) => call(clientController.create, { body: input }),
+  handler: async (input) => runController(clientController.create, { body: input }),
 };
 
 const update = {
@@ -85,7 +81,7 @@ const update = {
     address: z.string().optional(),
   },
   handler: async ({ id, ...patch }) =>
-    call(clientController.update, { params: { id }, body: patch }),
+    runController(clientController.update, { params: { id }, body: patch }),
 };
 
 module.exports = { tools: [search, read, create, update] };

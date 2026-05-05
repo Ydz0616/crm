@@ -53,9 +53,9 @@ async function makeAdmin(overrides = {}) {
     email: `${Math.random().toString(36).slice(2)}@example.com`,
     name: 'T',
     surname: 'A',
-    role: overrides.role || 'admin',
-    enabled: overrides.enabled ?? true,
-    removed: overrides.removed ?? false,
+    role: 'admin',
+    enabled: true,
+    removed: false,
     ...overrides,
   });
 }

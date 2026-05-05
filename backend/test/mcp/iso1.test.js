@@ -153,17 +153,18 @@ describe('resolveActingAdmin — cache', () => {
   });
 
   test('invalidateActingAsCache() with no arg clears all', async () => {
-    const a = await makeAdmin();
+    const a = await makeAdmin({ email: 'before@example.com' });
     const b = await makeAdmin();
     await resolveActingAdmin(a._id.toString());
     await resolveActingAdmin(b._id.toString());
 
     invalidateActingAsCache();
 
-    // After clear, mutations show up
-    await mongoose.model('Admin').updateOne({ _id: a._id }, { name: 'Updated' });
+    // After clear, mutations to projected fields show up on next resolve.
+    // Cache shape is _id/email/role/enabled/removed (PR #193 follow-up).
+    await mongoose.model('Admin').updateOne({ _id: a._id }, { email: 'after@example.com' });
     const r = await resolveActingAdmin(a._id.toString());
-    expect(r.admin.name).toBe('Updated');
+    expect(r.admin.email).toBe('after@example.com');
   });
 });
 

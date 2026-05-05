@@ -17,6 +17,9 @@ const { runController } = require('../../adapters/controllerAdapter');
 // description_cn first so partial match wins for both zh and en inquiries
 const SEARCH_FIELDS = 'serialNumber,description_cn,description_en,serialNumberLong';
 
+// PR #193 follow-up: dropped the dead `call()` wrapper. ISO3 made it a
+// no-op around runController since context now provides the admin.
+
 function projectMerch(m) {
   if (!m) return m;
   const o = m.toObject ? m.toObject() : m;
@@ -34,11 +37,6 @@ function projectMerch(m) {
   };
 }
 
-async function call(method, input) {
-  // ISO3 (issue #185): admin injected by server.js → context → buildReq.
-  return runController(method, input);
-}
-
 const search = {
   name: 'merch.search',
   description:
@@ -50,7 +48,7 @@ const search = {
       .describe('Product name or serial number — partial match in EN/CN'),
   },
   handler: async ({ q }) => {
-    const res = await call(merchController.search, {
+    const res = await runController(merchController.search, {
       query: { q, fields: SEARCH_FIELDS },
     });
     if (res.ok && Array.isArray(res.data) && res.data.length > 0) {
@@ -71,7 +69,7 @@ const read = {
   description: 'Read a single merchandise item by id.',
   inputSchema: { id: z.string().min(1).describe('Merch _id') },
   handler: async ({ id }) => {
-    const res = await call(merchController.read, { params: { id } });
+    const res = await runController(merchController.read, { params: { id } });
     if (res.ok && res.data) return { ok: true, data: projectMerch(res.data) };
     return res;
   },
@@ -92,7 +90,7 @@ const create = {
     unit_en: z.string().min(1).describe('English unit, e.g. PCS (required)'),
     unit_cn: z.string().min(1).describe('Chinese unit, e.g. 个 (required)'),
   },
-  handler: async (input) => call(merchController.create, { body: input }),
+  handler: async (input) => runController(merchController.create, { body: input }),
 };
 
 const update = {
@@ -112,7 +110,7 @@ const update = {
     unit_cn: z.string().optional(),
   },
   handler: async ({ id, ...patch }) =>
-    call(merchController.update, { params: { id }, body: patch }),
+    runController(merchController.update, { params: { id }, body: patch }),
 };
 
 module.exports = { tools: [search, read, create, update] };
