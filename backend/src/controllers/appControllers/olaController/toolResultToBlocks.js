@@ -72,8 +72,38 @@ function quoteCreateToBlocks(quote) {
   ];
 }
 
+// quote.search returns {found, results[]} envelope (see mcp/tools/crud/quote.js).
+// Renders a lightweight list (no per-row PDF) — user picks one, agent then
+// calls quote.read which routes through quoteCreateToBlocks for full preview.
+function quoteSearchToBlocks(data) {
+  if (!data || data.found !== true) return [];
+  const results = Array.isArray(data.results) ? data.results : [];
+  if (results.length === 0) return [];
+
+  return [
+    {
+      type: 'widget',
+      widgetType: 'quote_list',
+      data: {
+        results: results.map((q) => ({
+          quoteId: q._id,
+          quoteNumber: q.number || '',
+          client: (q.client && q.client.name) || '-',
+          date: q.date,
+          total: q.total,
+          currency: q.currency || 'USD',
+          status: q.status || 'draft',
+        })),
+      },
+    },
+  ];
+}
+
 const TOOL_BLOCK_PRODUCERS = {
   'quote.create': quoteCreateToBlocks,
+  'quote.read': quoteCreateToBlocks,
+  'quote.update': quoteCreateToBlocks,
+  'quote.search': quoteSearchToBlocks,
 };
 
 function toolEventToBlocks(event) {
@@ -85,11 +115,36 @@ function toolEventToBlocks(event) {
   return producer ? producer(envelope.data) : [];
 }
 
+// Dedupe widget+file blocks within one assistant turn so multi-tool flows
+// (e.g. agent reads then updates the same quote, or searches then reads)
+// don't stack visually identical previews. Strategy: walk blocks in order,
+// remember the LAST index of each (widgetType, quoteId) for widgets and
+// each url for files, then keep only those last occurrences.
+//
+// Search widgets carry no quoteId — they dedupe on widgetType alone, so a
+// repeated quote.search in the same turn keeps the latest list.
+function dedupeBlocks(blocks) {
+  const lastIdx = new Map();
+  const keyOf = (b) => {
+    if (b.type === 'widget') return `widget:${b.widgetType}:${(b.data && b.data.quoteId) || ''}`;
+    if (b.type === 'file') return `file:${b.url}`;
+    return null;
+  };
+  blocks.forEach((b, i) => {
+    const k = keyOf(b);
+    if (k !== null) lastIdx.set(k, i);
+  });
+  return blocks.filter((b, i) => {
+    const k = keyOf(b);
+    return k === null || lastIdx.get(k) === i;
+  });
+}
+
 function toolEventsToBlocks(events) {
   if (!Array.isArray(events)) return [];
   const out = [];
   for (const ev of events) out.push(...toolEventToBlocks(ev));
-  return out;
+  return dedupeBlocks(out);
 }
 
 module.exports = {
