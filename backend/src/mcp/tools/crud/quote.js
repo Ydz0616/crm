@@ -23,7 +23,6 @@ const { z } = require('zod');
 const mongoose = require('mongoose');
 const quoteController = require('@/controllers/appControllers/quoteController');
 const { runController } = require('../../adapters/controllerAdapter');
-const { getSystemAdmin } = require('../../bootstrap');
 
 // Auto-fill `items[].description` from the Merch master record (by
 // serialNumber) so the generated Quote shows meaningful descriptions in
@@ -81,7 +80,8 @@ async function enrichItemDescriptions(items) {
 }
 
 async function call(method, input) {
-  return runController(method, { ...input, admin: getSystemAdmin() });
+  // ISO3 (issue #185): admin injected by server.js → context → buildReq.
+  return runController(method, input);
 }
 
 function pad2(n) { return n < 10 ? `0${n}` : `${n}`; }

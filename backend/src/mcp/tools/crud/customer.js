@@ -7,17 +7,20 @@
 // `{ found: false, message: 'No matching customer' }` so the Agent has an explicit
 // signal to ask the user for more details (CLAUDE.md MVP rule).
 //
-// All tools impersonate the cached system admin (see ../../bootstrap.js).
+// ISO3 (issue #185): tools no longer import getSystemAdmin. Per-request
+// acting-as admin is injected by server.js into AsyncLocalStorage context;
+// controllerAdapter.buildReq picks it up automatically. Back-compat for
+// askola web (no X-Acting-As header) is preserved by server.js falling back
+// to systemAdmin in the context — business tools see a valid admin either way.
 
 const { z } = require('zod');
 const clientController = require('@/controllers/appControllers/clientController');
 const { runController } = require('../../adapters/controllerAdapter');
-const { getSystemAdmin } = require('../../bootstrap');
 
 const SEARCH_FIELDS = 'name,email,phone,country';
 
 async function call(method, input) {
-  return runController(method, { ...input, admin: getSystemAdmin() });
+  return runController(method, input);
 }
 
 const search = {

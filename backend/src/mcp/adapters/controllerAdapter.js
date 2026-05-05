@@ -1,4 +1,4 @@
-// Ola CRM MCP — Controller adapter (A2)
+// Ola CRM MCP — Controller adapter (A2; ISO2 update issue #185)
 //
 // 把现有 CRM controller 的 (req, res, next) 签名包装成 async (input) => output，
 // 让 MCP tools 能直接复用 controller，不必重写业务逻辑。
@@ -17,10 +17,28 @@
 //
 // 30s timeout 强制兜底，避免 controller 挂死阻塞 NanoBot。
 //
-// 注意：A2 阶段 adapter 是纯函数（不 require 任何 controller），方便单元自检。
-// A5+ 才会被真实 CRUD tool 使用。
+// ISO2: buildReq resolves req.admin from a 3-tier chain:
+//   1. input.admin (explicit) — caller passes it (legacy A5-A7 path)
+//   2. AsyncLocalStorage context.actingAdmin (set by server.js per-request)
+//   3. null (controller will likely crash; tool authors should handle this)
+// Tools that want server.js-managed acting-as can omit input.admin entirely
+// and rely on the context. This makes ISO3 (business tools) a drop of the
+// `admin: getSystemAdmin()` lines in each tool's call() helper.
+
+const { getCurrentActingAdmin } = require('../context');
 
 const DEFAULT_TIMEOUT_MS = 30 * 1000;
+
+// Read context.actingAdmin without throwing when called outside an MCP request
+// scope (e.g. unit tests that invoke buildReq directly). Returns null if no
+// scope is active or no admin was set.
+function readContextAdminSafe() {
+  try {
+    return getCurrentActingAdmin();
+  } catch (_outsideScope) {
+    return null;
+  }
+}
 
 function statusToCode(status) {
   if (status >= 200 && status < 300) return null; // 成功无 code
@@ -43,11 +61,17 @@ function statusToCode(status) {
  * @param {object} [input.headers]
  */
 function buildReq(input = {}) {
+  // ISO2 admin resolution: explicit input.admin first, then per-request
+  // context (set by server.js when X-Acting-As header is present), then null.
+  const admin =
+    input.admin !== undefined && input.admin !== null
+      ? input.admin
+      : readContextAdminSafe();
   return {
     body: input.body || {},
     params: input.params || {},
     query: input.query || {},
-    admin: input.admin || null,
+    admin,
     headers: input.headers || {},
     // 一些 controller 会用 req.method / req.originalUrl 做 logging，给点合理默认
     method: 'POST',
