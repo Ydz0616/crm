@@ -428,4 +428,47 @@ describe('chat — upstream error handling', () => {
     expect(frames.find((f) => f.event === 'text_token' && f.data.delta === 'survived')).toBeTruthy();
     expect(frames.find((f) => f.event === 'done')).toBeTruthy();
   });
+
+  // =========================================================================
+  // ISO5c (issue #185) — X-Ola-Acting-As header propagated to NanoBot
+  // =========================================================================
+
+  test('passes req.admin._id as X-Ola-Acting-As header to NanoBot', async () => {
+    let capturedHeader;
+    nanoBotResponder = (req, res) => {
+      capturedHeader = req.headers['x-ola-acting-as'];
+      startSSE(res);
+      res.write(nanoTextChunk('ok'));
+      res.write(NANO_DONE);
+      res.end();
+    };
+    const app = buildChatApp();
+    const res = await request(app).post('/api/ola/chat').send({ message: 'hi' });
+    expect(res.status).toBe(200);
+    expect(capturedHeader).toBe(adminId.toString());
+  });
+
+  test('different admin._id → different X-Ola-Acting-As header', async () => {
+    let capturedHeader;
+    nanoBotResponder = (req, res) => {
+      capturedHeader = req.headers['x-ola-acting-as'];
+      startSSE(res);
+      res.write(nanoTextChunk('ok'));
+      res.write(NANO_DONE);
+      res.end();
+    };
+    const otherAdminId = new mongoose.Types.ObjectId();
+    const app = express();
+    app.use(express.json());
+    app.use((req, _res, next) => {
+      req.admin = { _id: otherAdminId };
+      next();
+    });
+    const chat = require(path.join(BACKEND_ROOT, 'src/controllers/appControllers/olaController/chat.js'));
+    app.post('/api/ola/chat', (req, res) => chat(req, res));
+    const res = await request(app).post('/api/ola/chat').send({ message: 'hi' });
+    expect(res.status).toBe(200);
+    expect(capturedHeader).toBe(otherAdminId.toString());
+    expect(capturedHeader).not.toBe(adminId.toString());
+  });
 });

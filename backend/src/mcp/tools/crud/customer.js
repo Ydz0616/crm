@@ -7,18 +7,17 @@
 // `{ found: false, message: 'No matching customer' }` so the Agent has an explicit
 // signal to ask the user for more details (CLAUDE.md MVP rule).
 //
-// All tools impersonate the cached system admin (see ../../bootstrap.js).
+// ISO3 (issue #185): tools no longer import getSystemAdmin. Per-request
+// acting-as admin is injected by server.js into AsyncLocalStorage context;
+// controllerAdapter.buildReq picks it up automatically. Back-compat for
+// askola web (no X-Acting-As header) is preserved by server.js falling back
+// to systemAdmin in the context — business tools see a valid admin either way.
 
 const { z } = require('zod');
 const clientController = require('@/controllers/appControllers/clientController');
 const { runController } = require('../../adapters/controllerAdapter');
-const { getSystemAdmin } = require('../../bootstrap');
 
 const SEARCH_FIELDS = 'name,email,phone,country';
-
-async function call(method, input) {
-  return runController(method, { ...input, admin: getSystemAdmin() });
-}
 
 const search = {
   name: 'customer.search',
@@ -28,7 +27,7 @@ const search = {
     q: z.string().min(1).describe('Search query — partial match across name/email/phone/country'),
   },
   handler: async ({ q }) => {
-    const res = await call(clientController.search, {
+    const res = await runController(clientController.search, {
       query: { q, fields: SEARCH_FIELDS },
     });
     if (res.ok && Array.isArray(res.data) && res.data.length > 0) {
@@ -52,7 +51,7 @@ const read = {
   inputSchema: {
     id: z.string().min(1).describe('Customer _id'),
   },
-  handler: async ({ id }) => call(clientController.read, { params: { id } }),
+  handler: async ({ id }) => runController(clientController.read, { params: { id } }),
 };
 
 const create = {
@@ -66,7 +65,7 @@ const create = {
     country: z.string().optional(),
     address: z.string().optional(),
   },
-  handler: async (input) => call(clientController.create, { body: input }),
+  handler: async (input) => runController(clientController.create, { body: input }),
 };
 
 const update = {
@@ -82,7 +81,7 @@ const update = {
     address: z.string().optional(),
   },
   handler: async ({ id, ...patch }) =>
-    call(clientController.update, { params: { id }, body: patch }),
+    runController(clientController.update, { params: { id }, body: patch }),
 };
 
 module.exports = { tools: [search, read, create, update] };

@@ -23,7 +23,6 @@ const { z } = require('zod');
 const mongoose = require('mongoose');
 const quoteController = require('@/controllers/appControllers/quoteController');
 const { runController } = require('../../adapters/controllerAdapter');
-const { getSystemAdmin } = require('../../bootstrap');
 
 // Auto-fill `items[].description` from the Merch master record (by
 // serialNumber) so the generated Quote shows meaningful descriptions in
@@ -80,9 +79,8 @@ async function enrichItemDescriptions(items) {
   return { items: enriched, warnings };
 }
 
-async function call(method, input) {
-  return runController(method, { ...input, admin: getSystemAdmin() });
-}
+// PR #193 follow-up: dropped the dead `call()` wrapper. ISO3 made it a
+// no-op around runController since context now provides the admin.
 
 function pad2(n) { return n < 10 ? `0${n}` : `${n}`; }
 
@@ -112,7 +110,7 @@ const search = {
     q: z.string().min(1).describe('Quote number fragment'),
   },
   handler: async ({ q }) => {
-    const res = await call(quoteController.search, { query: { q, fields: 'number' } });
+    const res = await runController(quoteController.search, { query: { q, fields: 'number' } });
     if (res.ok && Array.isArray(res.data) && res.data.length > 0) {
       return { ok: true, data: { found: true, results: res.data } };
     }
@@ -124,7 +122,7 @@ const read = {
   name: 'quote.read',
   description: 'Read a single quote by id (includes items, totals, currency, status).',
   inputSchema: { id: z.string().min(1) },
-  handler: async ({ id }) => call(quoteController.read, { params: { id } }),
+  handler: async ({ id }) => runController(quoteController.read, { params: { id } }),
 };
 
 const create = {
@@ -184,7 +182,7 @@ const create = {
     };
     if (input.exchangeRate !== undefined) body.exchangeRate = input.exchangeRate;
 
-    const result = await call(quoteController.create, { body });
+    const result = await runController(quoteController.create, { body });
     if (result.ok && warnings.length > 0) {
       return { ...result, warnings };
     }
@@ -250,7 +248,7 @@ const update = {
       discount: rest.discount ?? 0,
     };
     if (rest.exchangeRate !== undefined) body.exchangeRate = rest.exchangeRate;
-    const result = await call(quoteController.update, { params: { id }, body });
+    const result = await runController(quoteController.update, { params: { id }, body });
     if (result.ok && warnings.length > 0) {
       return { ...result, warnings };
     }
