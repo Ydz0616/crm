@@ -96,12 +96,12 @@ describe('salesperson.lookup_by_email — happy path', () => {
 });
 
 describe('salesperson.lookup_by_email — not-found gates', () => {
-  test('unknown email → found:false with chinese message containing the email', async () => {
+  test('unknown email → found:false with message containing the email', async () => {
     const tool = findTool(salespersonTools, 'salesperson.lookup_by_email');
     const res = await tool.handler({ email: 'nobody@nowhere.com' });
     expect(res.ok).toBe(true);
     expect(res.data.found).toBe(false);
-    expect(res.data.message).toMatch(/未找到匹配销售/);
+    expect(res.data.message).toMatch(/No matching salesperson/);
     expect(res.data.message).toMatch(/nobody@nowhere\.com/);
     expect(res.data.salesperson).toBeUndefined();
   });
