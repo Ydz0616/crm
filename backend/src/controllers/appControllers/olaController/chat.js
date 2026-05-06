@@ -73,10 +73,12 @@ function makeSSEParser(onFrame) {
 }
 
 // ---------------------------------------------------------------------------
-// Auto-title (unchanged from prior implementation, just relocated).
+// Auto-title — non-streaming /v1/chat/completions call. Token spend is tracked
+// under channel='ask-ola-autotitle' so the dashboard can split user-facing
+// chat cost from incidental LLM costs (Ola CRM #98 C5).
 // ---------------------------------------------------------------------------
 
-function generateTitle(session, messages) {
+function generateTitle(session, messages, userId) {
   const conversation = messages
     .map((m) => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`)
     .join('\n');
@@ -91,20 +93,40 @@ function generateTitle(session, messages) {
     headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) },
     timeout: 30000,
   };
+  const titleStartTs = Date.now();
+  const titleRequestId = uuidv4();
   const titleReq = http.request(options, (titleRes) => {
     let data = '';
     titleRes.on('data', (chunk) => { data += chunk; });
     titleRes.on('end', () => {
+      let parsed;
       try {
-        const parsed = JSON.parse(data);
-        const title = parsed.choices?.[0]?.message?.content?.trim();
-        if (title && title.length > 0 && title.length <= 100) {
-          ChatSession.findByIdAndUpdate(session._id, { title, updated: Date.now() }).catch((err) => {
-            console.error(`[AutoTitle] Failed to update session ${session._id}:`, err.message);
-          });
-        }
+        parsed = JSON.parse(data);
       } catch (err) {
         console.error(`[AutoTitle] Failed to parse title response for session ${session._id}:`, err.message);
+        return;
+      }
+      const title = parsed?.choices?.[0]?.message?.content?.trim();
+      if (title && title.length > 0 && title.length <= 100) {
+        ChatSession.findByIdAndUpdate(session._id, { title, updated: Date.now() }).catch((err) => {
+          console.error(`[AutoTitle] Failed to update session ${session._id}:`, err.message);
+        });
+      }
+      // Record auto-title token spend under its own channel so the dashboard
+      // can split it from user-visible chat cost. Fire-and-forget; recordUsage
+      // is fail-silent. Only fires when nanobot supplied a real usage payload
+      // with provider/model — if the response was malformed or pre-N4 nanobot
+      // (no real usage), recordUsage's wire-contract check skips silently.
+      if (userId && parsed && typeof parsed.usage === 'object') {
+        recordUsage({
+          userId,
+          session,
+          messageId: null,
+          usage: parsed.usage,
+          latencyMs: Date.now() - titleStartTs,
+          requestId: titleRequestId,
+          channel: 'ask-ola-autotitle',
+        });
       }
     });
   });
@@ -115,14 +137,14 @@ function generateTitle(session, messages) {
   titleReq.end();
 }
 
-function maybeAutoTitle(session, userMessage, assistantContent) {
+function maybeAutoTitle(session, userMessage, assistantContent, userId) {
   if (session.title !== 'New Chat') return;
   ChatMessage.countDocuments({ sessionId: session._id, removed: false })
     .then((count) => {
       if (count >= 4) {
         return ChatMessage.find({ sessionId: session._id, removed: false })
           .sort({ created: 1 }).lean()
-          .then((msgs) => generateTitle(session, msgs));
+          .then((msgs) => generateTitle(session, msgs, userId));
       }
     })
     .catch((err) => console.error(`[AutoTitle] count/find failed for session ${session._id}:`, err.message));
@@ -312,7 +334,7 @@ const chat = async (req, res) => {
               errored: upstreamErrored,
             });
           }
-          return maybeAutoTitle(session, message.trim(), streamedText);
+          return maybeAutoTitle(session, message.trim(), streamedText, userId);
         })
         .catch((err) => {
           console.error(
@@ -405,3 +427,6 @@ const chat = async (req, res) => {
 };
 
 module.exports = chat;
+// Internal helpers exported for unit testing (Ola CRM #98 C5 — auto-title
+// usage tracking). Not part of the public chat controller surface.
+module.exports.__test__ = { generateTitle, maybeAutoTitle };
