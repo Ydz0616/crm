@@ -135,9 +135,7 @@ async function main() {
       });
     };
 
-    // ISO1/3/4 (issue #185): X-Acting-As header → acting-as admin decision.
-    // Pure helper in ./headerResolver.js so jest can cover the full path.
-    const decision = await decideActingAdmin(req.headers['x-acting-as']);
+    const decision = await decideActingAdmin(req.headers['x-acting-as'], toolLabel);
     if (!decision.ok) {
       logOnce(false, decision.code, decision.message);
       if (!res.headersSent) {
