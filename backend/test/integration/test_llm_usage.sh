@@ -120,13 +120,17 @@ fi
 # ---------------------------------------------------------------------------
 
 echo
-echo "==> Scenario 3: GET /api/llmusage/list with cookie → 200 + result array"
+echo "==> Scenario 3: GET /api/llmusage/list with cookie → 2xx + success envelope"
+# Note: Ola CRM's createCRUDController.paginatedList returns HTTP 203
+# ("Non-Authoritative Information") with success:true when the collection is
+# empty — see backend/src/controllers/middlewaresControllers/createCRUDController/paginatedList.js:57.
+# So we accept 200 (has rows) OR 203 (empty), both are documented success states.
 S3_BODY="$WORKDIR/s3.json"
 S3_STATUS=$(curl -s -o "$S3_BODY" -w '%{http_code}' "$BACKEND/api/llmusage/list" \
   -b "$COOKIE_JAR")
-if [[ "$S3_STATUS" == "200" ]] && grep -q '"success":true' "$S3_BODY" \
+if [[ "$S3_STATUS" =~ ^20[03]$ ]] && grep -q '"success":true' "$S3_BODY" \
    && grep -q '"result":' "$S3_BODY"; then
-  green "    PASS — list endpoint returns success envelope"
+  green "    PASS — list endpoint returns success envelope (HTTP $S3_STATUS)"
   PASSES=$((PASSES + 1))
 else
   red "    FAIL — got HTTP $S3_STATUS, body:"
