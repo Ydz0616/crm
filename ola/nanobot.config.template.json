@@ -296,11 +296,11 @@
       }
     },
     "exec": {
-      "enable": true,
+      "enable": false,
       "timeout": 60,
       "pathAppend": ""
     },
-    "restrictToWorkspace": false,
+    "restrictToWorkspace": true,
     "mcpServers": {
       "ola_crm": {
         "type": "streamableHttp",

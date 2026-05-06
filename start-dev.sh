@@ -42,6 +42,16 @@ if [ ! -f "$CRM_DIR/backend/.env" ]; then
   exit 1
 fi
 
+# Export secrets to shell so all child processes (backend, MCP, nanobot serve,
+# nanobot gateway, frontend) inherit them via 12-factor process env. Mirrors
+# prod systemd EnvironmentFile= / docker-compose env_file: pattern.
+set -a
+source "$CRM_DIR/backend/.env"
+if [ -f "$CRM_DIR/.secrets/SERVERS.env" ]; then
+  source "$CRM_DIR/.secrets/SERVERS.env"
+fi
+set +a
+
 # Always-overwrite render of ~/.nanobot/config.json. Single source of truth
 # is the vendored template + secrets; manual edits to ~/.nanobot/config.json
 # WILL be clobbered on next start (matches the SOUL/AGENTS/TOOLS pattern
