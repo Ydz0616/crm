@@ -23,6 +23,7 @@ const { z } = require('zod');
 const mongoose = require('mongoose');
 const quoteController = require('@/controllers/appControllers/quoteController');
 const { runController } = require('../../adapters/controllerAdapter');
+const { getCurrentActingAdmin } = require('../../context');
 
 // Auto-fill `items[].description` from the Merch master record (by
 // serialNumber) so the generated Quote shows meaningful descriptions in
@@ -314,9 +315,22 @@ const generatePdfUrl = {
         message: `Invalid quote id (must be a 24-char hex ObjectId): ${id}`,
       };
     }
+    let actingAdmin = null;
+    try {
+      actingAdmin = getCurrentActingAdmin();
+    } catch (_outsideScope) {
+      actingAdmin = null;
+    }
+    if (!actingAdmin || !actingAdmin._id) {
+      return {
+        ok: false,
+        code: 'PERMISSION',
+        message: 'quote.generate_pdf_url requires an authenticated admin context',
+      };
+    }
     const q = await mongoose
       .model('Quote')
-      .findOne({ _id: id, removed: false })
+      .findOne({ _id: id, removed: false, createdBy: actingAdmin._id })
       .select('_id')
       .lean();
     if (!q) {

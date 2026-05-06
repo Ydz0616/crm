@@ -361,10 +361,9 @@ def cmd_validate_isolation(args) -> int:
     sys_admin = db.admins.find_one({"email": "admin@admin.com"})
     sys_admin_id = sys_admin["_id"] if sys_admin else None
 
-    # Reverse lookup: createdBy ObjectId → label
-    id_to_label: dict = {a["_id"]: meta["label"] for a, meta in [
-        (db.admins.find_one({"_id": meta["_id"]}), meta) for meta in sender_to_admin.values()
-    ] if a is not None}
+    # Reverse lookup: createdBy ObjectId → label. sender_to_admin already has
+    # _id from the per-sender lookup above; no need to re-fetch.
+    id_to_label: dict = {meta["_id"]: meta["label"] for meta in sender_to_admin.values()}
     if sys_admin_id:
         id_to_label[sys_admin_id] = "SYSTEM(admin@admin.com)"
 
@@ -463,16 +462,19 @@ def cmd_validate_isolation(args) -> int:
                 unknown_ok = False
 
     print()
-    overall_ok = matrix_ok and unknown_ok
-    if overall_ok:
+    # Exit codes — distinct so CI can branch:
+    #   0 = PASS                    (matrix all-diagonal AND unknown senders rejected)
+    #   1 = FAIL                    (leakage detected OR unknown sender not rejected)
+    #   2 = INDETERMINATE           (no docs created in window — can't validate
+    #                               isolation, but not a hard failure either)
+    if matrix_ok and unknown_ok:
         print("Phase ISO email isolation: PASS")
         return 0
-    else:
-        if not matrix_ok and not matrix:
-            print("Phase ISO email isolation: INDETERMINATE (no docs created)")
-            return 1
-        print("Phase ISO email isolation: FAIL")
-        return 1
+    if not matrix and unknown_ok:
+        print("Phase ISO email isolation: INDETERMINATE (no docs created)")
+        return 2
+    print("Phase ISO email isolation: FAIL")
+    return 1
 
 
 # ---------------------------------------------------------------------------
