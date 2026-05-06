@@ -193,13 +193,13 @@ const create = {
 const update = {
   name: 'quote.update',
   description:
-    'Update a quote by id. Caller must pass the FULL quote body (items, currency, etc) — this is a replace-style update enforced by the controller. The Agent should typically read first, modify, then update.',
+    'Partial update of a quote by id (PATCH semantics). Only the fields you pass are changed; everything else is preserved from the current persisted quote. The Agent does NOT need to re-pass number / date / status / expiredDate / client / currency / items unless they are actually being changed. Items is array-replacement: if you pass items, you pass the FULL new list.',
   inputSchema: {
     id: z.string().min(1),
-    client: z.string().min(1),
-    currency: z.enum(['USD', 'CNY']),
+    client: z.string().min(1).optional(),
+    currency: z.enum(['USD', 'CNY']).optional(),
     exchangeRate: z.number().positive().optional(),
-    items: z.array(ItemShape).min(1),
+    items: z.array(ItemShape).min(1).optional(),
     status: z.string().optional(),
     notes: z.array(z.string()).optional(),
     termsOfDelivery: z.array(z.string()).optional(),
@@ -219,35 +219,78 @@ const update = {
         message: 'quote.update rejects `total` — totals are computed server-side',
       };
     }
-    let items = rest.items.map((it) => ({
-      itemName: it.itemName,
-      description: it.description || '',
-      quantity: it.quantity,
-      price: it.price == null ? 0 : it.price,
-      total: 0,
-      unit_en: it.unit_en || '',
-      unit_cn: it.unit_cn || '',
-    }));
-    const enrichResult = await enrichItemDescriptions(items);
-    items = enrichResult.items;
-    const warnings = enrichResult.warnings;
-    const now = new Date();
+
+    // PATCH: load the persisted quote first, merge only fields the agent
+    // actually passed. Bug history (issue #198): previously this handler used
+    // `||` against fresh defaults (number=defaultQuoteNumber(now), status='draft'…)
+    // so an agent omitting those fields silently got them rewritten.
+    const readRes = await runController(quoteController.read, { params: { id } });
+    if (!readRes.ok) return readRes;
+    const existing = readRes.data;
+
+    let items;
+    let warnings = [];
+    if (rest.items !== undefined) {
+      items = rest.items.map((it) => ({
+        itemName: it.itemName,
+        description: it.description || '',
+        quantity: it.quantity,
+        price: it.price == null ? 0 : it.price,
+        total: 0,
+        unit_en: it.unit_en || '',
+        unit_cn: it.unit_cn || '',
+      }));
+      const enrichResult = await enrichItemDescriptions(items);
+      items = enrichResult.items;
+      warnings = enrichResult.warnings;
+    } else {
+      items = (existing.items || []).map((it) => ({
+        itemName: it.itemName,
+        description: it.description || '',
+        quantity: it.quantity,
+        price: it.price,
+        total: it.total || 0,
+        unit_en: it.unit_en || '',
+        unit_cn: it.unit_cn || '',
+      }));
+    }
+
+    // Quote schema autopopulates `client` — existing.client is the populated
+    // Client doc, not a raw ObjectId. Pull the _id back out for the update.
+    const existingClientId =
+      existing.client && existing.client._id
+        ? String(existing.client._id)
+        : String(existing.client);
+
     const body = {
-      client: rest.client,
-      number: rest.number || defaultQuoteNumber(now),
-      year: rest.year || now.getFullYear(),
-      status: rest.status || 'draft',
-      date: rest.date || now,
-      expiredDate: rest.expiredDate || plusDays(now, 30),
-      currency: rest.currency,
+      client: rest.client !== undefined ? rest.client : existingClientId,
+      number: rest.number !== undefined ? rest.number : existing.number,
+      year: rest.year !== undefined ? rest.year : existing.year,
+      status: rest.status !== undefined ? rest.status : existing.status,
+      date: rest.date !== undefined ? rest.date : existing.date,
+      expiredDate: rest.expiredDate !== undefined ? rest.expiredDate : existing.expiredDate,
+      currency: rest.currency !== undefined ? rest.currency : existing.currency,
       items,
-      notes: rest.notes || [],
-      termsOfDelivery: rest.termsOfDelivery || [],
-      paymentTerms: rest.paymentTerms || [],
-      freight: rest.freight ?? 0,
-      discount: rest.discount ?? 0,
+      notes: rest.notes !== undefined ? rest.notes : (existing.notes || []),
+      termsOfDelivery:
+        rest.termsOfDelivery !== undefined ? rest.termsOfDelivery : (existing.termsOfDelivery || []),
+      paymentTerms:
+        rest.paymentTerms !== undefined ? rest.paymentTerms : (existing.paymentTerms || []),
+      freight: rest.freight !== undefined ? rest.freight : (existing.freight ?? 0),
+      discount: rest.discount !== undefined ? rest.discount : (existing.discount ?? 0),
     };
-    if (rest.exchangeRate !== undefined) body.exchangeRate = rest.exchangeRate;
+
+    // exchangeRate: prefer agent-passed value; else preserve existing only when
+    // currency hasn't changed (otherwise let controller B3 validation re-run
+    // with the right defaults — USD must be 1, CNY must be > 1 explicitly).
+    if (rest.exchangeRate !== undefined) {
+      body.exchangeRate = rest.exchangeRate;
+    } else if (rest.currency === undefined || rest.currency === existing.currency) {
+      if (existing.exchangeRate !== undefined && existing.exchangeRate !== null) {
+        body.exchangeRate = existing.exchangeRate;
+      }
+    }
+
     const result = await runController(quoteController.update, { params: { id }, body });
     if (result.ok && warnings.length > 0) {
       return { ...result, warnings };

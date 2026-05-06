@@ -133,6 +133,19 @@ cd "$CRM_DIR/backend"
 npx nodemon --watch src/mcp src/mcp/server.js > /tmp/ola-mcp.log 2>&1 &
 MCP_PID=$!
 
+# Wait for MCP to bind port before later check_port falsely flags FAILED
+echo -n "     Waiting for MCP..."
+for i in $(seq 1 15); do
+  if lsof -ti:8889 >/dev/null 2>&1; then
+    echo -e " ${GREEN}ok${NC}"
+    break
+  fi
+  sleep 1
+  if [ $i -eq 15 ]; then
+    echo -e " ${RED}timeout${NC}"
+  fi
+done
+
 # 3. NanoBot — two processes:
 #   serve   (8900) — OpenAI-compat /v1/chat/completions for askola web
 #   gateway (8901) — ChannelManager (email/etc) + cron + heartbeat

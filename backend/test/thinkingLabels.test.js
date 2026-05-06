@@ -13,13 +13,21 @@ const {
 } = require('@/controllers/appControllers/olaController/thinkingLabels');
 
 describe('thinkingLabels — TOOL_LABELS dictionary', () => {
-  test('covers all 12 v1 user-facing MCP tools', () => {
+  test('covers all v1 user-facing MCP tools + forward-looking entries (#170)', () => {
     const expected = [
       'customer.search', 'customer.read', 'customer.create', 'customer.update',
       'merch.search', 'merch.read', 'merch.create', 'merch.update',
       'quote.search', 'quote.read', 'quote.create', 'quote.update',
+      // Forward-looking: tools live on ZYD_FEAT, will activate when merged to dev
+      'quote.generate_pdf_url',
+      'salesperson.lookup_by_email',
     ];
     expect(Object.keys(TOOL_LABELS).sort()).toEqual(expected.sort());
+  });
+
+  test('forward-looking entries resolve to specific labels (not __unknown__ fallback)', () => {
+    expect(labelFor('mcp_ola_crm_quote.generate_pdf_url')).toBe('Ola is preparing the PDF link...');
+    expect(labelFor('mcp_ola_crm_salesperson.lookup_by_email')).toBe('Ola is identifying the salesperson...');
   });
 
   test('does NOT include health.ping (it is in SKIP_TOOLS)', () => {
