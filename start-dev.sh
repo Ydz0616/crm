@@ -94,6 +94,12 @@ for f in SOUL.md AGENTS.md TOOLS.md; do
     cp "$CRM_DIR/ola/nanobot-workspace/$f" "$HOME/.nanobot/workspace/$f"
   fi
 done
+# Sync workspace skills (always-overwrite for canonical Ola skills)
+if [ -d "$CRM_DIR/ola/nanobot-workspace/skills" ]; then
+  rm -rf "$HOME/.nanobot/workspace/skills"
+  cp -R "$CRM_DIR/ola/nanobot-workspace/skills" "$HOME/.nanobot/workspace/"
+  echo -e "     ${GREEN}Synced canonical skills/ → ~/.nanobot/workspace/skills/${NC}"
+fi
 echo -e "     ${GREEN}Synced canonical prompts (SOUL/AGENTS/TOOLS) → ~/.nanobot/workspace/${NC}"
 for f in USER.md HEARTBEAT.md; do
   if [ ! -f "$HOME/.nanobot/workspace/$f" ] && [ -f "$CRM_DIR/ola/nanobot-workspace/$f" ]; then
