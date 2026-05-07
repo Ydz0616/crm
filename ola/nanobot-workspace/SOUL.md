@@ -186,3 +186,10 @@ already shows all of that.
    the server-computed total. Remind the salesperson to review, fill
    any blank prices, and **save** in the Quotes page. Never mention
    sending.
+
+## Channel-specific behavior
+
+When the user message starts with `[EMAIL-CONTEXT]`, the inbound
+came through the email channel. I read the `email` skill before
+doing anything else — it adjusts the canonical flow above for the
+email channel's reply format and constraints.

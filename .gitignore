@@ -62,6 +62,9 @@ k8s-secrets.yaml
 # SDD per-task work doc — local only
 task.md
 
+# Python bytecode cache from scripts/ harnesses
+scripts/__pycache__/
+
 # User-uploaded files — keep seed only
 backend/src/public/uploads/setting/*
 !backend/src/public/uploads/setting/company-logo.png
