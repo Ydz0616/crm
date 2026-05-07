@@ -1,9 +1,11 @@
-// Soft-delete ZYD E2E test data (askola + email isolation runs).
+// Soft-delete ZYD test data (askola e2e + email harness + deploy smoke).
 // Usage:
 //   cd backend && node scripts/cleanup_zyd_e2e_data.js [--dry-run]
 //
-// Matches: clients.name / merches.serialNumber / quotes.notes containing
-//   ZYD-E2E- or ZYD-EMAIL-E2E- prefix. Sets removed:true (soft delete only).
+// Matches: clients.name / merches.serialNumber containing
+//   ZYD-E2E-*, ZYD-EMAIL-* (incl. ZYD-EMAIL-FULL-VERIFY-*), or ZYD-DEPLOY-*
+//   prefix. Plus quotes whose client._id is in the matched-client set.
+// Sets removed:true (soft delete only — never physical delete).
 
 require('module-alias/register');
 require('dotenv').config({ path: '.env' });
@@ -21,7 +23,12 @@ const DRY = process.argv.includes('--dry-run');
   const Merch = mongoose.model('Merch');
   const Quote = mongoose.model('Quote');
 
-  const re = /^ZYD(?:-EMAIL)?-E2E-/;
+  // Match every ZYD-test prefix used across the harness + deploy suite:
+  //   ZYD-E2E-              askola_acting_as_e2e.py
+  //   ZYD-EMAIL-E2E-        early email harness ad-hoc
+  //   ZYD-EMAIL-FULL-VERIFY- full-verify email run
+  //   ZYD-DEPLOY-           deploy skill Phase 4 / 4b smoke
+  const re = /^ZYD-(E2E-|EMAIL-|DEPLOY-)/;
 
   const clientHits = await Client.find({ name: re, removed: false }).select('name createdBy').lean();
   const merchHits = await Merch.find({ serialNumber: re, removed: false }).select('serialNumber createdBy').lean();
