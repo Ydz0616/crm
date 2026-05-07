@@ -88,4 +88,4 @@ jobs:
             - If the PR looks clean, say so in one sentence — don't pad
               with generic positives.
           claude_args: |
-            --max-turns 12
+            --max-turns 30
