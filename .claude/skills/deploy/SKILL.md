@@ -120,7 +120,7 @@ curl -sS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8888/api/setting/list
 
 ```bash
 # 在 Box1 ssh 内
-TOKEN=$(grep '^MCP_SERVICE_TOKEN=' /app/crm/backend/.env | cut -d= -f2 | tr -d '"')
+TOKEN=$(grep '^MCP_SERVICE_TOKEN=' /app/crm/backend/.env | cut -d= -f2- | tr -d '"' | tr -d "'" | tr -d '\n' | tr -d ' ')
 URL=http://100.109.220.126:8889/mcp     # Box1 Tailscale IP, NOT 127.0.0.1
 ACCEPT='application/json, text/event-stream'
 
@@ -239,21 +239,21 @@ curl -sS -o /dev/null -w 'api_unauth: %{http_code}\n' $PROD/api/setting/listAll
 # 期望: api_unauth: 401
 
 # 3. 完整 login + cookie
-TMPDIR=$(mktemp -d)
-curl -sS -c $TMPDIR/cookies.txt \
+COOKIEDIR=$(mktemp -d)
+curl -sS -c $COOKIEDIR/cookies.txt \
   -H 'Content-Type: application/json' \
   -d '{"email":"admin@admin.com","password":"admin123"}' \
   -o /dev/null -w 'login: %{http_code}\n' \
   $PROD/api/login
 # 期望: login: 200
-test -s $TMPDIR/cookies.txt || echo 'FAIL: no cookie set'
+test -s $COOKIEDIR/cookies.txt || echo 'FAIL: no cookie set'
 
 # 4. 用 cookie 拿受保护接口
-curl -sS -b $TMPDIR/cookies.txt -o /dev/null -w 'protected: %{http_code}\n' \
+curl -sS -b $COOKIEDIR/cookies.txt -o /dev/null -w 'protected: %{http_code}\n' \
   $PROD/api/setting/listAll
 # 期望: protected: 200
 
-rm -rf $TMPDIR
+rm -rf "$COOKIEDIR"
 ```
 
 报告 4 条结果。任一不符预期 → 回滚（Phase 5）。
@@ -267,23 +267,23 @@ rm -rf $TMPDIR
 ```bash
 PROD=https://app.olatech.ai
 TS=$(date +%s)
-TMPDIR=$(mktemp -d)
+COOKIEDIR=$(mktemp -d)
 
 # ─── Round 1: admin@admin.com 创建 customer ──────────────────────
 NAME_ADMIN="ZYD-DEPLOY-${TS}-CUST-admin"
-curl -sS -c $TMPDIR/c_admin.txt -H 'Content-Type: application/json' \
+curl -sS -c $COOKIEDIR/c_admin.txt -H 'Content-Type: application/json' \
   -d '{"email":"admin@admin.com","password":"admin123"}' \
   $PROD/api/login > /dev/null
-curl -sS -N -b $TMPDIR/c_admin.txt -H 'Content-Type: application/json' \
+curl -sS -N -b $COOKIEDIR/c_admin.txt -H 'Content-Type: application/json' \
   -d "{\"message\":\"创建客户 $NAME_ADMIN, 国家 US, 联系人 deploy smoke, 邮箱 zyde2e@example.com\"}" \
   $PROD/api/ola/chat 2>&1 | grep -E "event: done|tool_event|customer.create" | head -5
 
 # ─── Round 2: yuz371@ucsd.edu 创建 customer ──────────────────────
 NAME_YUZ="ZYD-DEPLOY-${TS}-CUST-yuz371"
-curl -sS -c $TMPDIR/c_yuz.txt -H 'Content-Type: application/json' \
+curl -sS -c $COOKIEDIR/c_yuz.txt -H 'Content-Type: application/json' \
   -d '{"email":"yuz371@ucsd.edu","password":"12345678"}' \
   $PROD/api/login > /dev/null
-curl -sS -N -b $TMPDIR/c_yuz.txt -H 'Content-Type: application/json' \
+curl -sS -N -b $COOKIEDIR/c_yuz.txt -H 'Content-Type: application/json' \
   -d "{\"message\":\"创建客户 $NAME_YUZ, 国家 US, 联系人 deploy smoke, 邮箱 zyde2e@example.com\"}" \
   $PROD/api/ola/chat 2>&1 | grep -E "event: done|tool_event|customer.create" | head -5
 
@@ -292,14 +292,14 @@ sleep 3
 
 # ─── Cross-admin 验证 ─────────────────────────────────────────────
 # admin 应能看到自己的 admin doc，但看不到 yuz371 的
-curl -sS -b $TMPDIR/c_admin.txt "$PROD/api/client/search?fields=name&q=$NAME_ADMIN" | python3 -c "import json,sys; r=json.load(sys.stdin); print('admin sees admin doc:', any(c['name']==\"$NAME_ADMIN\" for c in r.get('result',[])))"
-curl -sS -b $TMPDIR/c_admin.txt "$PROD/api/client/search?fields=name&q=$NAME_YUZ"   | python3 -c "import json,sys; r=json.load(sys.stdin); print('admin sees yuz371 doc (must be False):', any(c['name']==\"$NAME_YUZ\" for c in r.get('result',[])))"
+curl -sS -b $COOKIEDIR/c_admin.txt "$PROD/api/client/search?fields=name&q=$NAME_ADMIN" | python3 -c "import json,sys; r=json.load(sys.stdin); print('admin sees admin doc:', any(c['name']==\"$NAME_ADMIN\" for c in r.get('result',[])))"
+curl -sS -b $COOKIEDIR/c_admin.txt "$PROD/api/client/search?fields=name&q=$NAME_YUZ"   | python3 -c "import json,sys; r=json.load(sys.stdin); print('admin sees yuz371 doc (must be False):', any(c['name']==\"$NAME_YUZ\" for c in r.get('result',[])))"
 
 # yuz371 应能看到自己的 yuz371 doc，但看不到 admin 的
-curl -sS -b $TMPDIR/c_yuz.txt "$PROD/api/client/search?fields=name&q=$NAME_YUZ"   | python3 -c "import json,sys; r=json.load(sys.stdin); print('yuz371 sees yuz371 doc:', any(c['name']==\"$NAME_YUZ\" for c in r.get('result',[])))"
-curl -sS -b $TMPDIR/c_yuz.txt "$PROD/api/client/search?fields=name&q=$NAME_ADMIN" | python3 -c "import json,sys; r=json.load(sys.stdin); print('yuz371 sees admin doc (must be False):', any(c['name']==\"$NAME_ADMIN\" for c in r.get('result',[])))"
+curl -sS -b $COOKIEDIR/c_yuz.txt "$PROD/api/client/search?fields=name&q=$NAME_YUZ"   | python3 -c "import json,sys; r=json.load(sys.stdin); print('yuz371 sees yuz371 doc:', any(c['name']==\"$NAME_YUZ\" for c in r.get('result',[])))"
+curl -sS -b $COOKIEDIR/c_yuz.txt "$PROD/api/client/search?fields=name&q=$NAME_ADMIN" | python3 -c "import json,sys; r=json.load(sys.stdin); print('yuz371 sees admin doc (must be False):', any(c['name']==\"$NAME_ADMIN\" for c in r.get('result',[])))"
 
-rm -rf $TMPDIR
+rm -rf "$COOKIEDIR"
 ```
 
 **预期 4 行输出：**
@@ -334,6 +334,8 @@ ss -tlnp 2>/dev/null | grep ':8901\b'          # 应当 LISTEN
 
 **跑法：**
 
+操作员的本地 Python 必须有 `imaplib`（标准库）+ `pymongo`。设 `NANOBOT_PY` env 指向你的 venv（缺省走 Duke 的 macbook 路径，其他人必须 override）：
+
 ```bash
 # 在本地（不在 prod box 上跑，避免污染 prod）
 set -a; source .secrets/SERVERS.env; set +a
@@ -341,7 +343,11 @@ RUN_ID=$(date +%s)
 SENDER='yuz371@ucsd.edu'
 NAME="ZYD-DEPLOY-EMAIL-${RUN_ID}-CUST-yuz371"
 
-/Users/duke/Documents/GitHub/nanobot/.venv/bin/python <<EOF
+# 操作员可 export NANOBOT_PY=/path/to/your/.venv/bin/python 覆盖
+PY=${NANOBOT_PY:-/Users/duke/Documents/GitHub/nanobot/.venv/bin/python}
+test -x "$PY" || { echo "FAIL: $PY not executable; export NANOBOT_PY=<your venv python>"; exit 1; }
+
+"$PY" <<EOF
 import imaplib, os
 from email.message import EmailMessage
 from email.utils import make_msgid, formatdate
@@ -357,22 +363,33 @@ with imaplib.IMAP4_SSL(ih, 993) as M:
     M.append("INBOX", "()", None, msg.as_bytes())  # empty flags so Zoho doesn't auto-\\Seen
 EOF
 
-# Wait for gateway poll + agent processing
-sleep 120
-
+# Bounded retry — 24 × 5s = 2min upper bound, exits early on success
 set -a; source backend/.env; set +a
-/Users/duke/Documents/GitHub/nanobot/.venv/bin/python <<EOF
+for i in $(seq 1 24); do
+  sleep 5
+  result=$("$PY" <<EOF
 import os
 from pymongo import MongoClient
 db = MongoClient(os.environ['DATABASE'], tls=True, tlsAllowInvalidCertificates=True)['mydatabase']
 expected = db.admins.find_one({'email': '$SENDER'})['_id']
 c = db.clients.find_one({'name': '$NAME'})
-print('exists:', c is not None)
-print('createdBy match:', c is not None and c.get('createdBy') == expected)
+if c is None:
+    print('pending')
+elif c.get('createdBy') == expected:
+    print('PASS')
+else:
+    print(f'FAIL createdBy={c.get(\"createdBy\")} expected={expected}')
 EOF
+)
+  case "$result" in
+    PASS) echo "✓ ${i}*5=$((i*5))s — exists + createdBy match"; break ;;
+    pending) echo "  ${i}*5=$((i*5))s — waiting for Box2 gateway poll + agent"; ;;
+    *) echo "✗ ${result}"; break ;;
+  esac
+done
 ```
 
-**预期：** `exists: True` + `createdBy match: True`。任一 `False` → 回滚（Phase 6）。
+**预期：** 上面循环以 `✓ ... PASS` 结束。任一 `FAIL ...` → 回滚（Phase 6）。如果跑满 2 分钟还停在 `pending` → 看 Box2 `journalctl -u nanobot-gateway.service --since '3 min ago'`。
 
 ## 8. Phase 4c — Release-specific verification（操作员每次根据本次 PR 改动加）
 
@@ -424,8 +441,10 @@ ssh root@47.251.10.171
 cd /root/nanobot
 git log --oneline -5
 git reset --hard <prev-good-commit>
-# 重启即可（无需 pip install — nanobot source-tree import）
-systemctl restart nanobot.service
+# 双 unit restart — 跟 Phase 2 / §4.2 一致；nanobot source-tree import，无需 pip install
+systemctl restart nanobot.service nanobot-gateway.service
+sleep 4
+systemctl is-active nanobot.service nanobot-gateway.service
 ```
 
 回滚后再跑一次 Phase 3 + Phase 4 smoke 确认 prod 真回到了 good。
@@ -457,6 +476,8 @@ systemctl restart nanobot.service
 ## 13. Appendix — 一次性安装：Box2 nanobot-gateway.service
 
 > 拓扑变化或新 box 接管 ai role 时才跑。日常部署 Phase 0-6 已 cover 既有 unit 的 git pull + restart。
+
+**前置（本 appendix 不 cover）**：`/root/nanobot/` git clone + `pip install -e .` + `nanobot.service` (serve, 8900) 已经装好并 active。这是建 ai role box 的最早一步，参考 `ola/DEPLOY_RUNBOOK.md` Phase 4。如果连 `nanobot.service` 还没起，先去走那条 SOP，再回到这里装 gateway。
 
 ### 13.1 systemd unit 模板
 
