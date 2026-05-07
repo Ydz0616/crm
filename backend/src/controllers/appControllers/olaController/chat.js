@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const { v4: uuidv4 } = require('uuid');
 const { toolEventsToBlocks } = require('./toolResultToBlocks');
 const { labelFor, STAGE_LABELS } = require('./thinkingLabels');
+const recordUsage = require('@/controllers/appControllers/llmUsageController/recordUsage');
 
 const ChatSession = mongoose.model('ChatSession');
 const ChatMessage = mongoose.model('ChatMessage');
@@ -22,10 +23,6 @@ function nanobotEndpoint() {
 // ---------------------------------------------------------------------------
 
 function writeSSE(res, eventName, data) {
-  // No backpressure handling: res.write() can return false on a full TCP
-  // send buffer, but for a single chat session with short SSE frames the
-  // queue stays small. If we ever fan out one stream to many slow clients,
-  // revisit (likely use res.flush() + drain event).
   res.write(`event: ${eventName}\ndata: ${JSON.stringify(data)}\n\n`);
 }
 
@@ -72,10 +69,12 @@ function makeSSEParser(onFrame) {
 }
 
 // ---------------------------------------------------------------------------
-// Auto-title (unchanged from prior implementation, just relocated).
+// Auto-title — non-streaming /v1/chat/completions call. Token spend is tracked
+// under channel='ask-ola-autotitle' so the dashboard can split user-facing
+// chat cost from incidental LLM costs (Ola CRM #98 C5).
 // ---------------------------------------------------------------------------
 
-function generateTitle(session, messages) {
+function generateTitle(session, messages, userId) {
   const conversation = messages
     .map((m) => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`)
     .join('\n');
@@ -90,20 +89,40 @@ function generateTitle(session, messages) {
     headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) },
     timeout: 30000,
   };
+  const titleStartTs = Date.now();
+  const titleRequestId = uuidv4();
   const titleReq = http.request(options, (titleRes) => {
     let data = '';
     titleRes.on('data', (chunk) => { data += chunk; });
     titleRes.on('end', () => {
+      let parsed;
       try {
-        const parsed = JSON.parse(data);
-        const title = parsed.choices?.[0]?.message?.content?.trim();
-        if (title && title.length > 0 && title.length <= 100) {
-          ChatSession.findByIdAndUpdate(session._id, { title, updated: Date.now() }).catch((err) => {
-            console.error(`[AutoTitle] Failed to update session ${session._id}:`, err.message);
-          });
-        }
+        parsed = JSON.parse(data);
       } catch (err) {
         console.error(`[AutoTitle] Failed to parse title response for session ${session._id}:`, err.message);
+        return;
+      }
+      const title = parsed?.choices?.[0]?.message?.content?.trim();
+      if (title && title.length > 0 && title.length <= 100) {
+        ChatSession.findByIdAndUpdate(session._id, { title, updated: Date.now() }).catch((err) => {
+          console.error(`[AutoTitle] Failed to update session ${session._id}:`, err.message);
+        });
+      }
+      // Record auto-title token spend under its own channel so the dashboard
+      // can split it from user-visible chat cost. Fire-and-forget; recordUsage
+      // is fail-silent. Only fires when nanobot supplied a real usage payload
+      // with provider/model — if the response was malformed or pre-N4 nanobot
+      // (no real usage), recordUsage's wire-contract check skips silently.
+      if (userId && parsed && typeof parsed.usage === 'object') {
+        recordUsage({
+          userId,
+          session,
+          messageId: null,
+          usage: parsed.usage,
+          latencyMs: Date.now() - titleStartTs,
+          requestId: titleRequestId,
+          channel: 'ask-ola-autotitle',
+        });
       }
     });
   });
@@ -114,14 +133,14 @@ function generateTitle(session, messages) {
   titleReq.end();
 }
 
-function maybeAutoTitle(session, userMessage, assistantContent) {
+function maybeAutoTitle(session, userMessage, assistantContent, userId) {
   if (session.title !== 'New Chat') return;
   ChatMessage.countDocuments({ sessionId: session._id, removed: false })
     .then((count) => {
       if (count >= 4) {
         return ChatMessage.find({ sessionId: session._id, removed: false })
           .sort({ created: 1 }).lean()
-          .then((msgs) => generateTitle(session, msgs));
+          .then((msgs) => generateTitle(session, msgs, userId));
       }
     })
     .catch((err) => console.error(`[AutoTitle] count/find failed for session ${session._id}:`, err.message));
@@ -170,15 +189,18 @@ const chat = async (req, res) => {
   res.setHeader('X-Accel-Buffering', 'no'); // hint to nginx not to buffer
   res.flushHeaders();
 
-  // Accumulators for stream-end persistence + final `done` frame payload.
-  // Each step's `ts` is reserved for future relative-timing UI (e.g. "step 2
-  // took 320ms"); not yet rendered, but persisted so we don't have to
-  // backfill schema later. Drop only if we decide that surface stays out.
   const thinkingSteps = []; // [{label, ts}] — drives thinking_trace block
   const finalToolEvents = []; // phase==='end' payloads → toolEventsToBlocks → widgets
   let streamedText = '';
   let upstreamFinished = false;
   let upstreamErrored = false;
+  // Captured usage frame from NanoBot's SSE stream (Ola issue #98). Stays null
+  // when running against an older nanobot that doesn't emit `event: usage` —
+  // recordUsage() short-circuits on null so the chat path stays functional.
+  let capturedUsage = null;
+  // Per-request trace ids — used for log correlation + LLMUsage.requestId.
+  const requestId = uuidv4();
+  const startTs = Date.now();
 
   // Per-salesperson language directive prepended to user content. SOUL.md
   // teaches the agent to honor [SESSION_LANG=xx] as an overriding system
@@ -206,11 +228,7 @@ const chat = async (req, res) => {
       'Content-Type': 'application/json',
       'Content-Length': Buffer.byteLength(proxyPayload),
       'Accept': 'text/event-stream',
-      // ISO5c (issue #185): pass logged-in admin._id so nanobot's MCP HTTP
-      // calls inject X-Acting-As; MCP server then scopes business tools to
-      // this admin instead of falling back to systemAdmin. End-to-end:
-      //   browser cookie → req.admin._id → here → nanobot api/server.py
-      //   → set_acting_as → contextvar → mcp.py event_hook → MCP server
+      // X-Acting-As scopes MCP business tools to logged-in admin (#185)
       'X-Ola-Acting-As': userId.toString(),
     },
     timeout: NANOBOT_TIMEOUT_MS,
@@ -229,6 +247,15 @@ const chat = async (req, res) => {
         }
       } else if (payload.phase === 'end' || payload.phase === 'error') {
         finalToolEvents.push(payload);
+      }
+      return;
+    }
+    if (eventName === 'usage') {
+      // Per-turn token counts from NanoBot (#98). Captured here, written in finishStream so SSE isn't delayed.
+      try {
+        capturedUsage = JSON.parse(dataStr);
+      } catch (e) {
+        console.warn('[askola] malformed event:usage frame dropped:', dataStr);
       }
       return;
     }
@@ -258,7 +285,10 @@ const chat = async (req, res) => {
     writeSSE(res, 'done', { sessionId: session._id, blocks });
     res.end();
 
-    // Fire-and-forget persistence.
+    // Fire-and-forget persistence. ChatMessage and LLMUsage are independent
+    // writes (no shared lock, no upsert on a hot doc) — running them in
+    // parallel keeps the post-stream tail short and avoids any write
+    // serializing on the other.
     if (streamedText.length > 0 || blocks.length > 0) {
       ChatMessage.insertMany([
         {
@@ -276,13 +306,56 @@ const chat = async (req, res) => {
           createdBy: userId,
         },
       ])
-        .then(() => maybeAutoTitle(session, message.trim(), streamedText))
+        .then((docs) => {
+          // Plumb the assistant message _id into the LLMUsage row so the
+          // dashboard can deep-link cost → original message. Best-effort:
+          // if docs[1] is missing for any reason, recordUsage tolerates
+          // null messageId.
+          const assistantMsgId = docs && docs[1] && docs[1]._id;
+          if (capturedUsage) {
+            recordUsage({
+              userId,
+              session,
+              messageId: assistantMsgId || null,
+              usage: capturedUsage,
+              latencyMs: Date.now() - startTs,
+              requestId,
+              errored: upstreamErrored,
+            });
+          }
+          return maybeAutoTitle(session, message.trim(), streamedText, userId);
+        })
         .catch((err) => {
           console.error(
             `[ChatMessage] Persist failed for session ${session._id}:`,
             err.message,
           );
+          // ChatMessage persist failed — still record LLMUsage so cost
+          // tracking isn't lost. messageId stays null.
+          if (capturedUsage) {
+            recordUsage({
+              userId,
+              session,
+              messageId: null,
+              usage: capturedUsage,
+              latencyMs: Date.now() - startTs,
+              requestId,
+              errored: true,
+            });
+          }
         });
+    } else if (capturedUsage) {
+      // No content to persist (rare — empty stream) but we still saw a usage
+      // frame, so a real LLM call happened. Track it.
+      recordUsage({
+        userId,
+        session,
+        messageId: null,
+        usage: capturedUsage,
+        latencyMs: Date.now() - startTs,
+        requestId,
+        errored: upstreamErrored,
+      });
     }
   };
 
@@ -343,3 +416,6 @@ const chat = async (req, res) => {
 };
 
 module.exports = chat;
+// Internal helpers exported for unit testing (Ola CRM #98 C5 — auto-title
+// usage tracking). Not part of the public chat controller surface.
+module.exports.__test__ = { generateTitle, maybeAutoTitle };
