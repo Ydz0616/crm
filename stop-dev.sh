@@ -8,7 +8,7 @@ echo "Stopping Ola dev services..."
 pkill -f "nodemon.*src/server\.js" 2>/dev/null && echo "  Killed nodemon (backend)" || true
 pkill -f "nodemon.*src/mcp/server\.js" 2>/dev/null && echo "  Killed nodemon (mcp)" || true
 
-for PORT in 8888 8889 8900 3000; do
+for PORT in 8888 8889 8900 8901 3000; do
   PID=$(lsof -ti:$PORT 2>/dev/null || true)
   if [ -n "$PID" ]; then
     kill -9 $PID 2>/dev/null || true

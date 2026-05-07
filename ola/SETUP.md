@@ -39,7 +39,11 @@ bootstrap correctly:
 │
 └── nanobot/  (or  Ola_bot/)        ← MUST be a sibling of crm/
     └── NOTE: Use SeekMi-Technologies/Ola_bot, NOT upstream HKUDS/nanobot.
-        We carry Ola-specific patches on branch `ola-dev`.
+        Branch model:
+          - `ola-dev`   : development cumulative — local dev runs from here
+          - `ola-main`  : production stable (repo default) — deployment uses this
+          - `main`      : HKUDS upstream mirror — only touched on upstream sync
+        Release flow: PR `ola-dev` → `ola-main` once changes are reviewed.
 
 ~/.nanobot/                         ← provisioned by start-dev.sh on first boot
 ├── config.json                     ← rendered from ola/nanobot.config.template.json
@@ -424,4 +428,4 @@ machine personalization, use `USER.md` (first-boot only, never clobbered).
 | `~/.nanobot/workspace/memory/` | no | runtime agent memory — per machine |
 | `~/.nanobot/workspace/sessions/` | no | chat session logs — per machine |
 | `~/.nanobot/config.json` | no (mode 600) | rendered config with real `MCP_SERVICE_TOKEN` + `GEMINI_API_KEY` substituted in |
-| `../nanobot/` (sibling) | (separate repo) | NanoBot Python AI backbone — `SeekMi-Technologies/Ola_bot` fork, branch `ola-dev` |
+| `../nanobot/` (sibling) | (separate repo) | NanoBot Python AI backbone — `SeekMi-Technologies/Ola_bot` fork. `ola-dev` for dev / `ola-main` for prod (repo default). PR `ola-dev` → `ola-main` to release |

@@ -206,6 +206,12 @@ const chat = async (req, res) => {
       'Content-Type': 'application/json',
       'Content-Length': Buffer.byteLength(proxyPayload),
       'Accept': 'text/event-stream',
+      // ISO5c (issue #185): pass logged-in admin._id so nanobot's MCP HTTP
+      // calls inject X-Acting-As; MCP server then scopes business tools to
+      // this admin instead of falling back to systemAdmin. End-to-end:
+      //   browser cookie → req.admin._id → here → nanobot api/server.py
+      //   → set_acting_as → contextvar → mcp.py event_hook → MCP server
+      'X-Ola-Acting-As': userId.toString(),
     },
     timeout: NANOBOT_TIMEOUT_MS,
   };

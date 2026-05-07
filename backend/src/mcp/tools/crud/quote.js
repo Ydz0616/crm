@@ -23,7 +23,7 @@ const { z } = require('zod');
 const mongoose = require('mongoose');
 const quoteController = require('@/controllers/appControllers/quoteController');
 const { runController } = require('../../adapters/controllerAdapter');
-const { getSystemAdmin } = require('../../bootstrap');
+const { getCurrentActingAdmin } = require('../../context');
 
 // Auto-fill `items[].description` from the Merch master record (by
 // serialNumber) so the generated Quote shows meaningful descriptions in
@@ -80,9 +80,8 @@ async function enrichItemDescriptions(items) {
   return { items: enriched, warnings };
 }
 
-async function call(method, input) {
-  return runController(method, { ...input, admin: getSystemAdmin() });
-}
+// PR #193 follow-up: dropped the dead `call()` wrapper. ISO3 made it a
+// no-op around runController since context now provides the admin.
 
 function pad2(n) { return n < 10 ? `0${n}` : `${n}`; }
 
@@ -112,7 +111,7 @@ const search = {
     q: z.string().min(1).describe('Quote number fragment'),
   },
   handler: async ({ q }) => {
-    const res = await call(quoteController.search, { query: { q, fields: 'number' } });
+    const res = await runController(quoteController.search, { query: { q, fields: 'number' } });
     if (res.ok && Array.isArray(res.data) && res.data.length > 0) {
       return { ok: true, data: { found: true, results: res.data } };
     }
@@ -124,7 +123,7 @@ const read = {
   name: 'quote.read',
   description: 'Read a single quote by id (includes items, totals, currency, status).',
   inputSchema: { id: z.string().min(1) },
-  handler: async ({ id }) => call(quoteController.read, { params: { id } }),
+  handler: async ({ id }) => runController(quoteController.read, { params: { id } }),
 };
 
 const create = {
@@ -184,7 +183,7 @@ const create = {
     };
     if (input.exchangeRate !== undefined) body.exchangeRate = input.exchangeRate;
 
-    const result = await call(quoteController.create, { body });
+    const result = await runController(quoteController.create, { body });
     if (result.ok && warnings.length > 0) {
       return { ...result, warnings };
     }
@@ -195,13 +194,13 @@ const create = {
 const update = {
   name: 'quote.update',
   description:
-    'Update a quote by id. Caller must pass the FULL quote body (items, currency, etc) — this is a replace-style update enforced by the controller. The Agent should typically read first, modify, then update.',
+    'Partial update of a quote by id (PATCH semantics). Only the fields you pass are changed; everything else is preserved from the current persisted quote. The Agent does NOT need to re-pass number / date / status / expiredDate / client / currency / items unless they are actually being changed. Items is array-replacement: if you pass items, you pass the FULL new list.',
   inputSchema: {
     id: z.string().min(1),
-    client: z.string().min(1),
-    currency: z.enum(['USD', 'CNY']),
+    client: z.string().min(1).optional(),
+    currency: z.enum(['USD', 'CNY']).optional(),
     exchangeRate: z.number().positive().optional(),
-    items: z.array(ItemShape).min(1),
+    items: z.array(ItemShape).min(1).optional(),
     status: z.string().optional(),
     notes: z.array(z.string()).optional(),
     termsOfDelivery: z.array(z.string()).optional(),
@@ -221,36 +220,79 @@ const update = {
         message: 'quote.update rejects `total` — totals are computed server-side',
       };
     }
-    let items = rest.items.map((it) => ({
-      itemName: it.itemName,
-      description: it.description || '',
-      quantity: it.quantity,
-      price: it.price == null ? 0 : it.price,
-      total: 0,
-      unit_en: it.unit_en || '',
-      unit_cn: it.unit_cn || '',
-    }));
-    const enrichResult = await enrichItemDescriptions(items);
-    items = enrichResult.items;
-    const warnings = enrichResult.warnings;
-    const now = new Date();
+
+    // PATCH: load the persisted quote first, merge only fields the agent
+    // actually passed. Bug history (issue #198): previously this handler used
+    // `||` against fresh defaults (number=defaultQuoteNumber(now), status='draft'…)
+    // so an agent omitting those fields silently got them rewritten.
+    const readRes = await runController(quoteController.read, { params: { id } });
+    if (!readRes.ok) return readRes;
+    const existing = readRes.data;
+
+    let items;
+    let warnings = [];
+    if (rest.items !== undefined) {
+      items = rest.items.map((it) => ({
+        itemName: it.itemName,
+        description: it.description || '',
+        quantity: it.quantity,
+        price: it.price == null ? 0 : it.price,
+        total: 0,
+        unit_en: it.unit_en || '',
+        unit_cn: it.unit_cn || '',
+      }));
+      const enrichResult = await enrichItemDescriptions(items);
+      items = enrichResult.items;
+      warnings = enrichResult.warnings;
+    } else {
+      items = (existing.items || []).map((it) => ({
+        itemName: it.itemName,
+        description: it.description || '',
+        quantity: it.quantity,
+        price: it.price,
+        total: it.total || 0,
+        unit_en: it.unit_en || '',
+        unit_cn: it.unit_cn || '',
+      }));
+    }
+
+    // Quote schema autopopulates `client` — existing.client is the populated
+    // Client doc, not a raw ObjectId. Pull the _id back out for the update.
+    const existingClientId =
+      existing.client && existing.client._id
+        ? String(existing.client._id)
+        : String(existing.client);
+
     const body = {
-      client: rest.client,
-      number: rest.number || defaultQuoteNumber(now),
-      year: rest.year || now.getFullYear(),
-      status: rest.status || 'draft',
-      date: rest.date || now,
-      expiredDate: rest.expiredDate || plusDays(now, 30),
-      currency: rest.currency,
+      client: rest.client !== undefined ? rest.client : existingClientId,
+      number: rest.number !== undefined ? rest.number : existing.number,
+      year: rest.year !== undefined ? rest.year : existing.year,
+      status: rest.status !== undefined ? rest.status : existing.status,
+      date: rest.date !== undefined ? rest.date : existing.date,
+      expiredDate: rest.expiredDate !== undefined ? rest.expiredDate : existing.expiredDate,
+      currency: rest.currency !== undefined ? rest.currency : existing.currency,
       items,
-      notes: rest.notes || [],
-      termsOfDelivery: rest.termsOfDelivery || [],
-      paymentTerms: rest.paymentTerms || [],
-      freight: rest.freight ?? 0,
-      discount: rest.discount ?? 0,
+      notes: rest.notes !== undefined ? rest.notes : (existing.notes || []),
+      termsOfDelivery:
+        rest.termsOfDelivery !== undefined ? rest.termsOfDelivery : (existing.termsOfDelivery || []),
+      paymentTerms:
+        rest.paymentTerms !== undefined ? rest.paymentTerms : (existing.paymentTerms || []),
+      freight: rest.freight !== undefined ? rest.freight : (existing.freight ?? 0),
+      discount: rest.discount !== undefined ? rest.discount : (existing.discount ?? 0),
     };
-    if (rest.exchangeRate !== undefined) body.exchangeRate = rest.exchangeRate;
-    const result = await call(quoteController.update, { params: { id }, body });
+
+    // exchangeRate: prefer agent-passed value; else preserve existing only when
+    // currency hasn't changed (otherwise let controller B3 validation re-run
+    // with the right defaults — USD must be 1, CNY must be > 1 explicitly).
+    if (rest.exchangeRate !== undefined) {
+      body.exchangeRate = rest.exchangeRate;
+    } else if (rest.currency === undefined || rest.currency === existing.currency) {
+      if (existing.exchangeRate !== undefined && existing.exchangeRate !== null) {
+        body.exchangeRate = existing.exchangeRate;
+      }
+    }
+
+    const result = await runController(quoteController.update, { params: { id }, body });
     if (result.ok && warnings.length > 0) {
       return { ...result, warnings };
     }
@@ -258,8 +300,59 @@ const update = {
   },
 };
 
+const generatePdfUrl = {
+  name: 'quote.generate_pdf_url',
+  description:
+    'Return a downloadable PDF URL for an existing quote. Idempotent and safe to re-call; the PDF is regenerated server-side on each download. Useful any time an agent needs to surface a PDF link for a quote, not just after creation.',
+  inputSchema: {
+    id: z.string().min(1).describe('Quote _id (24-char Mongo ObjectId)'),
+  },
+  handler: async ({ id }) => {
+    if (!mongoose.isValidObjectId(id)) {
+      return {
+        ok: false,
+        code: 'VALIDATION',
+        message: `Invalid quote id (must be a 24-char hex ObjectId): ${id}`,
+      };
+    }
+    let actingAdmin = null;
+    try {
+      actingAdmin = getCurrentActingAdmin();
+    } catch (_outsideScope) {
+      actingAdmin = null;
+    }
+    if (!actingAdmin || !actingAdmin._id) {
+      return {
+        ok: false,
+        code: 'PERMISSION',
+        message: 'quote.generate_pdf_url requires an authenticated admin context',
+      };
+    }
+    const q = await mongoose
+      .model('Quote')
+      .findOne({ _id: id, removed: false, createdBy: actingAdmin._id })
+      .select('_id')
+      .lean();
+    if (!q) {
+      return {
+        ok: false,
+        code: 'NOT_FOUND',
+        message: `Quote not found (id=${id})`,
+      };
+    }
+    const baseRaw =
+      process.env.PUBLIC_SERVER_FILE ||
+      `http://localhost:${process.env.PORT || 8888}/`;
+    const base = baseRaw.endsWith('/') ? baseRaw.slice(0, -1) : baseRaw;
+    return {
+      ok: true,
+      data: { url: `${base}/download/quote/quote-${id}.pdf` },
+    };
+  },
+};
+
 module.exports = {
-  tools: [search, read, create, update],
+  tools: [search, read, create, update, generatePdfUrl],
   // Test-only export — enrichItemDescriptions is the auto-fill helper that
   // populates `description` from Merch.description_en (preferred) or
   // description_cn (fallback). Surfaced so backend/test/language.test.js can
