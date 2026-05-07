@@ -21,7 +21,12 @@ const DRY = process.argv.includes('--dry-run');
   const Merch = mongoose.model('Merch');
   const Quote = mongoose.model('Quote');
 
-  const re = /^ZYD(?:-EMAIL)?-E2E-/;
+  // Match every ZYD-test prefix used across the harness + deploy suite:
+  //   ZYD-E2E-              askola_acting_as_e2e.py
+  //   ZYD-EMAIL-E2E-        early email harness ad-hoc
+  //   ZYD-EMAIL-FULL-VERIFY- full-verify email run
+  //   ZYD-DEPLOY-           deploy skill Phase 4 / 4b smoke
+  const re = /^ZYD-(E2E-|EMAIL-|DEPLOY-)/;
 
   const clientHits = await Client.find({ name: re, removed: false }).select('name createdBy').lean();
   const merchHits = await Merch.find({ serialNumber: re, removed: false }).select('serialNumber createdBy').lean();
