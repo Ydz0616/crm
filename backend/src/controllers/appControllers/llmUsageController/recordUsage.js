@@ -1,27 +1,26 @@
 const mongoose = require('mongoose');
 
-const { calcCost, PRICING_VERSION } = require('@/constants/llmPricing');
+const { calcCost, PRICING, PRICING_VERSION } = require('@/constants/llmPricing');
 
 // Resolved lazily so this module can be required at boot before
 // models/utils/index.js has finished registering all mongoose models.
 const lazyModel = () => mongoose.model('LlmUsage');
 
-// Defaults reflect the current Ask Ola configuration (see
-// ola/nanobot.config.template.json `agents.defaults`). They can be overridden
-// per-request once nanobot starts surfacing per-call provider/model in the
-// usage SSE frame; for now NanoBot uses one model per process so a static
-// default is correct.
-const NANOBOT_PROVIDER = process.env.NANOBOT_PROVIDER || 'gemini';
-const NANOBOT_MODEL = process.env.NANOBOT_MODEL || 'gemini-3.1-flash-lite-preview';
-
 // Persist one LLMUsage document. Always returns a Promise so the caller can
 // `.catch()` if they want, but never throws — internally fail-silent so SSE
 // finalizers can fire-and-forget without risking the user's response.
 //
-// Skip rules (returns without inserting):
-//   - usage is missing / not an object → nanobot didn't surface real numbers
-//     (e.g. legacy nanobot version, mocked path, error during streaming)
-//   - totalTokens is 0 → no LLM call actually happened (rare; safety net)
+// Skip rules (return without inserting):
+//   - usage missing / not an object → nanobot didn't surface a frame at all
+//   - usage.provider or usage.model missing → wire-contract violation; do NOT
+//     fill defaults (would mask a nanobot rollback). Surfaced via console.error
+//     so the missing field is visible in logs.
+//   - totalTokens === 0 → no real LLM call (rare safety net)
+//
+// Errored row (insert with errored=true, costUsd=0):
+//   - PRICING table has no entry for `${provider}:${model}` → token data is
+//     still recorded for usage analytics, but cost is 0 and errored flag is
+//     raised so the dashboard can surface a "needs pricing" signal.
 async function recordUsage({
   userId,
   session,
@@ -34,6 +33,13 @@ async function recordUsage({
   if (!usage || typeof usage !== 'object') return;
   if (!session || !session._id) return;
 
+  const provider = typeof usage.provider === 'string' && usage.provider ? usage.provider : null;
+  const model = typeof usage.model === 'string' && usage.model ? usage.model : null;
+  if (!provider || !model) {
+    console.error('[LLMUsage] frame missing provider/model — skipping persist');
+    return;
+  }
+
   const inputTokens = Number(usage.prompt_tokens || 0);
   const outputTokens = Number(usage.completion_tokens || 0);
   const totalTokens = Number(usage.total_tokens || inputTokens + outputTokens);
@@ -42,8 +48,18 @@ async function recordUsage({
 
   if (totalTokens === 0) return;
 
+  const pricingKey = `${provider}:${model}`;
+  const pricingKnown = Object.prototype.hasOwnProperty.call(PRICING, pricingKey);
+  let unknownPricing = false;
+  if (!pricingKnown) {
+    console.error(
+      `[LLMUsage] unknown pricing for ${pricingKey} — recorded with costUsd=0 errored=true`,
+    );
+    unknownPricing = true;
+  }
+
   try {
-    const costUsd = calcCost(NANOBOT_PROVIDER, NANOBOT_MODEL, {
+    const costUsd = calcCost(provider, model, {
       inputTokens,
       outputTokens,
       cachedTokens,
@@ -57,8 +73,8 @@ async function recordUsage({
       nanobotSessionId: session.nanobotSessionId,
       requestId,
       channel: 'ask-ola',
-      provider: NANOBOT_PROVIDER,
-      model: NANOBOT_MODEL,
+      provider,
+      model,
       inputTokens,
       outputTokens,
       totalTokens,
@@ -67,7 +83,7 @@ async function recordUsage({
       costUsd,
       pricingVersion: PRICING_VERSION,
       latencyMs: Number(latencyMs) || 0,
-      errored: !!errored,
+      errored: !!errored || unknownPricing,
       createdBy: userId,
     });
   } catch (err) {
