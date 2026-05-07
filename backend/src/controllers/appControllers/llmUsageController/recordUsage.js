@@ -60,11 +60,9 @@ async function recordUsage({
   }
 
   try {
-    const costUsd = calcCost(provider, model, {
-      inputTokens,
-      outputTokens,
-      cachedTokens,
-    });
+    const costUsd = unknownPricing
+      ? 0
+      : calcCost(provider, model, { inputTokens, outputTokens, cachedTokens });
 
     const LlmUsage = lazyModel();
     await LlmUsage.create({
