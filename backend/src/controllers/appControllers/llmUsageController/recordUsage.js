@@ -29,6 +29,7 @@ async function recordUsage({
   latencyMs,
   requestId,
   errored = false,
+  channel = 'ask-ola',
 }) {
   if (!usage || typeof usage !== 'object') return;
   if (!session || !session._id) return;
@@ -72,7 +73,7 @@ async function recordUsage({
       messageId,
       nanobotSessionId: session.nanobotSessionId,
       requestId,
-      channel: 'ask-ola',
+      channel,
       provider,
       model,
       inputTokens,
