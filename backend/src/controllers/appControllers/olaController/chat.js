@@ -263,11 +263,12 @@ const chat = async (req, res) => {
       return;
     }
     if (eventName === 'usage') {
-      // Real per-turn token counts from NanoBot (Ola issue #98). Capture only
-      // — write to LLMUsage happens in finishStream() so it cannot delay the
-      // user-visible SSE response. Older nanobot versions never send this
-      // frame; capturedUsage stays null and recordUsage skips silently.
-      try { capturedUsage = JSON.parse(dataStr); } catch { /* drop malformed */ }
+      // Per-turn token counts from NanoBot (#98). Captured here, written in finishStream so SSE isn't delayed.
+      try {
+        capturedUsage = JSON.parse(dataStr);
+      } catch (e) {
+        console.warn('[askola] malformed event:usage frame dropped:', dataStr);
+      }
       return;
     }
     // Default event = OpenAI chat.completion.chunk
