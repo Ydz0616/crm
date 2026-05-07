@@ -20,6 +20,7 @@ import {
 } from '@ant-design/icons';
 
 import useLanguage from '@/locale/useLanguage';
+import { VERSION } from '@/version';
 
 import SettingsProfile from './SettingsProfile';
 // === MVP-HIDDEN: 以下 Settings 子页面本轮不需要 ===
@@ -185,6 +186,7 @@ export default function Settings() {
               <LogoutOutlined />
               <span>Log Out</span>
             </button>
+            <div className="settings-sidebar-version">Ola v{VERSION}</div>
           </div>
         </div>
 
