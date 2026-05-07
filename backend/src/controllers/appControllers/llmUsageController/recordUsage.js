@@ -89,7 +89,7 @@ async function recordUsage({
     // Never let cost-tracking failure poison the user request. Surface in
     // logs so we notice if writes start systematically dropping (e.g. mongo
     // connection pool exhausted under load).
-    console.error('[LLMUsage] persist failed:', err && err.message);
+    console.error('[LLMUsage] persist failed:', err.message);
   }
 }
 
