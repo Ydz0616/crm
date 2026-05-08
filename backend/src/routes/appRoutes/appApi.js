@@ -66,7 +66,12 @@ router.route('/ola/session/messages/:id').get(catchErrors(olaController['session
 // Internal developer dashboard — gated by email allowlist (issue #220 D1).
 // Routes for individual panels are registered in subsequent items (D3-D8).
 const internalAuth = require('@/middlewares/internalAuth');
+const internalDashboardController = require('@/controllers/internalDashboardController');
 const internalDashboardRouter = express.Router();
 router.use('/internal/dashboard', internalAuth, internalDashboardRouter);
+internalDashboardRouter.get(
+  '/llm-usage',
+  catchErrors(internalDashboardController.getLlmUsage)
+);
 
 module.exports = router;

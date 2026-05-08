@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
-# Real-stack integration test for the internal dashboard email-allowlist gate
-# (Ola CRM issue #220 D1).
+# Real-stack integration test for the internal dashboard gate + LLM-usage
+# panel endpoint (Ola CRM issue #220 D1 + D3).
 #
-# Mirrors the unit layer (backend/test/internalAuth.test.js) but hits the full
-# Express middleware chain to catch wiring regressions the unit layer cannot
-# see — specifically that internalAuth runs after isValidAuthToken and before
-# the internalDashboardRouter, that req.admin.email is correctly populated by
-# the upstream auth middleware, and that the empty router falls through to
-# errorHandlers.notFound (404) rather than the gate (403).
+# Mirrors the unit layers (backend/test/internalAuth.test.js,
+# backend/test/internal-dashboard/llmUsage.test.js) but hits the full Express
+# middleware chain to catch wiring regressions the unit layer cannot see —
+# specifically that internalAuth runs after isValidAuthToken and before the
+# internalDashboardRouter, that req.admin.email is correctly populated by the
+# upstream auth middleware, that an unknown panel falls through to
+# errorHandlers.notFound (404), and that getLlmUsage produces the documented
+# response shape end-to-end.
 #
 # Prerequisites:
 #   - Backend started with INTERNAL_DASHBOARD_EMAILS containing admin@admin.com
@@ -21,13 +23,14 @@
 #
 # Exit code: 0 if all assertions PASS, 1 if any FAIL.
 #
-# Assertions (3, follow Ola "second call after protocol entry + negative case"
-# rule from feedback_acceptance_criteria_depth.md):
+# Assertions (4):
 #   1. Protocol entry — no cookie → 401 (isValidAuthToken intercepts)
 #   2. Protocol entry — login → 200 + cookie issued
-#   3. Second call after entry — protected gate path with valid cookie + email
-#      in allowlist → 404 (router empty, proves auth+gate both passed without
+#   3. Second call after entry — unknown panel with valid cookie + email in
+#      allowlist → 404 (router fallback, proves auth+gate passed without
 #      collapsing into 403)
+#   4. Real panel call — /llm-usage?range=7d with valid cookie → 200 +
+#      success:true and the documented top-level result keys
 #
 # The 403 (email NOT in list) path is covered by the jest unit layer, since
 # reproducing it here would require a second backend with a different
@@ -85,6 +88,23 @@ if grep -q "Internal access denied" /tmp/d1_t3_body.json; then
   FAIL=$((FAIL + 1))
 fi
 rm -f /tmp/d1_t3_body.json
+
+echo
+echo "=== T4: GET /api/internal/dashboard/llm-usage?range=7d (expect 200 + result keys) ==="
+T4_STATUS=$(curl -s -b "$COOKIE_JAR" -o /tmp/d3_t4_body.json -w "%{http_code}" \
+  "$BACKEND/api/internal/dashboard/llm-usage?range=7d")
+assert_status "llm-usage in list -> 200" "200" "$T4_STATUS"
+if ! grep -q '"success":true' /tmp/d3_t4_body.json; then
+  echo "  FAIL  llm-usage body did not contain success:true"
+  FAIL=$((FAIL + 1))
+fi
+for key in range totals byProviderModel topUsers erroredCount byChannel; do
+  if ! grep -q "\"$key\"" /tmp/d3_t4_body.json; then
+    echo "  FAIL  llm-usage result missing key: $key"
+    FAIL=$((FAIL + 1))
+  fi
+done
+rm -f /tmp/d3_t4_body.json
 
 echo
 echo "=== Summary: $PASS passed, $FAIL failed ==="
