@@ -518,6 +518,12 @@ const lang = {
   exchange_rate_tooltip: 'Enter the exchange rate from USD to CNY (e.g., 7 means 1 USD = 7 CNY)',
   use_cny: 'Use CNY',
   using_cny_calculation: 'Using CNY Calculation',
+  dev_tools: 'Dev Tools',
+  dev_dashboard: 'Dev Dashboard',
+  internal_only: 'Internal only — visible to dev allowlist',
+  last_updated: 'Last Updated',
+  coming_soon: 'Coming soon',
+  access_denied: 'Access Denied',
 };
 
 export default lang;

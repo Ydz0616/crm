@@ -8,6 +8,7 @@ import { useSelector } from 'react-redux';
 import { useAppContext } from '@/context/appContext';
 import { selectCurrentAdmin } from '@/redux/auth/selectors';
 import { FILE_BASE_URL } from '@/config/serverApiConfig';
+import isInternalUser from '@/utils/isInternalUser';
 
 import useLanguage from '@/locale/useLanguage';
 import logo from '@/style/images/aola.png';
@@ -45,6 +46,7 @@ import {
   QuestionCircleOutlined,
   LogoutOutlined,
   RightOutlined,
+  CodeOutlined,
 } from '@ant-design/icons';
 
 const { Sider } = Layout;
@@ -172,6 +174,21 @@ function Sidebar({ collapsible, isMobile = false }) {
     //   ],
     // },
     // === END MVP-HIDDEN ===
+    ...(isInternalUser(currentAdmin)
+      ? [
+          {
+            type: 'group',
+            label: translate('dev_tools'),
+            children: [
+              {
+                key: 'dev-dashboard',
+                icon: <CodeOutlined />,
+                label: <Link to={'/dev-dashboard'}>{translate('dev_dashboard')}</Link>,
+              },
+            ],
+          },
+        ]
+      : []),
   ];
 
   useEffect(() => {
