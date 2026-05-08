@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
-# Real-stack integration test for the internal dashboard gate + LLM-usage
-# panel endpoint (Ola CRM issue #220 D1 + D3).
+# Real-stack integration test for the internal dashboard gate + LLM-usage +
+# email-token panel endpoints (Ola CRM issue #220 D1 + D3 + D4).
 #
 # Mirrors the unit layers (backend/test/internalAuth.test.js,
-# backend/test/internal-dashboard/llmUsage.test.js) but hits the full Express
-# middleware chain to catch wiring regressions the unit layer cannot see —
-# specifically that internalAuth runs after isValidAuthToken and before the
-# internalDashboardRouter, that req.admin.email is correctly populated by the
-# upstream auth middleware, that an unknown panel falls through to
-# errorHandlers.notFound (404), and that getLlmUsage produces the documented
-# response shape end-to-end.
+# backend/test/internal-dashboard/llmUsage.test.js,
+# backend/test/internal-dashboard/emailToken.test.js) but hits the full
+# Express middleware chain to catch wiring regressions the unit layer cannot
+# see — specifically that internalAuth runs after isValidAuthToken and before
+# the internalDashboardRouter, that req.admin.email is correctly populated by
+# the upstream auth middleware, that an unknown panel falls through to
+# errorHandlers.notFound (404), and that the panel handlers produce the
+# documented response shape end-to-end.
 #
 # Prerequisites:
 #   - Backend started with INTERNAL_DASHBOARD_EMAILS containing admin@admin.com
@@ -23,7 +24,7 @@
 #
 # Exit code: 0 if all assertions PASS, 1 if any FAIL.
 #
-# Assertions (4):
+# Assertions (5):
 #   1. Protocol entry — no cookie → 401 (isValidAuthToken intercepts)
 #   2. Protocol entry — login → 200 + cookie issued
 #   3. Second call after entry — unknown panel with valid cookie + email in
@@ -31,6 +32,8 @@
 #      collapsing into 403)
 #   4. Real panel call — /llm-usage?range=7d with valid cookie → 200 +
 #      success:true and the documented top-level result keys
+#   5. Email panel — /email-token-usage?range=7d with valid cookie → 200 +
+#      either the empty-state envelope or full aggregation (UI handles both)
 #
 # The 403 (email NOT in list) path is covered by the jest unit layer, since
 # reproducing it here would require a second backend with a different
@@ -105,6 +108,31 @@ for key in range totals byProviderModel topUsers erroredCount byChannel; do
   fi
 done
 rm -f /tmp/d3_t4_body.json
+
+echo
+echo "=== T5: GET /api/internal/dashboard/email-token-usage?range=7d (expect 200 + valid envelope) ==="
+T5_STATUS=$(curl -s -b "$COOKIE_JAR" -o /tmp/d4_t5_body.json -w "%{http_code}" \
+  "$BACKEND/api/internal/dashboard/email-token-usage?range=7d")
+assert_status "email-token-usage in list -> 200" "200" "$T5_STATUS"
+if ! grep -q '"success":true' /tmp/d4_t5_body.json; then
+  echo "  FAIL  email-token body did not contain success:true"
+  FAIL=$((FAIL + 1))
+fi
+# Email channel may legitimately have no data yet — accept either envelope.
+if grep -q '"empty":true' /tmp/d4_t5_body.json; then
+  if ! grep -q '"hint"' /tmp/d4_t5_body.json; then
+    echo "  FAIL  empty:true response missing hint key"
+    FAIL=$((FAIL + 1))
+  fi
+else
+  for key in totals byProviderModel topUsers erroredCount byChannel; do
+    if ! grep -q "\"$key\"" /tmp/d4_t5_body.json; then
+      echo "  FAIL  populated email-token result missing key: $key"
+      FAIL=$((FAIL + 1))
+    fi
+  done
+fi
+rm -f /tmp/d4_t5_body.json
 
 echo
 echo "=== Summary: $PASS passed, $FAIL failed ==="

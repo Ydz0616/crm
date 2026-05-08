@@ -73,5 +73,9 @@ internalDashboardRouter.get(
   '/llm-usage',
   catchErrors(internalDashboardController.getLlmUsage)
 );
+internalDashboardRouter.get(
+  '/email-token-usage',
+  catchErrors(internalDashboardController.getEmailToken)
+);
 
 module.exports = router;

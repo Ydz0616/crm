@@ -2,12 +2,13 @@ import { Tabs, Typography } from 'antd';
 import useLanguage from '@/locale/useLanguage';
 
 import LlmUsagePanel from './panels/LlmUsagePanel';
+import EmailTokenPanel from './panels/EmailTokenPanel';
 
 const { Title } = Typography;
 
 const PANELS = [
   { key: 'llm-usage', label: 'LLM Usage', component: <LlmUsagePanel /> },
-  { key: 'email-token', label: 'Email Token' },
+  { key: 'email-token', label: 'Email Token', component: <EmailTokenPanel /> },
   { key: 'user-activity', label: 'User Activity' },
   { key: 'mcp-health', label: 'MCP Health' },
   { key: 'logs', label: 'Logs' },
