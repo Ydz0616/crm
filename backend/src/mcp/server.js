@@ -103,6 +103,20 @@ async function main() {
 
   const app = express();
 
+  // GET /health — public liveness probe for the dev dashboard's MCP Health
+  // panel (#220 D6) and any external monitor. Intentionally no auth: it
+  // reveals only process-level metadata (no secrets, no business data).
+  app.get('/health', (_req, res) => {
+    res.json({
+      ok: true,
+      ts: Date.now(),
+      uptimeSec: Math.round(process.uptime()),
+      toolsCount: TOOL_COUNT,
+      bindHost: HOST,
+      bindPort: PORT,
+    });
+  });
+
   // POST /mcp —— 唯一的 MCP 入口。
   // 中间件顺序：先鉴权（无 token 直接 401，省 body parse），再 json parse，再 handler。
   app.post('/mcp', requireAuth, express.json({ limit: '1mb' }), async (req, res) => {

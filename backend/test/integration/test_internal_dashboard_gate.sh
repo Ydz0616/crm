@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Real-stack integration test for the internal dashboard gate + LLM-usage +
-# email-token + user-activity panel endpoints
-# (Ola CRM issue #220 D1 + D3 + D4 + D5).
+# Real-stack integration test for the internal dashboard gate + the
+# llm-usage / email-token / user-activity / mcp-health panel endpoints
+# (Ola CRM issue #220 D1 + D3 + D4 + D5 + D6).
 #
 # Mirrors the unit layers under backend/test/internal-dashboard/ but hits
 # the full Express middleware chain to catch wiring regressions the unit
@@ -24,7 +24,7 @@
 #
 # Exit code: 0 if all assertions PASS, 1 if any FAIL.
 #
-# Assertions (6):
+# Assertions (7):
 #   1. Protocol entry — no cookie → 401 (isValidAuthToken intercepts)
 #   2. Protocol entry — login → 200 + cookie issued
 #   3. Second call after entry — unknown panel with valid cookie + email in
@@ -36,6 +36,8 @@
 #      either the empty-state envelope or full aggregation (UI handles both)
 #   6. User activity — /users/active?windowMinutes=15 with valid cookie →
 #      200 + the documented dual-source result keys
+#   7. MCP health — /mcp-health with valid cookie → 200 + the three
+#      documented service keys (each entry whatever ok/error it gets)
 #
 # The 403 (email NOT in list) path is covered by the jest unit layer, since
 # reproducing it here would require a second backend with a different
@@ -152,6 +154,23 @@ for key in windowMinutes activeSessionsLast aiActiveUsersLast sessions aiUsers; 
   fi
 done
 rm -f /tmp/d5_t6_body.json
+
+echo
+echo "=== T7: GET /api/internal/dashboard/mcp-health (expect 200 + 3 service keys) ==="
+T7_STATUS=$(curl -s -b "$COOKIE_JAR" -o /tmp/d6_t7_body.json -w "%{http_code}" \
+  "$BACKEND/api/internal/dashboard/mcp-health")
+assert_status "mcp-health in list -> 200" "200" "$T7_STATUS"
+if ! grep -q '"success":true' /tmp/d6_t7_body.json; then
+  echo "  FAIL  mcp-health body did not contain success:true"
+  FAIL=$((FAIL + 1))
+fi
+for key in mcp nanobotServe nanobotGateway; do
+  if ! grep -q "\"$key\"" /tmp/d6_t7_body.json; then
+    echo "  FAIL  mcp-health result missing service: $key"
+    FAIL=$((FAIL + 1))
+  fi
+done
+rm -f /tmp/d6_t7_body.json
 
 echo
 echo "=== Summary: $PASS passed, $FAIL failed ==="

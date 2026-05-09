@@ -81,5 +81,9 @@ internalDashboardRouter.get(
   '/users/active',
   catchErrors(internalDashboardController.getUserActivity)
 );
+internalDashboardRouter.get(
+  '/mcp-health',
+  catchErrors(internalDashboardController.getMcpHealth)
+);
 
 module.exports = router;

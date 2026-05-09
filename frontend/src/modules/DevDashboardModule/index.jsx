@@ -4,6 +4,7 @@ import useLanguage from '@/locale/useLanguage';
 import LlmUsagePanel from './panels/LlmUsagePanel';
 import EmailTokenPanel from './panels/EmailTokenPanel';
 import UserActivityPanel from './panels/UserActivityPanel';
+import McpHealthPanel from './panels/McpHealthPanel';
 
 const { Title } = Typography;
 
@@ -11,7 +12,7 @@ const PANELS = [
   { key: 'llm-usage', label: 'LLM Usage', component: <LlmUsagePanel /> },
   { key: 'email-token', label: 'Email Token', component: <EmailTokenPanel /> },
   { key: 'user-activity', label: 'User Activity', component: <UserActivityPanel /> },
-  { key: 'mcp-health', label: 'MCP Health' },
+  { key: 'mcp-health', label: 'MCP Health', component: <McpHealthPanel /> },
   { key: 'logs', label: 'Logs' },
   { key: 'db-summary', label: 'DB Summary' },
 ];
