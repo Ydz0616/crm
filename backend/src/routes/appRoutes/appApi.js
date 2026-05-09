@@ -77,5 +77,9 @@ internalDashboardRouter.get(
   '/email-token-usage',
   catchErrors(internalDashboardController.getEmailToken)
 );
+internalDashboardRouter.get(
+  '/users/active',
+  catchErrors(internalDashboardController.getUserActivity)
+);
 
 module.exports = router;

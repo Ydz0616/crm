@@ -41,6 +41,12 @@ const adminSchema = new Schema({
   // 'zh' via `|| 'zh'`. No migration needed.
   language: { type: String, enum: ['zh', 'en'], default: 'zh' },
 
+  // Last time this admin made an authenticated API call. Updated by the
+  // trackActivity middleware (throttled to ≥60s per admin). Default null so
+  // existing docs read as "never seen since the field was added"; no
+  // backfill migration needed (issue #220 D5).
+  lastActivity: { type: Date, default: null, index: true },
+
   created: {
     type: Date,
     default: Date.now,

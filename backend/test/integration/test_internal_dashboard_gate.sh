@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 # Real-stack integration test for the internal dashboard gate + LLM-usage +
-# email-token panel endpoints (Ola CRM issue #220 D1 + D3 + D4).
+# email-token + user-activity panel endpoints
+# (Ola CRM issue #220 D1 + D3 + D4 + D5).
 #
-# Mirrors the unit layers (backend/test/internalAuth.test.js,
-# backend/test/internal-dashboard/llmUsage.test.js,
-# backend/test/internal-dashboard/emailToken.test.js) but hits the full
-# Express middleware chain to catch wiring regressions the unit layer cannot
-# see — specifically that internalAuth runs after isValidAuthToken and before
-# the internalDashboardRouter, that req.admin.email is correctly populated by
-# the upstream auth middleware, that an unknown panel falls through to
-# errorHandlers.notFound (404), and that the panel handlers produce the
-# documented response shape end-to-end.
+# Mirrors the unit layers under backend/test/internal-dashboard/ but hits
+# the full Express middleware chain to catch wiring regressions the unit
+# layer cannot see — specifically that internalAuth runs after
+# isValidAuthToken and before the internalDashboardRouter, that
+# req.admin.email is correctly populated by the upstream auth middleware,
+# that an unknown panel falls through to errorHandlers.notFound (404), and
+# that the panel handlers produce the documented response shape
+# end-to-end.
 #
 # Prerequisites:
 #   - Backend started with INTERNAL_DASHBOARD_EMAILS containing admin@admin.com
@@ -24,7 +24,7 @@
 #
 # Exit code: 0 if all assertions PASS, 1 if any FAIL.
 #
-# Assertions (5):
+# Assertions (6):
 #   1. Protocol entry — no cookie → 401 (isValidAuthToken intercepts)
 #   2. Protocol entry — login → 200 + cookie issued
 #   3. Second call after entry — unknown panel with valid cookie + email in
@@ -34,6 +34,8 @@
 #      success:true and the documented top-level result keys
 #   5. Email panel — /email-token-usage?range=7d with valid cookie → 200 +
 #      either the empty-state envelope or full aggregation (UI handles both)
+#   6. User activity — /users/active?windowMinutes=15 with valid cookie →
+#      200 + the documented dual-source result keys
 #
 # The 403 (email NOT in list) path is covered by the jest unit layer, since
 # reproducing it here would require a second backend with a different
@@ -133,6 +135,23 @@ else
   done
 fi
 rm -f /tmp/d4_t5_body.json
+
+echo
+echo "=== T6: GET /api/internal/dashboard/users/active?windowMinutes=15 (expect 200 + dual-source keys) ==="
+T6_STATUS=$(curl -s -b "$COOKIE_JAR" -o /tmp/d5_t6_body.json -w "%{http_code}" \
+  "$BACKEND/api/internal/dashboard/users/active?windowMinutes=15")
+assert_status "users/active in list -> 200" "200" "$T6_STATUS"
+if ! grep -q '"success":true' /tmp/d5_t6_body.json; then
+  echo "  FAIL  users/active body did not contain success:true"
+  FAIL=$((FAIL + 1))
+fi
+for key in windowMinutes activeSessionsLast aiActiveUsersLast sessions aiUsers; do
+  if ! grep -q "\"$key\"" /tmp/d5_t6_body.json; then
+    echo "  FAIL  users/active result missing key: $key"
+    FAIL=$((FAIL + 1))
+  fi
+done
+rm -f /tmp/d5_t6_body.json
 
 echo
 echo "=== Summary: $PASS passed, $FAIL failed ==="
