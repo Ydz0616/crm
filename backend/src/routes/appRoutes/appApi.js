@@ -89,5 +89,9 @@ internalDashboardRouter.get(
   '/logs',
   catchErrors(internalDashboardController.getLogs)
 );
+internalDashboardRouter.get(
+  '/db-summary',
+  catchErrors(internalDashboardController.getDbSummary)
+);
 
 module.exports = router;

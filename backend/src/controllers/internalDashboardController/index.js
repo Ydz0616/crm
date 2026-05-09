@@ -3,6 +3,7 @@ const getEmailToken = require('./emailToken');
 const getUserActivity = require('./userActivity');
 const getMcpHealth = require('./mcpHealth');
 const getLogs = require('./logs');
+const getDbSummary = require('./dbSummary');
 
 module.exports = {
   getLlmUsage,
@@ -10,4 +11,5 @@ module.exports = {
   getUserActivity,
   getMcpHealth,
   getLogs,
+  getDbSummary,
 };

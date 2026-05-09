@@ -6,6 +6,7 @@ import EmailTokenPanel from './panels/EmailTokenPanel';
 import UserActivityPanel from './panels/UserActivityPanel';
 import McpHealthPanel from './panels/McpHealthPanel';
 import LogsPanel from './panels/LogsPanel';
+import DbSummaryPanel from './panels/DbSummaryPanel';
 
 const { Title } = Typography;
 
@@ -15,7 +16,7 @@ const PANELS = [
   { key: 'user-activity', label: 'User Activity', component: <UserActivityPanel /> },
   { key: 'mcp-health', label: 'MCP Health', component: <McpHealthPanel /> },
   { key: 'logs', label: 'Logs', component: <LogsPanel /> },
-  { key: 'db-summary', label: 'DB Summary' },
+  { key: 'db-summary', label: 'DB Summary', component: <DbSummaryPanel /> },
 ];
 
 export default function DevDashboardModule() {
