@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Real-stack integration test for the internal dashboard gate + the
-# llm-usage / email-token / user-activity / mcp-health panel endpoints
-# (Ola CRM issue #220 D1 + D3 + D4 + D5 + D6).
+# llm-usage / email-token / user-activity / mcp-health / logs panel
+# endpoints (Ola CRM issue #220 D1 + D3 + D4 + D5 + D6 + D7).
 #
 # Mirrors the unit layers under backend/test/internal-dashboard/ but hits
 # the full Express middleware chain to catch wiring regressions the unit
@@ -24,7 +24,7 @@
 #
 # Exit code: 0 if all assertions PASS, 1 if any FAIL.
 #
-# Assertions (7):
+# Assertions (9):
 #   1. Protocol entry — no cookie → 401 (isValidAuthToken intercepts)
 #   2. Protocol entry — login → 200 + cookie issued
 #   3. Second call after entry — unknown panel with valid cookie + email in
@@ -38,6 +38,9 @@
 #      200 + the documented dual-source result keys
 #   7. MCP health — /mcp-health with valid cookie → 200 + the three
 #      documented service keys (each entry whatever ok/error it gets)
+#   8. Logs — /logs?source=mcp&limit=10 with valid cookie → 200 + the
+#      documented top-level result keys (logs[], source, limit)
+#   9. Logs — /logs?limit=501 → 400 (out-of-bounds rejection)
 #
 # The 403 (email NOT in list) path is covered by the jest unit layer, since
 # reproducing it here would require a second backend with a different
@@ -171,6 +174,29 @@ for key in mcp nanobotServe nanobotGateway; do
   fi
 done
 rm -f /tmp/d6_t7_body.json
+
+echo
+echo "=== T8: GET /api/internal/dashboard/logs?source=mcp&limit=10 (expect 200 + result keys) ==="
+T8_STATUS=$(curl -s -b "$COOKIE_JAR" -o /tmp/d7_t8_body.json -w "%{http_code}" \
+  "$BACKEND/api/internal/dashboard/logs?source=mcp&limit=10")
+assert_status "logs in list -> 200" "200" "$T8_STATUS"
+if ! grep -q '"success":true' /tmp/d7_t8_body.json; then
+  echo "  FAIL  logs body did not contain success:true"
+  FAIL=$((FAIL + 1))
+fi
+for key in source limit logs; do
+  if ! grep -q "\"$key\"" /tmp/d7_t8_body.json; then
+    echo "  FAIL  logs result missing key: $key"
+    FAIL=$((FAIL + 1))
+  fi
+done
+rm -f /tmp/d7_t8_body.json
+
+echo
+echo "=== T9: GET /api/internal/dashboard/logs?limit=501 (expect 400 — Joi rejects out-of-bounds) ==="
+T9_STATUS=$(curl -s -b "$COOKIE_JAR" -o /dev/null -w "%{http_code}" \
+  "$BACKEND/api/internal/dashboard/logs?limit=501")
+assert_status "logs limit=501 -> 400" "400" "$T9_STATUS"
 
 echo
 echo "=== Summary: $PASS passed, $FAIL failed ==="

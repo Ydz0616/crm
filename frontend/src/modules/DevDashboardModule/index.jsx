@@ -5,6 +5,7 @@ import LlmUsagePanel from './panels/LlmUsagePanel';
 import EmailTokenPanel from './panels/EmailTokenPanel';
 import UserActivityPanel from './panels/UserActivityPanel';
 import McpHealthPanel from './panels/McpHealthPanel';
+import LogsPanel from './panels/LogsPanel';
 
 const { Title } = Typography;
 
@@ -13,7 +14,7 @@ const PANELS = [
   { key: 'email-token', label: 'Email Token', component: <EmailTokenPanel /> },
   { key: 'user-activity', label: 'User Activity', component: <UserActivityPanel /> },
   { key: 'mcp-health', label: 'MCP Health', component: <McpHealthPanel /> },
-  { key: 'logs', label: 'Logs' },
+  { key: 'logs', label: 'Logs', component: <LogsPanel /> },
   { key: 'db-summary', label: 'DB Summary' },
 ];
 
