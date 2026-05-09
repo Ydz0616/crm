@@ -6,7 +6,6 @@ const Logout = lazy(() => import('@/pages/Logout.jsx'));
 const NotFound = lazy(() => import('@/pages/NotFound.jsx'));
 
 const Dashboard = lazy(() => import('@/pages/Dashboard'));
-const DevDashboard = lazy(() => import('@/pages/DevDashboard'));
 const AskOla = lazy(() => import('@/pages/AskOla'));
 const Customer = lazy(() => import('@/pages/Customer'));
 const Factory = lazy(() => import('@/pages/Factory'));  
@@ -186,10 +185,6 @@ let routes = {
     {
       path: '/profile',
       element: <Profile />,
-    },
-    {
-      path: '/dev-dashboard',
-      element: <DevDashboard />,
     },
     // === MVP-HIDDEN: 高度定制功能，非 MVP 范围 ===
     // {

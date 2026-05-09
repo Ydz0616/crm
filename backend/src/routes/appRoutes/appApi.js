@@ -63,35 +63,4 @@ router.route('/ola/session/delete/:id').delete(catchErrors(olaController['sessio
 router.route('/ola/session/rename/:id').patch(catchErrors(olaController['sessionRename']));
 router.route('/ola/session/messages/:id').get(catchErrors(olaController['sessionMessages']));
 
-// Internal developer dashboard — gated by email allowlist (issue #220 D1).
-// Routes for individual panels are registered in subsequent items (D3-D8).
-const internalAuth = require('@/middlewares/internalAuth');
-const internalDashboardController = require('@/controllers/internalDashboardController');
-const internalDashboardRouter = express.Router();
-router.use('/internal/dashboard', internalAuth, internalDashboardRouter);
-internalDashboardRouter.get(
-  '/llm-usage',
-  catchErrors(internalDashboardController.getLlmUsage)
-);
-internalDashboardRouter.get(
-  '/email-token-usage',
-  catchErrors(internalDashboardController.getEmailToken)
-);
-internalDashboardRouter.get(
-  '/users/active',
-  catchErrors(internalDashboardController.getUserActivity)
-);
-internalDashboardRouter.get(
-  '/mcp-health',
-  catchErrors(internalDashboardController.getMcpHealth)
-);
-internalDashboardRouter.get(
-  '/logs',
-  catchErrors(internalDashboardController.getLogs)
-);
-internalDashboardRouter.get(
-  '/db-summary',
-  catchErrors(internalDashboardController.getDbSummary)
-);
-
 module.exports = router;
