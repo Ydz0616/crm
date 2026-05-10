@@ -103,9 +103,8 @@ async function main() {
 
   const app = express();
 
-  // GET /health — public liveness probe for the dev dashboard's MCP Health
-  // panel (#220 D6) and any external monitor. Intentionally no auth: it
-  // reveals only process-level metadata (no secrets, no business data).
+  // GET /health — public liveness probe. No auth: reveals only
+  // process-level metadata (no secrets, no business data).
   app.get('/health', (_req, res) => {
     res.json({
       ok: true,

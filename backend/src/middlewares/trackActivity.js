@@ -24,7 +24,10 @@ function trackActivity(req, res, next) {
   return next();
 }
 
-// Test hook only.
-trackActivity._resetThrottle = () => lastWriteByAdmin.clear();
+// Test hook — only attached outside production so the throttle Map can't
+// be cleared at runtime by a misbehaving caller.
+if (process.env.NODE_ENV !== 'production') {
+  trackActivity._resetThrottle = () => lastWriteByAdmin.clear();
+}
 
 module.exports = trackActivity;
