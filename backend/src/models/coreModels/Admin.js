@@ -41,6 +41,9 @@ const adminSchema = new Schema({
   // 'zh' via `|| 'zh'`. No migration needed.
   language: { type: String, enum: ['zh', 'en'], default: 'zh' },
 
+  // Updated by trackActivity middleware (≥60s throttle); read by Ola_devboard.
+  lastActivity: { type: Date, default: null, index: true },
+
   created: {
     type: Date,
     default: Date.now,
