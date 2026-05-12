@@ -695,6 +695,23 @@ const lang = {
   'Untitled chat': '未命名对话',
   'Add Chat': '新对话',
   'Open Ask Ola to chat': '打开 Ask Ola 开始对话',
+  'What can I do for you?': '我能为您做什么？',
+  'Ask anything': '随便问点什么',
+  'Upload photos & files': '上传图片和文件',
+  'Ola is thinking...': 'Ola 正在思考...',
+  'Ola is working on it...': 'Ola 正在处理...',
+  'View thinking process': '查看思考过程',
+  'Cannot load history messages': '无法加载历史消息',
+  'Failed to load session messages, please refresh':
+    '会话消息加载失败，请刷新重试',
+  'Cannot refresh session list': '无法刷新会话列表',
+  'Please refresh the page': '请刷新页面重试',
+  'Network error': '网络错误',
+  'Ola response failed': 'Ola 响应失败',
+  'Unknown error': '未知错误',
+  'Cannot connect to Ola': '无法连接 Ola',
+  'Please verify backend and NanoBot are running':
+    '请确认后端服务和 NanoBot 是否正常运行',
 };
 
 export default lang;

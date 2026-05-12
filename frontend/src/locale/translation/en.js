@@ -694,6 +694,23 @@ const lang = {
   'Untitled chat': 'Untitled chat',
   'Add Chat': 'New Chat',
   'Open Ask Ola to chat': 'Open Ask Ola to chat',
+  'What can I do for you?': 'What can I do for you?',
+  'Ask anything': 'Ask anything',
+  'Upload photos & files': 'Upload photos & files',
+  'Ola is thinking...': 'Ola is thinking...',
+  'Ola is working on it...': 'Ola is working on it...',
+  'View thinking process': 'View thinking process',
+  'Cannot load history messages': 'Cannot load history messages',
+  'Failed to load session messages, please refresh':
+    'Failed to load session messages, please refresh',
+  'Cannot refresh session list': 'Cannot refresh session list',
+  'Please refresh the page': 'Please refresh the page',
+  'Network error': 'Network error',
+  'Ola response failed': 'Ola response failed',
+  'Unknown error': 'Unknown error',
+  'Cannot connect to Ola': 'Cannot connect to Ola',
+  'Please verify backend and NanoBot are running':
+    'Please verify backend and NanoBot are running',
 };
 
 export default lang;

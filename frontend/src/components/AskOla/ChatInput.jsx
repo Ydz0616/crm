@@ -6,10 +6,7 @@ import {
   ArrowUpOutlined,
   PaperClipOutlined,
 } from '@ant-design/icons';
-
-const PLUS_MENU_ITEMS = [
-  { icon: <PaperClipOutlined />, label: 'Upload photos & files' },
-];
+import useLanguage from '@/locale/useLanguage';
 
 /**
  * Independent chat input component.
@@ -17,10 +14,15 @@ const PLUS_MENU_ITEMS = [
  * @param {boolean} disabled - Disable input and send button while waiting for response
  */
 export default function ChatInput({ onSend, disabled = false }) {
+  const translate = useLanguage();
   const [inputValue, setInputValue] = useState('');
   const [plusMenuOpen, setPlusMenuOpen] = useState(false);
   const menuRef = useRef(null);
   const btnRef = useRef(null);
+
+  const plusMenuItems = [
+    { icon: <PaperClipOutlined />, label: translate('Upload photos & files') },
+  ];
 
   // Close menu on outside click
   useEffect(() => {
@@ -58,7 +60,7 @@ export default function ChatInput({ onSend, disabled = false }) {
     <div className="askola-chat-input-bar">
       <Input.TextArea
         className="askola-chat-input"
-        placeholder="Ask anything"
+        placeholder={translate('Ask anything')}
         autoSize={{ minRows: 1, maxRows: 5 }}
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
@@ -76,7 +78,7 @@ export default function ChatInput({ onSend, disabled = false }) {
           </button>
           {plusMenuOpen && (
             <div ref={menuRef} className="askola-plus-menu">
-              {PLUS_MENU_ITEMS.map((item, i) => (
+              {plusMenuItems.map((item, i) => (
                 <button key={i} className="askola-plus-menu-item">
                   <span className="askola-plus-menu-icon">{item.icon}</span>
                   <span className="askola-plus-menu-label">{item.label}</span>

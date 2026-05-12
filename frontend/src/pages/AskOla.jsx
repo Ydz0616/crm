@@ -3,6 +3,7 @@ import { notification } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import request from '@/request/request';
 import { useAppContext } from '@/context/appContext';
+import useLanguage from '@/locale/useLanguage';
 import MessageBubble from '@/components/AskOla/MessageBubble';
 import ChatInput from '@/components/AskOla/ChatInput';
 import ThinkingPanel from '@/components/AskOla/ThinkingPanel';
@@ -10,6 +11,7 @@ import TextBlock from '@/components/AskOla/blocks/TextBlock';
 import { consumeSSEStream } from '@/components/AskOla/consumeSSEStream';
 
 export default function AskOla() {
+  const translate = useLanguage();
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   // Live streaming UI state — replaces hardcoded "Ola is thinking..." placeholder.
@@ -52,17 +54,17 @@ export default function AskOla() {
         setMessages(loaded);
       } else {
         notification.error({
-          message: '无法加载历史消息',
-          description: response.message || '会话消息加载失败，请刷新重试',
+          message: translate('Cannot load history messages'),
+          description: response.message || translate('Failed to load session messages, please refresh'),
         });
       }
     } catch (err) {
       notification.error({
-        message: '无法加载历史消息',
-        description: err.message || '网络错误',
+        message: translate('Cannot load history messages'),
+        description: err.message || translate('Network error'),
       });
     }
-  }, []);
+  }, [translate]);
 
   useEffect(() => {
     loadMessages(activeSessionId);
@@ -76,14 +78,14 @@ export default function AskOla() {
         chatSession.setList(response.result);
       } else {
         notification.error({
-          message: '无法刷新会话列表',
-          description: response.message || '请刷新页面重试',
+          message: translate('Cannot refresh session list'),
+          description: response.message || translate('Please refresh the page'),
         });
       }
     } catch (err) {
       notification.error({
-        message: '无法刷新会话列表',
-        description: err.message || '网络错误',
+        message: translate('Cannot refresh session list'),
+        description: err.message || translate('Network error'),
       });
     }
   };
@@ -113,7 +115,7 @@ export default function AskOla() {
     };
     setMessages((prev) => [...prev, userMessage]);
     setLoading(true);
-    setLiveLabel('Ola is thinking...');  // STAGE_LABELS.__init__ (kept in sync with backend)
+    setLiveLabel(translate('Ola is thinking...'));  // STAGE_LABELS.__init__ (kept in sync with backend)
     setStreamingText('');
 
     try {
@@ -138,7 +140,7 @@ export default function AskOla() {
           const j = await resp.json();
           if (j && j.message) errMsg = j.message;
         } catch { /* keep default */ }
-        notification.error({ message: 'Ola 响应失败', description: errMsg });
+        notification.error({ message: translate('Ola response failed'), description: errMsg });
         return;
       }
 
@@ -165,8 +167,8 @@ export default function AskOla() {
         error: (data) => {
           errored = true;
           notification.error({
-            message: 'Ola 响应失败',
-            description: (data && data.message) || '未知错误',
+            message: translate('Ola response failed'),
+            description: (data && data.message) || translate('Unknown error'),
           });
         },
       }, ac.signal);
@@ -196,8 +198,8 @@ export default function AskOla() {
       // AbortError on cancel is expected; suppress the user-facing toast.
       if (err.name === 'AbortError' || ac.signal.aborted) return;
       notification.error({
-        message: '无法连接 Ola',
-        description: err.message || '请确认后端服务和 NanoBot 是否正常运行',
+        message: translate('Cannot connect to Ola'),
+        description: err.message || translate('Please verify backend and NanoBot are running'),
       });
     } finally {
       // Only clear if this is still the active stream — a newer handleSend may
@@ -218,7 +220,7 @@ export default function AskOla() {
       {isEmpty ? (
         <div className="askola-chat-welcome">
           <div className="askola-chat-center">
-            <h1 className="askola-chat-greeting">What can I do for you?</h1>
+            <h1 className="askola-chat-greeting">{translate('What can I do for you?')}</h1>
           </div>
           <div className="askola-chat-input-wrapper">
             <ChatInput onSend={handleSend} disabled={loading} />
@@ -252,7 +254,7 @@ export default function AskOla() {
       )}
 
       {/* New Chat button — always visible */}
-      <button className="askola-new-chat-btn" onClick={handleNewChat} title="New Chat">
+      <button className="askola-new-chat-btn" onClick={handleNewChat} title={translate('New Chat')}>
         <PlusOutlined />
       </button>
     </div>
