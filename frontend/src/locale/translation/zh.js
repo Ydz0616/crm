@@ -215,8 +215,6 @@ const lang = {
   company: '公司',
   // AUDIT(ziyue): lead 在外贸语境通常译为"销售线索"; 也有团队用"潜在客户"
   lead: '销售线索',
-  // AUDIT(ziyue): offer 与 quote 区分 — offer = 报价(单条),quote = 报价单(文档)
-  offer: '报价',
   invoice: '发票',
   // AUDIT(ziyue): quote 在外贸=报价单(文档)。若团队习惯"询盘单"或"PI"请调整
   quote: '报价单',
@@ -240,7 +238,6 @@ const lang = {
   status: '状态',
   invoices_preview: '发票概览',
   quotes_preview: '报价单概览',
-  offers_preview: '报价概览',
   payments_preview: '付款概览',
   this_month: '本月',
   unpaid: '未付款',
@@ -313,7 +310,6 @@ const lang = {
   update_company_finance_settings: '更新公司财务设置',
   last_invoice_number: '最后发票号',
   last_quote_number: '最后报价单号',
-  last_offer_number: '最后报价号',
   last_payment_number: '最后付款号',
   client_list: '客户列表',
   add_new_client: '添加客户',
@@ -369,8 +365,6 @@ const lang = {
   date: '日期',
   sub_total: '小计',
   note: '备注',
-  offer_list: '报价列表',
-  add_new_offer: '添加报价',
   year: '年份',
   expire_date: '到期日期',
   item: '商品',
@@ -449,7 +443,6 @@ const lang = {
   peoples: '联系人',
   companies: '公司',
   leads: '销售线索',
-  offer_leads: '报价线索',
   invoices: '发票',
   quotes: '报价单',
   payments: '付款',
@@ -461,9 +454,6 @@ const lang = {
   account_owner: '账户所有者',
   create_only: '仅创建',
   enter_code: '输入验证码',
-  offers: '报价',
-  // AUDIT(ziyue): proforma_invoices 在外贸=形式发票/PI。上游 value 写成 'quote' 是 bug
-  proforma_invoices: '形式发票',
   search: '搜索',
   price_search: '价格搜索',
   search_price_history: '搜索价格历史',
