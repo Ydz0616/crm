@@ -498,6 +498,11 @@ const lang = {
   purchase_total: 'Purchase Total',
   profit: 'Profit',
   calculation_log: 'Calculation Log',
+  language_synced_locally_only_title: 'Language saved on this device only',
+  language_synced_locally_only_desc:
+    "Couldn't sync to server. Your language may reset on next login.",
+  switch_to_chinese: 'Switch to 中文',
+  switch_to_english: 'Switch to English',
 };
 
 export default lang;

@@ -507,6 +507,10 @@ const lang = {
   purchase_total: '采购总额',
   profit: '利润',
   calculation_log: '计算日志',
+  language_synced_locally_only_title: '语言仅保存在本地',
+  language_synced_locally_only_desc: '未能同步到服务器。下次登录时语言可能会重置。',
+  switch_to_chinese: '切换到中文',
+  switch_to_english: '切换到 English',
 };
 
 export default lang;

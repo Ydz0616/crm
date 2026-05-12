@@ -195,12 +195,14 @@ const request = {
       return errorHandler(error);
     }
   },
-  patch: async ({ entity, jsonData }) => {
+  // silent: suppress AntD success/failed toasts from successHandler.
+  // errorHandler (network / JWT-expired / 401 redirect) still runs.
+  patch: async ({ entity, jsonData, silent = false }) => {
     try {
       const response = await axios.patch(entity, jsonData);
       successHandler(response, {
-        notifyOnSuccess: true,
-        notifyOnFailed: true,
+        notifyOnSuccess: !silent,
+        notifyOnFailed: !silent,
       });
       return response.data;
     } catch (error) {
