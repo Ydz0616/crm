@@ -668,6 +668,29 @@ const lang = {
   add_new_merch: 'Add New Merch',
   purchase_order_list: 'Purchase Order List',
   add_new_purchase_order: 'Add New Purchase Order',
+
+  // G3 — Merchandise + Factory config.js field labels/keys and header chrome.
+  'Serial Number': 'Serial Number',
+  'Serial Number (Long)': 'Serial Number (Long)',
+  'Description (EN)': 'Description (EN)',
+  'Description (CN)': 'Description (CN)',
+  'Weight (kg)': 'Weight (kg)',
+  'VAT (%)': 'VAT (%)',
+  'ETR (%)': 'ETR (%)',
+  'Unit (EN)': 'Unit (EN)',
+  'Unit (CN)': 'Unit (CN)',
+  factory_code: 'Factory Code',
+  factory_name: 'Factory Name',
+  location: 'Location',
+  tel1: 'Tel1',
+  tel2: 'Tel2',
+  'New Chat': 'New Chat',
+  'History': 'History',
+  'Setting': 'Setting',
+  'Help': 'Help',
+  'Ask Ola': 'Ask Ola',
+  'Tasks': 'Tasks',
+  purchase_orders: 'Purchase Orders',
 };
 
 export default lang;

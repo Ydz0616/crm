@@ -2,6 +2,7 @@ import { Layout, Tooltip } from 'antd';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useAppContext } from '@/context/appContext';
+import useLanguage from '@/locale/useLanguage';
 
 import {
   QuestionCircleOutlined,
@@ -74,6 +75,7 @@ export default function HeaderContent() {
   const { Header } = Layout;
   const location = useLocation();
   const navigate = useNavigate();
+  const translate = useLanguage();
   const pageInfo = getPageInfo(location.pathname);
   const { state: stateApp, appContextAction } = useAppContext();
   const { isOlaPanelOpen } = stateApp;
@@ -101,7 +103,7 @@ export default function HeaderContent() {
     >
       <div className="header-page-title">
         <span className="header-page-icon">{pageInfo.icon}</span>
-        <span className="header-page-label">{pageInfo.label}</span>
+        <span className="header-page-label">{translate(pageInfo.label)}</span>
       </div>
 
       <div className="header-right-actions">
@@ -109,18 +111,18 @@ export default function HeaderContent() {
           <>
             <button className="header-action-btn" onClick={() => { appContextAction.chatSession.setActive(null); }}>
               <PlusOutlined />
-              <span>New Chat</span>
+              <span>{translate('New Chat')}</span>
             </button>
             <button className="header-action-btn header-action-btn--ola" onClick={() => appContextAction.historyModal.open()}>
               <HistoryOutlined />
-              <span>History</span>
+              <span>{translate('History')}</span>
             </button>
             <button
               className="header-action-btn"
               onClick={() => navigate('/settings/edit/ask_ola')}
               style={{ padding: '0 8px', minWidth: 'auto', border: 'none', background: 'transparent', boxShadow: 'none' }}
             >
-              <Tooltip title="Setting" placement="bottom">
+              <Tooltip title={translate('Setting')} placement="bottom">
                 <EllipsisOutlined rotate={90} style={{ fontSize: '18px', color: '#8c8c8c' }} />
               </Tooltip>
             </button>
@@ -129,12 +131,12 @@ export default function HeaderContent() {
           <>
             <button className="header-action-btn">
               <QuestionCircleOutlined />
-              <span>Help</span>
+              <span>{translate('Help')}</span>
             </button>
             {!isOlaPanelOpen && (
               <button className="header-action-btn header-action-btn--ola" onClick={() => olaPanel.open()}>
                 <SmileOutlined />
-                <span>Ask Ola</span>
+                <span>{translate('Ask Ola')}</span>
               </button>
             )}
           </>

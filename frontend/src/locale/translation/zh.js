@@ -669,6 +669,29 @@ const lang = {
   add_new_merch: '添加商品',
   purchase_order_list: '采购订单列表',
   add_new_purchase_order: '添加采购订单',
+
+  // G3 — Merchandise + Factory config.js field labels/keys and header chrome.
+  'Serial Number': '序列号',
+  'Serial Number (Long)': '完整序列号',
+  'Description (EN)': '描述 (英文)',
+  'Description (CN)': '描述 (中文)',
+  'Weight (kg)': '重量 (kg)',
+  'VAT (%)': '增值税率 (%)',
+  'ETR (%)': '出口退税率 (%)',
+  'Unit (EN)': '单位 (英文)',
+  'Unit (CN)': '单位 (中文)',
+  factory_code: '工厂代码',
+  factory_name: '工厂名称',
+  location: '地址',
+  tel1: '电话1',
+  tel2: '电话2',
+  'New Chat': '新对话',
+  'History': '历史',
+  'Setting': '设置',
+  'Help': '帮助',
+  'Ask Ola': '问 Ola',
+  'Tasks': '任务',
+  purchase_orders: '采购订单',
 };
 
 export default lang;
