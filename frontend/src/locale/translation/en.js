@@ -691,6 +691,9 @@ const lang = {
   'Ask Ola': 'Ask Ola',
   'Tasks': 'Tasks',
   purchase_orders: 'Purchase Orders',
+  'Untitled chat': 'Untitled chat',
+  'Add Chat': 'New Chat',
+  'Open Ask Ola to chat': 'Open Ask Ola to chat',
 };
 
 export default lang;

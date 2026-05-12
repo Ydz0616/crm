@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useAppContext } from '@/context/appContext';
 import useLanguage from '@/locale/useLanguage';
+import LanguageToggle from '@/components/LanguageToggle';
 
 import {
   QuestionCircleOutlined,
@@ -117,6 +118,7 @@ export default function HeaderContent() {
               <HistoryOutlined />
               <span>{translate('History')}</span>
             </button>
+            <LanguageToggle variant="header" />
             <button
               className="header-action-btn"
               onClick={() => navigate('/settings/edit/ask_ola')}
@@ -129,6 +131,7 @@ export default function HeaderContent() {
           </>
         ) : (
           <>
+            <LanguageToggle variant="header" />
             <button className="header-action-btn">
               <QuestionCircleOutlined />
               <span>{translate('Help')}</span>

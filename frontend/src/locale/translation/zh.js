@@ -692,6 +692,9 @@ const lang = {
   'Ask Ola': '问 Ola',
   'Tasks': '任务',
   purchase_orders: '采购订单',
+  'Untitled chat': '未命名对话',
+  'Add Chat': '新对话',
+  'Open Ask Ola to chat': '打开 Ask Ola 开始对话',
 };
 
 export default lang;
