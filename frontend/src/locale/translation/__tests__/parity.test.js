@@ -28,9 +28,13 @@ describe('translation dict parity (en ↔ zh)', () => {
   });
 
   test('zh values must not be identical to en values for the same key (anti-skeleton drift)', () => {
-    // Single allowed exception: a few abbreviations / brand-y terms render the same.
-    // If this fires for a real key, either translate it or add it to ALLOWED.
-    const ALLOWED = new Set([]);
+    // Allowed exceptions: pure math expressions / brand symbols that read
+    // identically across languages. If this fires for a real key, either
+    // translate it or add it here with a one-line WHY.
+    const ALLOWED = new Set([
+      'TRSell + TTB - TExp',   // math formula (Expected Gross Profit)
+      'EGP / TRSell',          // math formula (Expected GP Margin)
+    ]);
     const stillEnglish = Object.keys(en).filter(
       (k) => !ALLOWED.has(k) && zh[k] === en[k]
     );
