@@ -13,8 +13,10 @@ import {
   // BellOutlined,
   // === END MVP-HIDDEN ===
   UserOutlined,
-  MailOutlined,
-  SmileOutlined,
+  // === MVP-HIDDEN: 仅供已隐藏的 Accounts / Ask Ola 子页面使用 ===
+  // MailOutlined,
+  // SmileOutlined,
+  // === END MVP-HIDDEN ===
   LeftOutlined,
   LogoutOutlined,
 } from '@ant-design/icons';
@@ -25,13 +27,11 @@ import { VERSION } from '@/version';
 import SettingsProfile from './SettingsProfile';
 // === MVP-HIDDEN: 以下 Settings 子页面本轮不需要 ===
 // import SettingsAppearance from './SettingsAppearance';
-// === END MVP-HIDDEN ===
-import SettingsEmailAccounts from './SettingsEmailAccounts';
-// === MVP-HIDDEN: 以下 Settings 子页面本轮不需要 ===
+// import SettingsEmailAccounts from './SettingsEmailAccounts';
 // import SettingsStorageAccounts from './SettingsStorageAccounts';
 // import SettingsNotifications from './SettingsNotifications';
+// import SettingsAskOla from './SettingsAskOla';
 // === END MVP-HIDDEN ===
-import SettingsAskOla from './SettingsAskOla';
 import SettingsGeneralNew from './SettingsGeneralNew';
 // === MVP-HIDDEN: 以下 Settings 子页面本轮不需要 ===
 // import SettingsMembers from './SettingsMembers';
@@ -59,15 +59,13 @@ export default function Settings() {
       label: translate('Personal'),
       items: [
         { key: 'profile', icon: <UserOutlined />, label: translate('Profile') },
-        // === MVP-HIDDEN: Appearance 本轮不需要 ===
+        // === MVP-HIDDEN: Appearance / Accounts / Storage / Notifications / Ask Ola 本轮不需要 ===
         // { key: 'appearance', icon: <BgColorsOutlined />, label: 'Appearance' },
-        // === END MVP-HIDDEN ===
-        { key: 'email_accounts', icon: <MailOutlined />, label: translate('Accounts') },
-        // === MVP-HIDDEN: Storage/Notifications 本轮不需要 ===
+        // { key: 'email_accounts', icon: <MailOutlined />, label: translate('Accounts') },
         // { key: 'storage_accounts', icon: <CloudServerOutlined />, label: 'Storage Accounts' },
         // { key: 'notifications_settings', icon: <BellOutlined />, label: 'Notifications' },
+        // { key: 'ask_ola', icon: <SmileOutlined />, label: translate('Ask Ola') },
         // === END MVP-HIDDEN ===
-        { key: 'ask_ola', icon: <SmileOutlined />, label: translate('Ask Ola') },
       ],
     },
     {
@@ -90,13 +88,11 @@ export default function Settings() {
     profile: { icon: <UserOutlined />, label: translate('Profile') },
     // === MVP-HIDDEN: 对应已隐藏的 Settings 子页面 ===
     // appearance: { icon: <BgColorsOutlined />, label: 'Appearance' },
-    // === END MVP-HIDDEN ===
-    email_accounts: { icon: <MailOutlined />, label: translate('Accounts') },
-    // === MVP-HIDDEN: 对应已隐藏的 Settings 子页面 ===
+    // email_accounts: { icon: <MailOutlined />, label: translate('Accounts') },
     // storage_accounts: { icon: <CloudServerOutlined />, label: 'Storage Accounts' },
     // notifications_settings: { icon: <BellOutlined />, label: 'Notifications' },
+    // ask_ola: { icon: <SmileOutlined />, label: translate('Ask Ola') },
     // === END MVP-HIDDEN ===
-    ask_ola: { icon: <SmileOutlined />, label: translate('Ask Ola') },
     general_settings: { icon: <SettingOutlined />, label: translate('Company') },
     // === MVP-HIDDEN: 对应已隐藏的 Settings 子页面 ===
     // members_teams: { icon: <TeamOutlined />, label: 'Members and teams' },
@@ -115,17 +111,15 @@ export default function Settings() {
       // === MVP-HIDDEN: 对应已隐藏的 Settings 子页面 ===
       // case 'appearance':
       //   return <SettingsAppearance />;
-      // === END MVP-HIDDEN ===
-      case 'email_accounts':
-        return <SettingsEmailAccounts />;
-      // === MVP-HIDDEN: 对应已隐藏的 Settings 子页面 ===
+      // case 'email_accounts':
+      //   return <SettingsEmailAccounts />;
       // case 'storage_accounts':
       //   return <SettingsStorageAccounts />;
       // case 'notifications_settings':
       //   return <SettingsNotifications />;
+      // case 'ask_ola':
+      //   return <SettingsAskOla />;
       // === END MVP-HIDDEN ===
-      case 'ask_ola':
-        return <SettingsAskOla />;
       case 'general_settings':
         return <SettingsGeneralNew />;
       // === MVP-HIDDEN: 对应已隐藏的 Settings 子页面 ===
