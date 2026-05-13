@@ -27,6 +27,12 @@ export default function AskOla() {
   // send can cancel a stale stream — otherwise the still-streaming `done`
   // frame would silently re-open the previous session (PR #171 review bug).
   const abortRef = useRef(null);
+  // When handleSend completes a fresh new-chat turn it calls setActive(newId),
+  // which would otherwise re-fire the load-messages effect and clobber the
+  // locally-rendered [user, assistant] pair with a server fetch that returns
+  // the same content under different ids — React then remounts every bubble
+  // (key change) and the user sees their own message "swallowed" for a frame.
+  const skipNextLoadRef = useRef(false);
   const { state: stateApp, appContextAction } = useAppContext();
   const { activeSessionId } = stateApp;
   const { chatSession } = appContextAction;
@@ -67,6 +73,10 @@ export default function AskOla() {
   }, [translate]);
 
   useEffect(() => {
+    if (skipNextLoadRef.current) {
+      skipNextLoadRef.current = false;
+      return;
+    }
     loadMessages(activeSessionId);
   }, [activeSessionId, loadMessages]);
 
@@ -190,6 +200,9 @@ export default function AskOla() {
         setMessages((prev) => [...prev, assistantMessage]);
 
         if (!activeSessionId && finalSessionId) {
+          // Mark the upcoming activeSessionId-change effect as a no-op — the
+          // local messages array is already authoritative for this turn.
+          skipNextLoadRef.current = true;
           chatSession.setActive(finalSessionId);
         }
         refreshSessionList();
