@@ -44,8 +44,4 @@ const store = configureStore({
   devTools: import.meta.env.PROD === false, // Enable Redux DevTools in development mode
 });
 
-console.log(
-  '🚀 Welcome to Ola ERP CRM!'
-);
-
 export default store;

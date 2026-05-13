@@ -1,6 +1,5 @@
 import axios from 'axios';
 import { API_BASE_URL } from '@/config/serverApiConfig';
-import {notification} from 'antd';
 import errorHandler from './errorHandler';
 import successHandler from './successHandler';
 

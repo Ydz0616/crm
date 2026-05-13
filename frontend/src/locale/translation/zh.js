@@ -347,8 +347,8 @@ const lang = {
   // AUDIT(ziyue): 上游 typo — in_negociation (应为 negotiation),保留 key,译"谈判中"
   in_negociation: '谈判中',
   won: '已成交',
-  // AUDIT(ziyue): 上游 typo — loose (应为 lost),保留 key,译"已失败"
-  loose: '已失败',
+  // upstream typo — 'loose' should be 'lost'; CRM 行业术语用「已丢单」
+  loose: '已丢单',
   canceled: '已取消',
   assigned: '已分配',
   on_hold: '已暂停',
