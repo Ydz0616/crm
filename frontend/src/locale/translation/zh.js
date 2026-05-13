@@ -712,6 +712,56 @@ const lang = {
   'Cannot connect to Ola': '无法连接 Ola',
   'Please verify backend and NanoBot are running':
     '请确认后端服务和 NanoBot 是否正常运行',
+
+  // G2c (#227) — Settings shell + Profile + Onboarding
+  'Personal': '个人',
+  'Workspace': '工作区',
+  'Accounts': '账户',
+  'Log Out': '退出登录',
+  'Manage your personal details': '管理你的个人信息',
+  'Changes to your profile will apply to all of your workspaces.':
+    '资料修改将应用到你的所有工作区',
+  'Primary email address': '主邮箱地址',
+  'Ask Ola language': 'Ask Ola 语言',
+  'Drives the language Ola uses to talk to you. Quote document language is asked separately at quote-creation time.':
+    '决定 Ola 与你对话使用的语言。报价文档的语言会在创建报价时单独询问。',
+  'Save Changes': '保存修改',
+  'Profile updated successfully!': '资料更新成功',
+  'Failed to update profile': '更新资料失败',
+  'An error occurred during update': '更新过程中出现错误',
+  'About You': '关于你',
+  'Your Company': '你的公司',
+  'Welcome to Ola!': '欢迎来到 Ola！',
+  'Almost there!': '就快好了！',
+  '+86 xxx xxxx xxxx': '+86 xxx xxxx xxxx',
+  'Job Title': '职位',
+  'e.g. Sales Manager': '例如：销售经理',
+  'Continue': '继续',
+  "Your company's legal name": '公司法定名称',
+  'Select your country': '选择国家',
+  'Street address, city, postal code': '街道地址、城市、邮编',
+  'Office phone': '办公电话',
+  'contact@company.com': '公司联系邮箱',
+  'Complete Workspace': '完成创建',
+
+  // G2c.6 (#227) — SettingsGeneralNew (公司 panel)
+  'Manage your company information': '管理你的公司信息',
+  'Tax Number': '税号',
+  'VAT Number': '增值税号',
+  'Registration Number': '工商注册号',
+  'Enter company name': '请输入公司名称',
+  'Enter company email': '请输入公司邮箱',
+  'Enter phone number': '请输入电话号码',
+  'Enter website URL': '请输入网址',
+  'Enter address': '请输入地址',
+  'Enter state': '请输入省/州',
+  'Enter tax number': '请输入税号',
+  'Enter VAT number': '请输入增值税号',
+  'Enter registration number': '请输入工商注册号',
+  'Failed to load company settings': '加载公司设置失败',
+  'Company settings updated successfully!': '公司设置更新成功',
+  'Failed to update settings': '更新设置失败',
+  'An error occurred while updating settings': '更新设置时出现错误',
 };
 
 export default lang;

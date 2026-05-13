@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import languages from './translation/translation';
 import { selectLang } from '@/redux/lang/selectors';
@@ -27,19 +28,26 @@ const lookup = (rawKey, dict) => {
   return undefined;
 };
 
+// Returned function is memoized on `lang` so callers can safely put `translate`
+// in a useCallback / useEffect dependency array without re-firing every render.
+// (Pre-memo version caused AskOla to refetch /ola/session/messages on every
+// streamed token, which visibly clobbered the local user-message bubble.)
 const useLanguage = () => {
   const lang = useSelector(selectLang) || DEFAULT_LANG;
-  const dict = languages[lang] || {};
-  const fallback = languages[FALLBACK_LANG] || {};
 
-  return (rawKey) => {
-    if (rawKey === null || rawKey === undefined || rawKey === '') return '';
-    const hit = lookup(rawKey, dict);
-    if (hit !== undefined) return hit;
-    const fb = lookup(rawKey, fallback);
-    if (fb !== undefined) return fb;
-    return titleCase(rawKey);
-  };
+  return useCallback(
+    (rawKey) => {
+      const dict = languages[lang] || {};
+      const fallback = languages[FALLBACK_LANG] || {};
+      if (rawKey === null || rawKey === undefined || rawKey === '') return '';
+      const hit = lookup(rawKey, dict);
+      if (hit !== undefined) return hit;
+      const fb = lookup(rawKey, fallback);
+      if (fb !== undefined) return fb;
+      return titleCase(rawKey);
+    },
+    [lang],
+  );
 };
 
 export default useLanguage;
