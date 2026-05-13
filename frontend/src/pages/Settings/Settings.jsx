@@ -56,24 +56,24 @@ export default function Settings() {
   // Sidebar menu structure
   const sidebarSections = [
     {
-      label: 'Personal',
+      label: translate('Personal'),
       items: [
-        { key: 'profile', icon: <UserOutlined />, label: 'Profile' },
+        { key: 'profile', icon: <UserOutlined />, label: translate('Profile') },
         // === MVP-HIDDEN: Appearance 本轮不需要 ===
         // { key: 'appearance', icon: <BgColorsOutlined />, label: 'Appearance' },
         // === END MVP-HIDDEN ===
-        { key: 'email_accounts', icon: <MailOutlined />, label: 'Accounts' },
+        { key: 'email_accounts', icon: <MailOutlined />, label: translate('Accounts') },
         // === MVP-HIDDEN: Storage/Notifications 本轮不需要 ===
         // { key: 'storage_accounts', icon: <CloudServerOutlined />, label: 'Storage Accounts' },
         // { key: 'notifications_settings', icon: <BellOutlined />, label: 'Notifications' },
         // === END MVP-HIDDEN ===
-        { key: 'ask_ola', icon: <SmileOutlined />, label: 'Ask Ola' },
+        { key: 'ask_ola', icon: <SmileOutlined />, label: translate('Ask Ola') },
       ],
     },
     {
-      label: 'Workspace',
+      label: translate('Workspace'),
       items: [
-        { key: 'general_settings', icon: <SettingOutlined />, label: 'Company' },
+        { key: 'general_settings', icon: <SettingOutlined />, label: translate('Company') },
         // === MVP-HIDDEN: Members/AskOla Usage/Plans/Billing 本轮不需要 ===
         // { key: 'members_teams', icon: <TeamOutlined />, label: 'Members and teams' },
         // { key: 'ask_ola_usage', icon: <RocketOutlined />, label: 'Ask Ola usage' },
@@ -87,17 +87,17 @@ export default function Settings() {
 
   // Content panel header info
   const panelHeaders = {
-    profile: { icon: <UserOutlined />, label: 'Profile' },
+    profile: { icon: <UserOutlined />, label: translate('Profile') },
     // === MVP-HIDDEN: 对应已隐藏的 Settings 子页面 ===
     // appearance: { icon: <BgColorsOutlined />, label: 'Appearance' },
     // === END MVP-HIDDEN ===
-    email_accounts: { icon: <MailOutlined />, label: 'Accounts' },
+    email_accounts: { icon: <MailOutlined />, label: translate('Accounts') },
     // === MVP-HIDDEN: 对应已隐藏的 Settings 子页面 ===
     // storage_accounts: { icon: <CloudServerOutlined />, label: 'Storage Accounts' },
     // notifications_settings: { icon: <BellOutlined />, label: 'Notifications' },
     // === END MVP-HIDDEN ===
-    ask_ola: { icon: <SmileOutlined />, label: 'Ask Ola' },
-    general_settings: { icon: <SettingOutlined />, label: 'Company' },
+    ask_ola: { icon: <SmileOutlined />, label: translate('Ask Ola') },
+    general_settings: { icon: <SettingOutlined />, label: translate('Company') },
     // === MVP-HIDDEN: 对应已隐藏的 Settings 子页面 ===
     // members_teams: { icon: <TeamOutlined />, label: 'Members and teams' },
     // ask_ola_usage: { icon: <RocketOutlined />, label: 'Ask Ola usage' },
@@ -184,7 +184,7 @@ export default function Settings() {
           <div className="settings-sidebar-logout-container">
             <button className="settings-sidebar-logout-btn" onClick={() => navigate('/logout')}>
               <LogoutOutlined />
-              <span>Log Out</span>
+              <span>{translate('Log Out')}</span>
             </button>
             <div className="settings-sidebar-version">Ola v{VERSION}</div>
           </div>

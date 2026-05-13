@@ -711,6 +711,56 @@ const lang = {
   'Cannot connect to Ola': 'Cannot connect to Ola',
   'Please verify backend and NanoBot are running':
     'Please verify backend and NanoBot are running',
+
+  // G2c (#227) — Settings shell + Profile + Onboarding
+  'Personal': 'Personal',
+  'Workspace': 'Workspace',
+  'Accounts': 'Accounts',
+  'Log Out': 'Log Out',
+  'Manage your personal details': 'Manage your personal details',
+  'Changes to your profile will apply to all of your workspaces.':
+    'Changes to your profile will apply to all of your workspaces.',
+  'Primary email address': 'Primary email address',
+  'Ask Ola language': 'Ask Ola language',
+  'Drives the language Ola uses to talk to you. Quote document language is asked separately at quote-creation time.':
+    'Drives the language Ola uses to talk to you. Quote document language is asked separately at quote-creation time.',
+  'Save Changes': 'Save Changes',
+  'Profile updated successfully!': 'Profile updated successfully!',
+  'Failed to update profile': 'Failed to update profile',
+  'An error occurred during update': 'An error occurred during update',
+  'About You': 'About You',
+  'Your Company': 'Your Company',
+  'Welcome to Ola!': 'Welcome to Ola!',
+  'Almost there!': 'Almost there!',
+  '+86 xxx xxxx xxxx': '+1 (555) 555-5555',
+  'Job Title': 'Job Title',
+  'e.g. Sales Manager': 'e.g. Sales Manager',
+  'Continue': 'Continue',
+  "Your company's legal name": "Your company's legal name",
+  'Select your country': 'Select your country',
+  'Street address, city, postal code': 'Street address, city, postal code',
+  'Office phone': 'Office phone',
+  'contact@company.com': 'contact@company.com',
+  'Complete Workspace': 'Complete Workspace',
+
+  // G2c.6 (#227) — SettingsGeneralNew (公司 panel)
+  'Manage your company information': 'Manage your company information',
+  'Tax Number': 'Tax Number',
+  'VAT Number': 'VAT Number',
+  'Registration Number': 'Registration Number',
+  'Enter company name': 'Enter company name',
+  'Enter company email': 'Enter company email',
+  'Enter phone number': 'Enter phone number',
+  'Enter website URL': 'Enter website URL',
+  'Enter address': 'Enter address',
+  'Enter state': 'Enter state',
+  'Enter tax number': 'Enter tax number',
+  'Enter VAT number': 'Enter VAT number',
+  'Enter registration number': 'Enter registration number',
+  'Failed to load company settings': 'Failed to load company settings',
+  'Company settings updated successfully!': 'Company settings updated successfully!',
+  'Failed to update settings': 'Failed to update settings',
+  'An error occurred while updating settings': 'An error occurred while updating settings',
 };
 
 export default lang;
