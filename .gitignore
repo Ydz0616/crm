@@ -65,6 +65,12 @@ task.md
 # Python bytecode cache from scripts/ harnesses
 scripts/__pycache__/
 
+# OpenAI nanobot config (contains ${OPENAI_API_KEY} placeholder — local only)
+ola/nanobot.config.openai.template.json
+
+# Cursor: local fingerprint for scripts/sync-npm-deps.sh --if-changed
+.cursor/.npm-deps-fingerprint
+
 # User-uploaded files — keep seed only
 backend/src/public/uploads/setting/*
 !backend/src/public/uploads/setting/company-logo.png

@@ -10,6 +10,7 @@ const coreApiRouter = require('./routes/coreRoutes/coreApi');
 const coreDownloadRouter = require('./routes/coreRoutes/coreDownloadRouter');
 const corePublicRouter = require('./routes/coreRoutes/corePublicRouter');
 const adminAuth = require('./controllers/coreControllers/adminAuth');
+const trackActivity = require('./middlewares/trackActivity');
 const exportRoutes = require('./routes/exportRoutes');
 
 const errorHandlers = require('./handlers/errorHandlers');
@@ -101,8 +102,8 @@ app.get('/debug/settings', async (req, res) => {
 
 // Here our API Routes
 app.use('/api', coreAuthRouter);
-app.use('/api', adminAuth.isValidAuthToken, coreApiRouter);
-app.use('/api', adminAuth.isValidAuthToken, erpApiRouter);
+app.use('/api', adminAuth.isValidAuthToken, trackActivity, coreApiRouter);
+app.use('/api', adminAuth.isValidAuthToken, trackActivity, erpApiRouter);
 app.use('/download', coreDownloadRouter);
 app.use('/public', corePublicRouter);
 // Excel 导出路由 - 不需要身份验证
