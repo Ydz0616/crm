@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [CICD, dev, main]
+  push:
+    branches: [CIDI, dev, main]
+
+jobs:
+  backend:
+    name: Backend (lint + test + audit)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.9.0
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+        continue-on-error: true
+
+      - name: Unit + integration tests
+        run: npm test
+
+      - name: Security audit (high/critical prod deps)
+        run: npm audit --audit-level=high --omit=dev
+
+  frontend:
+    name: Frontend (lint + test + build + audit)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.9.0
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+        continue-on-error: true
+
+      - name: Unit tests (vitest)
+        run: npm test
+
+      - name: Production build
+        run: npm run build
+
+      - name: Security audit (high/critical prod deps)
+        run: npm audit --audit-level=high --omit=dev
