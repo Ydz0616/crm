@@ -5,8 +5,10 @@ const multer = require('multer');
 const mongoose = require('mongoose');
 
 const { uploadSchema, MAX_FILE_SIZE } = require('./schemaValidate');
+const transcribeWithOpenAI = require('@/jobs/transcriptionWorker');
 
 const FileModel = mongoose.model('File');
+const JobModel = mongoose.model('Job');
 
 const UPLOADS_DIR =
   process.env.UPLOADS_DIR || path.resolve(__dirname, '../../../../uploads');
@@ -96,6 +98,30 @@ const upload = async (req, res) => {
     sourcePath,
   });
 
+  let transcriptionJobId = null;
+  if (req.file.mimetype.startsWith('audio/')) {
+    let job;
+    try {
+      job = await JobModel.create({
+        createdBy: req.admin._id,
+        type: 'transcription',
+        refModel: 'File',
+        refId: fileDoc._id,
+      });
+      await FileModel.findByIdAndUpdate(fileDoc._id, { transcriptionJobId: job._id });
+      transcriptionJobId = job._id;
+    } catch (err) {
+      return res.status(500).json({
+        success: false,
+        result: null,
+        message: `转写任务创建失败: ${err.message}`,
+      });
+    }
+    transcribeWithOpenAI(fileDoc, job).catch((err) => {
+      console.error(`[transcribe] worker failed for File ${fileDoc._id}:`, err.message);
+    });
+  }
+
   return res.status(200).json({
     success: true,
     result: {
@@ -103,6 +129,7 @@ const upload = async (req, res) => {
       originalName: fileDoc.originalName,
       sizeBytes: fileDoc.sizeBytes,
       mimeType: fileDoc.mimeType,
+      transcriptionJobId,
     },
     message: '上传成功',
   });

@@ -32,6 +32,10 @@ const fileSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  transcriptionJobId: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'Job',
+  },
   created: {
     type: Date,
     default: Date.now,

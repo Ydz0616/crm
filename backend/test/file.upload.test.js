@@ -7,7 +7,13 @@
  *  - Mime rejection (PDF / non-audio → 415)
  *  - Cross-tenant isolation (admin B reading admin A's fileId via /file/read → 404)
  *  - Disk path scope (sourcePath under uploads/<adminId>/)
+ *  - Audio upload spawns transcription Job (#249 Plan B v2 item 2)
  */
+
+// Stub the worker so audio uploads don't actually hit OpenAI in tests.
+jest.mock('@/jobs/transcriptionWorker', () =>
+  jest.fn().mockResolvedValue(undefined)
+);
 
 const path = require('path');
 const fs = require('fs');
@@ -43,6 +49,9 @@ afterAll(async () => {
 
 beforeEach(async () => {
   if (mongoose.models.File) await mongoose.models.File.deleteMany({});
+  if (mongoose.models.Job) await mongoose.models.Job.deleteMany({});
+  const transcribeWithOpenAI = require('@/jobs/transcriptionWorker');
+  if (transcribeWithOpenAI.mockClear) transcribeWithOpenAI.mockClear();
 });
 
 function buildApp(adminId) {
@@ -164,6 +173,41 @@ describe('Tenant isolation', () => {
     const ownRead = await request(appARead).get(`/api/file/read/${fileId}`);
     expect(ownRead.statusCode).toBe(200);
     expect(ownRead.body.success).toBe(true);
+  });
+});
+
+describe('Audio upload spawns transcription Job (Plan B v2 item 2)', () => {
+  it('audio mp3 → response includes transcriptionJobId + Job doc exists + worker called', async () => {
+    const transcribeWithOpenAI = require('@/jobs/transcriptionWorker');
+    const app = buildApp(adminAId);
+    const audio = Buffer.from([0xff, 0xfb, 0x90, 0x00, 0x01]);
+
+    const res = await request(app)
+      .post('/api/file/create')
+      .attach('file', audio, { filename: 'spawn.mp3', contentType: 'audio/mpeg' });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.result.transcriptionJobId).toBeTruthy();
+
+    const FileModel = mongoose.model('File');
+    const JobModel = mongoose.model('Job');
+
+    const fileDoc = await FileModel.findById(res.body.result._id);
+    expect(fileDoc.transcriptionJobId.toString()).toBe(res.body.result.transcriptionJobId.toString());
+
+    const jobDoc = await JobModel.findById(res.body.result.transcriptionJobId);
+    expect(jobDoc).toBeTruthy();
+    expect(jobDoc.type).toBe('transcription');
+    expect(jobDoc.refModel).toBe('File');
+    expect(jobDoc.refId.toString()).toBe(fileDoc._id.toString());
+    expect(jobDoc.createdBy.toString()).toBe(adminAId.toString());
+    expect(jobDoc.status).toBe('pending');
+
+    // Worker was invoked fire-and-forget
+    expect(transcribeWithOpenAI).toHaveBeenCalledTimes(1);
+    const [calledFile, calledJob] = transcribeWithOpenAI.mock.calls[0];
+    expect(calledFile._id.toString()).toBe(fileDoc._id.toString());
+    expect(calledJob._id.toString()).toBe(jobDoc._id.toString());
   });
 });
 
