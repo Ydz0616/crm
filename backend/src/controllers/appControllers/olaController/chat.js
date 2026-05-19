@@ -7,9 +7,14 @@ const recordUsage = require('@/controllers/appControllers/llmUsageController/rec
 
 const ChatSession = mongoose.model('ChatSession');
 const ChatMessage = mongoose.model('ChatMessage');
+const FileModel = mongoose.model('File');
 
 // Read env at request time so tests / hot-reload can override per call.
-const NANOBOT_TIMEOUT_MS = 120000;
+// Default 900s (15 min) accommodates long-running tool calls like
+// transcribe_audio on multi-minute recordings (Ola#249); env override
+// for tighter / looser per-deployment policies.
+const NANOBOT_TIMEOUT_MS =
+  parseInt(process.env.NANOBOT_TIMEOUT_MS, 10) || 900000;
 function nanobotEndpoint() {
   return {
     host: process.env.NANOBOT_HOST || '127.0.0.1',
@@ -154,13 +159,21 @@ function maybeAutoTitle(session, userMessage, assistantContent, userId) {
 // ---------------------------------------------------------------------------
 
 const chat = async (req, res) => {
-  const { message, sessionId } = req.body;
+  const { message, sessionId, fileIds = [] } = req.body;
 
   if (!message || typeof message !== 'string' || message.trim() === '') {
     return res.status(400).json({
       success: false,
       result: null,
       message: 'message 字段为必填项，且不能为空字符串',
+    });
+  }
+
+  if (!Array.isArray(fileIds)) {
+    return res.status(400).json({
+      success: false,
+      result: null,
+      message: 'fileIds 必须是 string 数组',
     });
   }
 
@@ -179,6 +192,33 @@ const chat = async (req, res) => {
   } else {
     const nanobotSessionId = `user:${userId}:conv:${uuidv4()}`;
     session = await ChatSession.create({ userId, nanobotSessionId, createdBy: userId });
+  }
+
+  // Resolve fileIds → [file: <sourcePath>] tags. Tenant-scoped lookup; missing
+  // or cross-tenant ids return 404 (don't leak existence). Done BEFORE SSE
+  // headers are flushed so we can still send a JSON error envelope.
+  const fileRefs = [];
+  for (const fid of fileIds) {
+    if (typeof fid !== 'string' || !mongoose.isValidObjectId(fid)) {
+      return res.status(404).json({
+        success: false,
+        result: null,
+        message: '文件不存在或无权访问',
+      });
+    }
+    const file = await FileModel.findOne({
+      _id: fid,
+      createdBy: userId,
+      removed: false,
+    });
+    if (!file) {
+      return res.status(404).json({
+        success: false,
+        result: null,
+        message: '文件不存在或无权访问',
+      });
+    }
+    fileRefs.push(`[file: ${file.sourcePath}]`);
   }
 
   // Switch to SSE mode.
@@ -210,7 +250,12 @@ const chat = async (req, res) => {
   // (line ~252) intentionally stores the RAW user text without the directive
   // so the chat history UI never displays the marker.
   const sessionLang = req.admin?.language === 'en' ? 'en' : 'zh';
-  const directedContent = `[SESSION_LANG=${sessionLang}]\n\n${message.trim()}`;
+  const directedContent = [
+    `[SESSION_LANG=${sessionLang}]`,
+    ...fileRefs,
+    '',
+    message.trim(),
+  ].join('\n');
 
   const proxyPayload = JSON.stringify({
     messages: [{ role: 'user', content: directedContent }],

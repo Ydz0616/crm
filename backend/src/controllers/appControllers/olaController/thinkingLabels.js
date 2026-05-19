@@ -40,6 +40,10 @@ const TOOL_LABELS = {
 
   // Salesperson (system-scope; mainly invoked by email channel)
   'salesperson.lookup_by_email': 'Ola is identifying the salesperson...',
+
+  // NanoBot-native tools (no mcp_ola_crm_ prefix). rawToolName() passes
+  // them through unchanged, so the key here matches the raw tool name.
+  'transcribe_audio': 'Ola is transcribing the audio...',
 };
 
 // Tools that should NOT surface a thinking step to the end user.

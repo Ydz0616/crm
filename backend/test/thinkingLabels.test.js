@@ -21,6 +21,8 @@ describe('thinkingLabels — TOOL_LABELS dictionary', () => {
       // Forward-looking: tools live on ZYD_FEAT, will activate when merged to dev
       'quote.generate_pdf_url',
       'salesperson.lookup_by_email',
+      // NanoBot-native tools (no MCP prefix; rawToolName passes through)
+      'transcribe_audio',
     ];
     expect(Object.keys(TOOL_LABELS).sort()).toEqual(expected.sort());
   });
@@ -28,6 +30,10 @@ describe('thinkingLabels — TOOL_LABELS dictionary', () => {
   test('forward-looking entries resolve to specific labels (not __unknown__ fallback)', () => {
     expect(labelFor('mcp_ola_crm_quote.generate_pdf_url')).toBe('Ola is preparing the PDF link...');
     expect(labelFor('mcp_ola_crm_salesperson.lookup_by_email')).toBe('Ola is identifying the salesperson...');
+  });
+
+  test('nanobot-native transcribe_audio (no MCP prefix) resolves to specific label', () => {
+    expect(labelFor('transcribe_audio')).toBe('Ola is transcribing the audio...');
   });
 
   test('does NOT include health.ping (it is in SKIP_TOOLS)', () => {
