@@ -16,6 +16,8 @@
  */
 
 const path = require('path');
+const fs = require('fs');
+const os = require('os');
 const http = require('http');
 const express = require('express');
 const request = require('supertest');
@@ -25,6 +27,7 @@ const { MongoMemoryServer } = require('mongodb-memory-server');
 
 const BACKEND_ROOT = path.join(__dirname, '..');
 const FAKE_NANOBOT_PORT = 18901;
+const TMP_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'chat-fileref-test-'));
 const adminAId = new mongoose.Types.ObjectId();
 const adminBId = new mongoose.Types.ObjectId();
 
@@ -74,11 +77,12 @@ afterAll(async () => {
   await mongoose.disconnect();
   if (mongo) await mongo.stop();
   if (fakeNanoBot) await new Promise((resolve) => fakeNanoBot.close(resolve));
+  fs.rmSync(TMP_DIR, { recursive: true, force: true });
 });
 
 beforeEach(async () => {
   lastUpstreamBody = null;
-  for (const name of ['ChatSession', 'ChatMessage', 'File']) {
+  for (const name of ['ChatSession', 'ChatMessage', 'File', 'Job']) {
     if (mongoose.models[name]) await mongoose.models[name].deleteMany({});
   }
 });
@@ -97,21 +101,54 @@ function buildChatApp(adminId) {
   return app;
 }
 
+/**
+ * Build a fully ready audio File: backing bytes on disk, an associated Job
+ * with status='done', and a sidecar .txt next to the source. This is what
+ * Plan B v2 chat.js expects when fileIds are passed in.
+ *
+ * Pass overrides.skipJob=true to create only the File without Job+sidecar
+ * (useful for negative tests that don't reach the Job branch).
+ * Pass overrides.removed=true / etc to test the rejection paths.
+ */
 async function createFileForAdmin(adminId, overrides = {}) {
   const FileModel = mongoose.model('File');
-  return FileModel.create({
+  const JobModel = mongoose.model('Job');
+  const originalName = overrides.originalName || 'sample.mp3';
+  const sourcePath = path.join(TMP_DIR, `${adminId}-${Date.now()}-${Math.random()}-${originalName}`);
+  fs.writeFileSync(sourcePath, Buffer.from([0xff, 0xfb, 0x90, 0x00]));
+
+  const fileDoc = await FileModel.create({
     createdBy: adminId,
-    originalName: overrides.originalName || 'sample.mp3',
+    originalName,
     mimeType: 'audio/mpeg',
     sizeBytes: 1024,
-    sourcePath: `/tmp/uploads/${adminId}/2026/05/sample.mp3`,
+    sourcePath,
     ...overrides,
   });
+
+  if (!overrides.skipJob) {
+    const transcriptText = overrides.transcriptText || 'A 00:00  你好\nB 00:03  请问押金';
+    fs.writeFileSync(sourcePath + '.txt', transcriptText, 'utf-8');
+    const job = await JobModel.create({
+      createdBy: adminId,
+      type: 'transcription',
+      refModel: 'File',
+      refId: fileDoc._id,
+      status: 'done',
+      result: { sidecarPath: sourcePath + '.txt' },
+    });
+    await FileModel.findByIdAndUpdate(fileDoc._id, { transcriptionJobId: job._id });
+    fileDoc.transcriptionJobId = job._id;
+  }
+  return fileDoc;
 }
 
-describe('chat fileIds — valid same-admin file', () => {
-  it('injects [file: <sourcePath>] tag into NanoBot upstream user content', async () => {
-    const file = await createFileForAdmin(adminAId);
+describe('chat fileIds — valid same-admin file (ready transcript)', () => {
+  it('injects [transcript of "<name>": <text>] tag into NanoBot upstream user content', async () => {
+    const file = await createFileForAdmin(adminAId, {
+      originalName: 'cici-test.mp3',
+      transcriptText: 'A 00:00  你好\nB 00:03  请问押金',
+    });
 
     const app = buildChatApp(adminAId);
     const res = await request(app)
@@ -122,8 +159,12 @@ describe('chat fileIds — valid same-admin file', () => {
     expect(lastUpstreamBody).toBeTruthy();
     const parsed = JSON.parse(lastUpstreamBody);
     const userContent = parsed.messages[0].content;
-    expect(userContent).toContain(`[file: ${file.sourcePath}]`);
+    expect(userContent).toContain('[transcript of "cici-test.mp3":');
+    expect(userContent).toContain('A 00:00  你好');
+    expect(userContent).toContain('B 00:03  请问押金');
     expect(userContent).toContain('请评估这段录音');
+    // Old format must not leak
+    expect(userContent).not.toContain('[file:');
   });
 });
 
@@ -151,7 +192,7 @@ describe('chat fileIds — rejections (all return 404, no existence leak)', () =
   });
 
   it('removed=true fileId → 404', async () => {
-    const file = await createFileForAdmin(adminAId, { removed: true });
+    const file = await createFileForAdmin(adminAId, { removed: true, skipJob: true });
     const app = buildChatApp(adminAId);
     const res = await request(app)
       .post('/api/ola/chat')
@@ -181,7 +222,7 @@ describe('chat fileIds — rejections (all return 404, no existence leak)', () =
 });
 
 describe('chat fileIds — regression (no fileIds = pre-extension behavior)', () => {
-  it('omitting fileIds → NanoBot upstream content has no [file: ...] tag', async () => {
+  it('omitting fileIds → NanoBot upstream content has no transcript tag', async () => {
     const app = buildChatApp(adminAId);
     const res = await request(app)
       .post('/api/ola/chat')
@@ -189,14 +230,16 @@ describe('chat fileIds — regression (no fileIds = pre-extension behavior)', ()
 
     expect(res.statusCode).toBe(200);
     const parsed = JSON.parse(lastUpstreamBody);
+    expect(parsed.messages[0].content).not.toContain('[transcript of');
     expect(parsed.messages[0].content).not.toContain('[file:');
     expect(parsed.messages[0].content).toContain('plain chat with no file');
   });
 
-  it('empty fileIds array → no [file: ...] tag', async () => {
+  it('empty fileIds array → no transcript tag', async () => {
     const app = buildChatApp(adminAId);
     await request(app).post('/api/ola/chat').send({ message: 'hi', fileIds: [] });
     const parsed = JSON.parse(lastUpstreamBody);
+    expect(parsed.messages[0].content).not.toContain('[transcript of');
     expect(parsed.messages[0].content).not.toContain('[file:');
   });
 
@@ -204,17 +247,18 @@ describe('chat fileIds — regression (no fileIds = pre-extension behavior)', ()
     const file = await createFileForAdmin(adminAId);
     const app = buildChatApp(adminAId);
 
-    // First call with fileIds
+    // First call with fileIds — transcript injected
     await request(app)
       .post('/api/ola/chat')
       .send({ message: 'analyze this', fileIds: [file._id.toString()] });
-    expect(JSON.parse(lastUpstreamBody).messages[0].content).toContain('[file:');
+    expect(JSON.parse(lastUpstreamBody).messages[0].content).toContain('[transcript of');
 
-    // Second call without fileIds
+    // Second call without fileIds — must not leak
     await request(app)
       .post('/api/ola/chat')
       .send({ message: 'follow up question' });
     const second = JSON.parse(lastUpstreamBody);
+    expect(second.messages[0].content).not.toContain('[transcript of');
     expect(second.messages[0].content).not.toContain('[file:');
     expect(second.messages[0].content).toContain('follow up question');
   });

@@ -1,4 +1,5 @@
 const http = require('http');
+const fs = require('fs').promises;
 const mongoose = require('mongoose');
 const { v4: uuidv4 } = require('uuid');
 const { toolEventsToBlocks } = require('./toolResultToBlocks');
@@ -8,6 +9,7 @@ const recordUsage = require('@/controllers/appControllers/llmUsageController/rec
 const ChatSession = mongoose.model('ChatSession');
 const ChatMessage = mongoose.model('ChatMessage');
 const FileModel = mongoose.model('File');
+const JobModel = mongoose.model('Job');
 
 // Read env at request time so tests / hot-reload can override per call.
 // Default 900s (15 min) accommodates long-running tool calls like
@@ -194,9 +196,16 @@ const chat = async (req, res) => {
     session = await ChatSession.create({ userId, nanobotSessionId, createdBy: userId });
   }
 
-  // Resolve fileIds → [file: <sourcePath>] tags. Tenant-scoped lookup; missing
-  // or cross-tenant ids return 404 (don't leak existence). Done BEFORE SSE
-  // headers are flushed so we can still send a JSON error envelope.
+  // Resolve fileIds → [transcript of "<name>": <text>] tags. Audio uploads
+  // spawn a Job at upload-time (Plan B v2 item 2); chat-time we read the
+  // sidecar transcript and inline-inject it into the user message so the
+  // agent sees fully-realized text instead of having to call transcribe_audio.
+  // Tenant-scoped lookup (404, no existence leak); Job status drives the
+  // remaining status codes:
+  //   - pending / running → 409 (client polls until done)
+  //   - failed → 422 with job.error in message
+  //   - done + sidecar missing → 500 (data integrity)
+  //   - File.transcriptionJobId null → 422 (audio upload never spawned Job)
   const fileRefs = [];
   for (const fid of fileIds) {
     if (typeof fid !== 'string' || !mongoose.isValidObjectId(fid)) {
@@ -218,7 +227,47 @@ const chat = async (req, res) => {
         message: '文件不存在或无权访问',
       });
     }
-    fileRefs.push(`[file: ${file.sourcePath}]`);
+    if (!file.transcriptionJobId) {
+      return res.status(422).json({
+        success: false,
+        result: null,
+        message: `文件 "${file.originalName}" 无关联转写任务`,
+      });
+    }
+    const job = await JobModel.findById(file.transcriptionJobId);
+    if (!job) {
+      return res.status(500).json({
+        success: false,
+        result: null,
+        message: `文件 "${file.originalName}" 关联的转写任务记录缺失`,
+      });
+    }
+    if (job.status === 'pending' || job.status === 'running') {
+      return res.status(409).json({
+        success: false,
+        result: null,
+        message: `文件 "${file.originalName}" 转写中，稍候再发`,
+      });
+    }
+    if (job.status === 'failed') {
+      return res.status(422).json({
+        success: false,
+        result: null,
+        message: `文件 "${file.originalName}" 转写失败: ${job.error || 'unknown'}`,
+      });
+    }
+    // status === 'done'
+    let transcript;
+    try {
+      transcript = await fs.readFile(file.sourcePath + '.txt', 'utf-8');
+    } catch (err) {
+      return res.status(500).json({
+        success: false,
+        result: null,
+        message: `Sidecar transcript 读取失败 (${file.originalName}): ${err.message}`,
+      });
+    }
+    fileRefs.push(`[transcript of "${file.originalName}": ${transcript}]`);
   }
 
   // Switch to SSE mode.
