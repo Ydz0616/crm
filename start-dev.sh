@@ -24,7 +24,10 @@ echo "=== Ola CRM Dev Startup ==="
 echo ""
 
 # Kill any existing processes on our ports
-for PORT in 8888 8889 8900 3000; do
+# 8901 (nanobot gateway) included after Plan B v3 phase G — old gateway
+# instances from previous start-dev.sh runs held 8901, causing new gateway
+# spawn to crash with EADDRINUSE while serve/backend silently restarted.
+for PORT in 8888 8889 8900 8901 3000; do
   PID=$(lsof -ti:$PORT 2>/dev/null || true)
   if [ -n "$PID" ]; then
     echo -e "${YELLOW}Killing existing process on port $PORT (PID: $PID)${NC}"
