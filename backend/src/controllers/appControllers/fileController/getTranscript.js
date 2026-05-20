@@ -36,7 +36,14 @@ const getTranscript = async (req, res) => {
     });
   }
 
-  const job = await JobModel.findById(file.transcriptionJobId);
+  // Defense-in-depth: createdBy filter closes a cross-admin read path where an
+  // admin PATCHes File.transcriptionJobId to point at another admin's Job
+  // (createCRUDController/update has no field whitelist). Same handler backs
+  // the MCP file.get_transcript tool, so this also closes the agent-driven path.
+  const job = await JobModel.findOne({
+    _id: file.transcriptionJobId,
+    createdBy: req.admin._id,
+  });
   if (!job) {
     return res.status(500).json({
       success: false,

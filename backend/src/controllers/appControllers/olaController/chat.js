@@ -96,7 +96,14 @@ function generateTitle(session, messages, userId) {
     port,
     path: '/v1/chat/completions',
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) },
+    headers: {
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(payload),
+      // Mirrors main chat path (#185). Without this nanobot routes the autotitle
+      // subagent's jsonl to admins/_system/sessions/ — leaking conversation text
+      // (which is embedded in the prompt) across the multi-tenant boundary.
+      'X-Ola-Acting-As': userId.toString(),
+    },
     timeout: 30000,
   };
   const titleStartTs = Date.now();
