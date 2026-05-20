@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { RAW_JOB_STATUS_VALUES, RAW_JOB_STATUS } = require('@/constants/jobStatus');
 
 const jobSchema = new mongoose.Schema({
   removed: {
@@ -39,8 +40,8 @@ const jobSchema = new mongoose.Schema({
   status: {
     type: String,
     required: true,
-    enum: ['pending', 'running', 'done', 'failed'],
-    default: 'pending',
+    enum: RAW_JOB_STATUS_VALUES,
+    default: RAW_JOB_STATUS.PENDING,
   },
   result: {
     type: mongoose.Schema.Types.Mixed,
