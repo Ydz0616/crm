@@ -698,6 +698,8 @@ const lang = {
   'What can I do for you?': '我能为您做什么？',
   'Ask anything': '随便问点什么',
   'Upload photos & files': '上传图片和文件',
+  'Coming soon': '即将推出',
+  'Voice input (coming soon)': '语音输入（即将推出）',
   'Ola is thinking...': 'Ola 正在思考...',
   'Ola is working on it...': 'Ola 正在处理...',
   'View thinking process': '查看思考过程',

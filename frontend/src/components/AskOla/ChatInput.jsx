@@ -146,6 +146,9 @@ export default function ChatInput({ onSend, onTranscriptionComplete, disabled = 
     e.target.value = '';
     if (!file) return;
 
+    // Picking a new file always cancels any in-flight poll for a previous
+    // file, even if the new upload subsequently fails before startPolling.
+    stopPolling();
     setPlusMenuOpen(false);
     setPendingFile({
       state: 'uploading',
@@ -485,7 +488,13 @@ export default function ChatInput({ onSend, onTranscriptionComplete, disabled = 
           )}
         </div>
         <div className="askola-chat-footer-right">
-          <button className="askola-chat-mic-btn">
+          <button
+            type="button"
+            className="askola-chat-mic-btn"
+            disabled
+            title={translate('Coming soon')}
+            aria-label={translate('Voice input (coming soon)')}
+          >
             <AudioOutlined />
           </button>
           <button

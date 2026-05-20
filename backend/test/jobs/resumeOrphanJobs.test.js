@@ -169,3 +169,17 @@ test('8. attempts counter increments on resume', async () => {
   const updated = await Job.findById(job._id);
   expect(updated.attempts).toBe(3);
 });
+
+test('9. Orphan Job at MAX_ATTEMPTS → marked failed (crash-loop guard)', async () => {
+  const file = await makeFile();
+  const job = await makeJob(file, { status: 'running', ageMs: 60 * 1000, attempts: 3 });
+
+  const result = await resumeOrphanJobs();
+
+  expect(result).toEqual({ resumed: 0, failed: 1 });
+  const updated = await Job.findById(job._id);
+  expect(updated.status).toBe('failed');
+  expect(updated.error).toMatch(/Exceeded 3 resume attempts/);
+  const transcribeWithOpenAI = require('@/jobs/transcriptionWorker');
+  expect(transcribeWithOpenAI).not.toHaveBeenCalled();
+});

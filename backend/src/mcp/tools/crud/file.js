@@ -16,6 +16,7 @@
 // `processing` = pending or running (transitional — distinction is not
 // useful for the agent and only invites premature polling).
 
+const mongoose = require('mongoose');
 const { z } = require('zod');
 const fileController = require('@/controllers/appControllers/fileController');
 const jobController = require('@/controllers/appControllers/jobController');
@@ -49,25 +50,30 @@ const search = {
 
     const files = Array.isArray(listRes.data) ? listRes.data : [];
 
+    const candidates = query
+      ? files.filter((f) =>
+          (f.originalName || '').toLowerCase().includes(query.toLowerCase())
+        )
+      : files;
+
+    const jobIds = candidates
+      .map((f) => f.transcriptionJobId)
+      .filter(Boolean)
+      .map((id) => String(id));
+    const jobById = new Map();
+    if (jobIds.length) {
+      const JobModel = mongoose.model('Job');
+      const jobs = await JobModel.find({ _id: { $in: jobIds } })
+        .select('status result error')
+        .lean();
+      for (const j of jobs) jobById.set(String(j._id), j);
+    }
+
     const enriched = [];
-    for (const f of files) {
-      if (query) {
-        const haystack = (f.originalName || '').toLowerCase();
-        if (!haystack.includes(query.toLowerCase())) continue;
-      }
-      let job = null;
-      let durationMs = null;
-      let error = '';
-      if (f.transcriptionJobId) {
-        const jr = await runController(jobController.read, {
-          params: { id: String(f.transcriptionJobId) },
-        });
-        if (jr.ok && jr.data) {
-          job = jr.data;
-          durationMs = jr.data.result?.durationMs ?? null;
-          error = jr.data.error || '';
-        }
-      }
+    for (const f of candidates) {
+      const job = f.transcriptionJobId
+        ? jobById.get(String(f.transcriptionJobId)) || null
+        : null;
       const collapsed = collapseJobStatus(job);
       if (status && collapsed !== status) continue;
       enriched.push({
@@ -76,7 +82,13 @@ const search = {
         mimeType: f.mimeType,
         sizeBytes: f.sizeBytes,
         created: f.created,
-        transcription: job ? { status: collapsed, durationMs, error } : null,
+        transcription: job
+          ? {
+              status: collapsed,
+              durationMs: job.result?.durationMs ?? null,
+              error: job.error || '',
+            }
+          : null,
       });
     }
 

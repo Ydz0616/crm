@@ -697,6 +697,8 @@ const lang = {
   'What can I do for you?': 'What can I do for you?',
   'Ask anything': 'Ask anything',
   'Upload photos & files': 'Upload photos & files',
+  'Coming soon': 'Coming soon',
+  'Voice input (coming soon)': 'Voice input (coming soon)',
   'Ola is thinking...': 'Ola is thinking...',
   'Ola is working on it...': 'Ola is working on it...',
   'View thinking process': 'View thinking process',

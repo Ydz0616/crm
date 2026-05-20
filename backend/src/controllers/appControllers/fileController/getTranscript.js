@@ -59,9 +59,17 @@ const getTranscript = async (req, res) => {
     });
   }
 
+  const sidecarPath = job.result?.sidecarPath;
+  if (!sidecarPath) {
+    return res.status(500).json({
+      success: false,
+      result: null,
+      message: `Sidecar transcript 路径缺失 (${file.originalName}): job.result.sidecarPath empty`,
+    });
+  }
   let transcript;
   try {
-    transcript = await fs.readFile(file.sourcePath + '.txt', 'utf-8');
+    transcript = await fs.readFile(sidecarPath, 'utf-8');
   } catch (err) {
     return res.status(500).json({
       success: false,

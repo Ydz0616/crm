@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const transcribeWithOpenAI = require('./transcriptionWorker');
 
 const ORPHAN_THRESHOLD_MS = 30 * 1000;
+const MAX_ATTEMPTS = 3;
 
 const resumeOrphanJobs = async () => {
   const Job = mongoose.model('Job');
@@ -34,6 +35,19 @@ const resumeOrphanJobs = async () => {
         updated: Date.now(),
       });
       console.log(`[resume-orphan-jobs] job=${job._id} → failed (file missing)`);
+      failed += 1;
+      continue;
+    }
+
+    if (job.attempts >= MAX_ATTEMPTS) {
+      await Job.findByIdAndUpdate(job._id, {
+        status: 'failed',
+        error: `Exceeded ${MAX_ATTEMPTS} resume attempts (likely crash-loop)`,
+        updated: Date.now(),
+      });
+      console.log(
+        `[resume-orphan-jobs] job=${job._id} → failed (attempts=${job.attempts} ≥ ${MAX_ATTEMPTS})`
+      );
       failed += 1;
       continue;
     }

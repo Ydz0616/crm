@@ -11,6 +11,10 @@ const collapseJobStatus = (job) => {
     case RAW_JOB_STATUS.RUNNING:
       return COLLAPSED_JOB_STATUS.PROCESSING;
     default:
+      console.warn(
+        `[collapseJobStatus] unknown raw status "${job.status}" — defaulting to processing. ` +
+          'A new status was likely added to the Job enum without updating collapseJobStatus.'
+      );
       return COLLAPSED_JOB_STATUS.PROCESSING;
   }
 };
