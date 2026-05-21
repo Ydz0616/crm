@@ -6,7 +6,7 @@ const multer = require('multer');
 const mongoose = require('mongoose');
 
 const { uploadSchema, MAX_FILE_SIZE } = require('./schemaValidate');
-const transcribeWithOpenAI = require('@/jobs/transcriptionWorker');
+const runTranscription = require('@/jobs/transcriptionWorker');
 const { UPLOADS_DIR, resolveUploadPath } = require('@/utils/uploadsPath');
 
 const FileModel = mongoose.model('File');
@@ -149,7 +149,7 @@ const upload = async (req, res) => {
         message: `转写任务创建失败: ${err.message}`,
       });
     }
-    transcribeWithOpenAI(fileDoc, job).catch((err) => {
+    runTranscription(fileDoc, job).catch((err) => {
       console.error(`[transcribe] worker failed for File ${fileDoc._id}:`, err.message);
     });
   }

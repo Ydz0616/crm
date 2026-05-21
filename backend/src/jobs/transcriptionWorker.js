@@ -1,21 +1,29 @@
+// Transcription dispatcher (#257). Resolves STT provider per upload then
+// hands off to the matching provider module. Per-admin selection beats
+// process-wide env which beats hardcoded 'openai' fallback.
+//
+//   admin.transcribeProvider > process.env.TRANSCRIPTION_PROVIDER > 'openai'
+//
+// Shared helpers (needsCompression / compressToMp3) live here because they
+// apply to OpenAI's push-multipart path (size budget); paraformer's pull
+// path skips compression — DashScope's 2 GB / 2 h limits leave plenty of
+// headroom for the original file.
+
 const path = require('path');
 const fs = require('fs').promises;
-const fsSync = require('fs');
 const { execFile } = require('child_process');
 const { promisify } = require('util');
-const FormData = require('form-data');
-const axios = require('axios');
 const mongoose = require('mongoose');
 
 const { resolveUploadPath } = require('@/utils/uploadsPath');
+const transcribeViaOpenAI = require('./providers/openaiProvider');
+const transcribeViaParaformer = require('./providers/paraformerProvider');
 
 const execFileAsync = promisify(execFile);
 
 const COMPRESSIBLE_EXTS = new Set(['.wav', '.flac', '.aiff', '.aac', '.m4a']);
 const SIZE_THRESHOLD_BYTES = 20 * 1024 * 1024;
-const OPENAI_URL = 'https://api.openai.com/v1/audio/transcriptions';
-const MODEL = 'gpt-4o-transcribe-diarize';
-const RESPONSE_FORMAT = 'diarized_json';
+const VALID_PROVIDERS = new Set(['openai', 'paraformer']);
 
 function needsCompression(file) {
   const ext = path.extname(file.sourcePath).toLowerCase();
@@ -30,87 +38,60 @@ async function compressToMp3(srcPath) {
   return dstPath;
 }
 
-// Mirrors nanobot providers/transcription.py _format_diarized so the sidecar
-// .txt shape stays consistent across CRM-direct and channel-driven paths.
-function formatDiarizedJson(payload) {
-  const segments = payload && Array.isArray(payload.segments) ? payload.segments : null;
-  if (!segments || segments.length === 0) {
-    return (payload && payload.text) || '';
-  }
-  return segments
-    .map((seg) => {
-      const speaker = seg.speaker || '?';
-      const start = Number(seg.start) || 0;
-      const text = (seg.text || '').trim();
-      const mm = String(Math.floor(start / 60)).padStart(2, '0');
-      const ss = String(Math.floor(start % 60)).padStart(2, '0');
-      return `${speaker} ${mm}:${ss}  ${text}`;
-    })
-    .join('\n');
-}
-
-async function callOpenAI(audioPath) {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) throw new Error('OPENAI_API_KEY not set');
-  const formData = new FormData();
-  formData.append('file', fsSync.createReadStream(audioPath));
-  formData.append('model', MODEL);
-  formData.append('response_format', RESPONSE_FORMAT);
-  formData.append('chunking_strategy', 'auto');
+async function resolveProvider(fileDoc) {
+  let adminProvider = null;
   try {
-    const response = await axios.post(OPENAI_URL, formData, {
-      headers: { ...formData.getHeaders(), Authorization: `Bearer ${apiKey}` },
-      maxBodyLength: Infinity,
-      maxContentLength: Infinity,
-      timeout: parseInt(process.env.OPENAI_TRANSCRIPTION_TIMEOUT_MS, 10) || 600000,
-    });
-    return response.data;
-  } catch (err) {
-    // axios swallows the OpenAI error body — surface it so Job.error and the
-    // structured log capture the real "why" instead of just the HTTP code.
-    if (err && err.response) {
-      const status = err.response.status;
-      const body = err.response.data;
-      const bodyJson =
-        typeof body === 'object' ? JSON.stringify(body) : String(body).slice(0, 500);
-      const detail =
-        body && body.error && body.error.message
-          ? body.error.message
-          : bodyJson;
-      const wrapped = new Error(`OpenAI HTTP ${status}: ${detail}`);
-      wrapped.status = status;
-      wrapped.openaiBody = body;
-      throw wrapped;
-    }
-    throw err;
+    const Admin = mongoose.model('Admin');
+    const admin = await Admin.findById(fileDoc.createdBy).select('transcribeProvider').lean();
+    if (admin && admin.transcribeProvider) adminProvider = admin.transcribeProvider;
+  } catch (e) {
+    // Admin lookup failure shouldn't block transcription — fall through to env/default.
+    console.warn(`[transcribe.dispatch] admin lookup failed: ${e.message}`);
   }
+  const provider = adminProvider || process.env.TRANSCRIPTION_PROVIDER || 'openai';
+  if (!VALID_PROVIDERS.has(provider)) {
+    throw new Error(`Unknown transcription provider: ${provider}`);
+  }
+  return provider;
 }
 
-async function transcribeWithOpenAI(fileDoc, jobDoc) {
+async function runTranscription(fileDoc, jobDoc) {
   const Job = mongoose.model('Job');
   const startTs = Date.now();
   let compressedPath = null;
+
+  const provider = await resolveProvider(fileDoc);
   console.log(
-    `[transcribe.worker] job=${jobDoc._id} file=${fileDoc._id} name=${fileDoc.originalName} size=${fileDoc.sizeBytes} mime=${fileDoc.mimeType} status=pending→running`
+    `[transcribe.worker] job=${jobDoc._id} file=${fileDoc._id} name=${fileDoc.originalName} ` +
+    `size=${fileDoc.sizeBytes} mime=${fileDoc.mimeType} provider=${provider} status=pending→running`
   );
+
   try {
     await Job.findByIdAndUpdate(jobDoc._id, { status: 'running', updated: Date.now() });
 
-    // #266: File.sourcePath is a relative path; resolve to absolute for ffmpeg
-    // / OpenAI calls but never store the absolute form back.
-    const absoluteSourcePath = resolveUploadPath(fileDoc.sourcePath);
-    const audioPath = needsCompression(fileDoc)
-      ? (compressedPath = await compressToMp3(absoluteSourcePath))
-      : absoluteSourcePath;
-
-    const payload = await callOpenAI(audioPath);
-    const transcript = formatDiarizedJson(payload);
-    if (!transcript || transcript.trim() === '') {
-      throw new Error('OpenAI returned empty transcript');
+    let transcript;
+    if (provider === 'openai') {
+      // Push model — compress if needed, then stream multipart.
+      const absoluteSourcePath = resolveUploadPath(fileDoc.sourcePath);
+      const audioPath = needsCompression(fileDoc)
+        ? (compressedPath = await compressToMp3(absoluteSourcePath))
+        : absoluteSourcePath;
+      transcript = await transcribeViaOpenAI(audioPath);
+    } else if (provider === 'paraformer') {
+      // Pull model — DashScope fetches from BACKEND_PUBLIC_BASE_URL via
+      // corePublicAudioRouter; no compression, no local read by us.
+      transcript = await transcribeViaParaformer(fileDoc, {
+        onPollHeartbeat: () =>
+          Job.findByIdAndUpdate(jobDoc._id, { updated: Date.now() }),
+      });
     }
 
-    // Sidecar lives next to the source on disk but is recorded as a relative
-    // path in Job.result.sidecarPath (same portability invariant as #266).
+    if (!transcript || transcript.trim() === '') {
+      throw new Error(`${provider} returned empty transcript`);
+    }
+
+    // Sidecar lives next to source on disk; path stored RELATIVE in Job.result
+    // (same #266 invariant as File.sourcePath).
     const relativeSidecarPath = fileDoc.sourcePath + '.txt';
     const absoluteSidecarPath = resolveUploadPath(relativeSidecarPath);
     await fs.writeFile(absoluteSidecarPath, transcript, 'utf-8');
@@ -123,11 +104,13 @@ async function transcribeWithOpenAI(fileDoc, jobDoc) {
         sidecarPath: relativeSidecarPath,
         sizeBytes: transcriptBytes,
         durationMs,
+        provider,
       },
       updated: Date.now(),
     });
     console.log(
-      `[transcribe.worker] job=${jobDoc._id} status=running→done duration_ms=${durationMs} sidecar_bytes=${transcriptBytes}`
+      `[transcribe.worker] job=${jobDoc._id} provider=${provider} status=running→done ` +
+      `duration_ms=${durationMs} sidecar_bytes=${transcriptBytes}`
     );
   } catch (err) {
     await Job.findByIdAndUpdate(jobDoc._id, {
@@ -136,7 +119,8 @@ async function transcribeWithOpenAI(fileDoc, jobDoc) {
       updated: Date.now(),
     });
     console.error(
-      `[transcribe.worker] job=${jobDoc._id} status=running→failed error=${err.message || String(err)}`
+      `[transcribe.worker] job=${jobDoc._id} provider=${provider} status=running→failed ` +
+      `error=${err.message || String(err)}`
     );
     throw err;
   } finally {
@@ -150,5 +134,5 @@ async function transcribeWithOpenAI(fileDoc, jobDoc) {
   }
 }
 
-module.exports = transcribeWithOpenAI;
-module.exports.__test__ = { needsCompression, compressToMp3, formatDiarizedJson, callOpenAI };
+module.exports = runTranscription;
+module.exports.__test__ = { needsCompression, compressToMp3, resolveProvider };
