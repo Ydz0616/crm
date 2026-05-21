@@ -41,6 +41,16 @@ const adminSchema = new Schema({
   // 'zh' via `|| 'zh'`. No migration needed.
   language: { type: String, enum: ['zh', 'en'], default: 'zh' },
 
+  // Per-admin STT engine selection (#257). null = fall back to env
+  // TRANSCRIPTION_PROVIDER or hardcoded 'openai'. paraformer = DashScope
+  // Paraformer-v2 (HK Cantonese first-class + 9× cheaper). Existing docs
+  // without this field read null and route to openai unchanged.
+  transcribeProvider: {
+    type: String,
+    enum: ['openai', 'paraformer'],
+    default: null,
+  },
+
   // Updated by trackActivity middleware (≥60s throttle); read by Ola_devboard.
   lastActivity: { type: Date, default: null, index: true },
 
