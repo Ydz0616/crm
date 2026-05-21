@@ -103,11 +103,12 @@ describe('POST /api/file/create — happy path', () => {
     expect(doc).toBeTruthy();
     expect(doc.createdBy.toString()).toBe(adminAId.toString());
 
-    // Disk write — under tenant-scoped path
-    expect(doc.sourcePath.startsWith(TMP_UPLOADS)).toBe(true);
-    expect(doc.sourcePath).toContain(`/${adminAId.toString()}/`);
-    expect(fs.existsSync(doc.sourcePath)).toBe(true);
-    expect(fs.readFileSync(doc.sourcePath)).toEqual(fakeAudio);
+    // #266: sourcePath stored RELATIVE to UPLOADS_DIR (not absolute).
+    expect(path.isAbsolute(doc.sourcePath)).toBe(false);
+    expect(doc.sourcePath.startsWith(`${adminAId.toString()}/`)).toBe(true);
+    const absoluteSourcePath = path.join(TMP_UPLOADS, doc.sourcePath);
+    expect(fs.existsSync(absoluteSourcePath)).toBe(true);
+    expect(fs.readFileSync(absoluteSourcePath)).toEqual(fakeAudio);
   });
 });
 
@@ -276,8 +277,9 @@ describe('Disk path scope', () => {
 
     const FileModel = mongoose.model('File');
     const doc = await FileModel.findById(res.body.result._id);
-    const relative = path.relative(TMP_UPLOADS, doc.sourcePath);
-    const parts = relative.split(path.sep);
+    // #266: doc.sourcePath is already relative; split directly (no path.relative)
+    expect(path.isAbsolute(doc.sourcePath)).toBe(false);
+    const parts = doc.sourcePath.split(path.sep);
 
     expect(parts[0]).toBe(adminAId.toString());
     expect(parts[1]).toMatch(/^\d{4}$/); // YYYY

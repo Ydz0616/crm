@@ -28,6 +28,10 @@ const fileSchema = new mongoose.Schema({
     required: true,
     min: 0,
   },
+  // Path RELATIVE to UPLOADS_DIR (#266). Format: "<adminId>/YYYY/MM/<uuid>.ext".
+  // Resolved to absolute via utils/uploadsPath.resolveUploadPath() at read time
+  // so the doc stays host-portable across mac dev / Linux container / etc.
+  // Job.result.sidecarPath follows the same invariant.
   sourcePath: {
     type: String,
     required: true,

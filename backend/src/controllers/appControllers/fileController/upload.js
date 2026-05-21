@@ -7,12 +7,10 @@ const mongoose = require('mongoose');
 
 const { uploadSchema, MAX_FILE_SIZE } = require('./schemaValidate');
 const transcribeWithOpenAI = require('@/jobs/transcriptionWorker');
+const { UPLOADS_DIR, resolveUploadPath } = require('@/utils/uploadsPath');
 
 const FileModel = mongoose.model('File');
 const JobModel = mongoose.model('Job');
-
-const UPLOADS_DIR =
-  process.env.UPLOADS_DIR || path.resolve(__dirname, '../../../../uploads');
 
 const multerHandler = multer({
   storage: multer.memoryStorage(),
@@ -106,12 +104,15 @@ const upload = async (req, res) => {
   const mm = String(now.getMonth() + 1).padStart(2, '0');
   const ext = safeExt(req.file.originalname);
   const uniqueName = `${uuidv4()}${ext}`;
-  const targetDir = path.join(UPLOADS_DIR, adminId, yyyy, mm);
-  const sourcePath = path.join(targetDir, uniqueName);
+  // #266: sourcePath stored RELATIVE to UPLOADS_DIR; absolute path resolved
+  // at read time via resolveUploadPath() so the doc stays host-portable.
+  const relativeSourcePath = path.join(adminId, yyyy, mm, uniqueName);
+  const absoluteSourcePath = resolveUploadPath(relativeSourcePath);
+  const targetDir = path.dirname(absoluteSourcePath);
 
   try {
     await fs.mkdir(targetDir, { recursive: true });
-    await fs.writeFile(sourcePath, req.file.buffer);
+    await fs.writeFile(absoluteSourcePath, req.file.buffer);
   } catch (err) {
     return res.status(500).json({
       success: false,
@@ -125,7 +126,7 @@ const upload = async (req, res) => {
     originalName: req.file.originalname,
     mimeType: req.file.mimetype,
     sizeBytes: req.file.size,
-    sourcePath,
+    sourcePath: relativeSourcePath,
     contentHash,
   });
 

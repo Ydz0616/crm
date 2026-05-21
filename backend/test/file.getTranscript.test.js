@@ -29,6 +29,10 @@ const { MongoMemoryServer } = require('mongodb-memory-server');
 
 const BACKEND_ROOT = path.join(__dirname, '..');
 const TMP_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'get-transcript-test-'));
+// #266: getTranscript resolves Job.result.sidecarPath via UPLOADS_DIR; point
+// it at TMP_DIR before requiring the controller so resolveUploadPath() reads
+// the right root.
+process.env.UPLOADS_DIR = TMP_DIR;
 
 let mongo;
 const adminAId = new mongoose.Types.ObjectId();
@@ -70,19 +74,19 @@ function buildApp(adminId) {
 async function seedFileWithJob({ adminId, transcript = 'hello world transcript' }) {
   const File = mongoose.model('File');
   const Job = mongoose.model('Job');
-  const sourcePath = path.join(
-    TMP_DIR,
-    `${Date.now()}-${Math.random()}-audio.mp3`
-  );
-  fs.writeFileSync(sourcePath, Buffer.alloc(8, 0));
-  const sidecarPath = `${sourcePath}.txt`;
-  fs.writeFileSync(sidecarPath, transcript);
+  // #266: sourcePath / sidecarPath stored RELATIVE to UPLOADS_DIR (= TMP_DIR).
+  const relativeSourcePath = `${Date.now()}-${Math.random()}-audio.mp3`;
+  const relativeSidecarPath = `${relativeSourcePath}.txt`;
+  const absoluteSourcePath = path.join(TMP_DIR, relativeSourcePath);
+  const absoluteSidecarPath = path.join(TMP_DIR, relativeSidecarPath);
+  fs.writeFileSync(absoluteSourcePath, Buffer.alloc(8, 0));
+  fs.writeFileSync(absoluteSidecarPath, transcript);
   const file = await File.create({
     createdBy: adminId,
     originalName: 'audio.mp3',
     mimeType: 'audio/mpeg',
     sizeBytes: 8,
-    sourcePath,
+    sourcePath: relativeSourcePath,
   });
   const job = await Job.create({
     createdBy: adminId,
@@ -90,11 +94,11 @@ async function seedFileWithJob({ adminId, transcript = 'hello world transcript' 
     refModel: 'File',
     refId: file._id,
     status: 'done',
-    result: { sidecarPath, durationMs: 1234 },
+    result: { sidecarPath: relativeSidecarPath, durationMs: 1234 },
   });
   file.transcriptionJobId = job._id;
   await file.save();
-  return { file, job, sidecarPath };
+  return { file, job, relativeSidecarPath, absoluteSidecarPath };
 }
 
 describe('getTranscript multi-tenant isolation (PR #258 Ziyue review)', () => {
@@ -109,6 +113,43 @@ describe('getTranscript multi-tenant isolation (PR #258 Ziyue review)', () => {
     expect(res.body.success).toBe(true);
     expect(res.body.result.transcript).toBe('admin A own transcript content');
     expect(res.body.result.fileId.toString()).toBe(file._id.toString());
+  });
+
+  // #266 Item 2 — fail-fast case: a legacy doc with absolute sidecarPath
+  // (from before the migration) must produce a clear 500 instead of silently
+  // hitting a wrong-host filesystem path.
+  test('legacy absolute sidecarPath → 500 "路径无效" fail-fast (#266)', async () => {
+    const File = mongoose.model('File');
+    const Job = mongoose.model('Job');
+    // Write a real sidecar at an absolute location so this isn't an ENOENT
+    // — the absolute-path check must reject BEFORE fs.readFile is attempted.
+    const absoluteSidecarPath = path.join(TMP_DIR, 'legacy-absolute-sidecar.txt');
+    fs.writeFileSync(absoluteSidecarPath, 'should NOT be read');
+    const file = await File.create({
+      createdBy: adminAId,
+      originalName: 'legacy.mp3',
+      mimeType: 'audio/mpeg',
+      sizeBytes: 8,
+      sourcePath: 'legacy-relative.mp3',
+    });
+    const job = await Job.create({
+      createdBy: adminAId,
+      type: 'transcription',
+      refModel: 'File',
+      refId: file._id,
+      status: 'done',
+      result: { sidecarPath: absoluteSidecarPath, durationMs: 1 },
+    });
+    file.transcriptionJobId = job._id;
+    await file.save();
+
+    const res = await request(buildApp(adminAId))
+      .get(`/api/file/transcript/${file._id}`);
+
+    expect(res.status).toBe(500);
+    expect(res.body.success).toBe(false);
+    expect(res.body.message).toContain('路径无效');
+    expect(JSON.stringify(res.body)).not.toContain('should NOT be read');
   });
 
   test('cross-admin attack: A.File → B.Job → 500, no transcript leaked', async () => {

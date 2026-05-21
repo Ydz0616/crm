@@ -55,6 +55,18 @@ if [ -f "$CRM_DIR/.secrets/SERVERS.env" ]; then
 fi
 set +a
 
+# #266 Item 3 — fail-fast if backend/.env declares OLA_ENV=prod. Local dev
+# must never point at the production Atlas cluster: cross-env writes pollute
+# the shared DB with host-specific paths and other dev artifacts (see #266
+# Bug 3+4 for the original incident). Prod boxes set OLA_ENV=prod in their
+# .env; local dev leaves it unset OR sets =dev.
+if [ "${OLA_ENV:-dev}" = "prod" ]; then
+  echo -e "${RED}REFUSING TO START: backend/.env has OLA_ENV=prod.${NC}"
+  echo -e "${YELLOW}start-dev.sh is for local development only. Set OLA_ENV=dev (or unset it)${NC}"
+  echo -e "${YELLOW}in backend/.env before running this script. See #266 for context.${NC}"
+  exit 1
+fi
+
 # Always-overwrite render of ~/.nanobot/config.json. Single source of truth
 # is the vendored template + secrets; manual edits to ~/.nanobot/config.json
 # WILL be clobbered on next start (matches the SOUL/AGENTS/TOOLS pattern

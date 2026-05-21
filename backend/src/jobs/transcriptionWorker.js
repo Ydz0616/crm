@@ -7,6 +7,8 @@ const FormData = require('form-data');
 const axios = require('axios');
 const mongoose = require('mongoose');
 
+const { resolveUploadPath } = require('@/utils/uploadsPath');
+
 const execFileAsync = promisify(execFile);
 
 const COMPRESSIBLE_EXTS = new Set(['.wav', '.flac', '.aiff', '.aac', '.m4a']);
@@ -94,9 +96,12 @@ async function transcribeWithOpenAI(fileDoc, jobDoc) {
   try {
     await Job.findByIdAndUpdate(jobDoc._id, { status: 'running', updated: Date.now() });
 
+    // #266: File.sourcePath is a relative path; resolve to absolute for ffmpeg
+    // / OpenAI calls but never store the absolute form back.
+    const absoluteSourcePath = resolveUploadPath(fileDoc.sourcePath);
     const audioPath = needsCompression(fileDoc)
-      ? (compressedPath = await compressToMp3(fileDoc.sourcePath))
-      : fileDoc.sourcePath;
+      ? (compressedPath = await compressToMp3(absoluteSourcePath))
+      : absoluteSourcePath;
 
     const payload = await callOpenAI(audioPath);
     const transcript = formatDiarizedJson(payload);
@@ -104,15 +109,18 @@ async function transcribeWithOpenAI(fileDoc, jobDoc) {
       throw new Error('OpenAI returned empty transcript');
     }
 
-    const sidecarPath = fileDoc.sourcePath + '.txt';
-    await fs.writeFile(sidecarPath, transcript, 'utf-8');
+    // Sidecar lives next to the source on disk but is recorded as a relative
+    // path in Job.result.sidecarPath (same portability invariant as #266).
+    const relativeSidecarPath = fileDoc.sourcePath + '.txt';
+    const absoluteSidecarPath = resolveUploadPath(relativeSidecarPath);
+    await fs.writeFile(absoluteSidecarPath, transcript, 'utf-8');
 
     const durationMs = Date.now() - startTs;
     const transcriptBytes = Buffer.byteLength(transcript, 'utf-8');
     await Job.findByIdAndUpdate(jobDoc._id, {
       status: 'done',
       result: {
-        sidecarPath,
+        sidecarPath: relativeSidecarPath,
         sizeBytes: transcriptBytes,
         durationMs,
       },
