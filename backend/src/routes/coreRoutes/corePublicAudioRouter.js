@@ -23,7 +23,7 @@ const router = express.Router();
 const ADMIN_ID_RE = /^[a-f0-9]{24}$/;            // Mongo ObjectId hex
 const YEAR_RE = /^\d{4}$/;
 const MONTH_RE = /^\d{2}$/;
-const FILENAME_RE = /^[a-f0-9-]{36}\.[a-z0-9]{1,8}$/i; // uuid v4 + ext
+const FILENAME_RE = /^[a-f0-9-]{36}\.[a-z0-9]{1,8}$/; // uuid v4 + ext (upload.js always writes lowercase)
 
 router.route('/:adminId/:year/:month/:filename').get(function (req, res) {
   try {
@@ -52,7 +52,11 @@ router.route('/:adminId/:year/:month/:filename').get(function (req, res) {
     }
 
     return res.sendFile(absolutePath, function (err) {
-      if (err) {
+      // sendFile fires the callback twice-shaped: pre-send miss (headers not
+      // yet sent → 404 ok) OR mid-stream client drop (headers + partial body
+      // already on the wire → res.status would throw ERR_HTTP_HEADERS_SENT).
+      // headersSent guard distinguishes the two.
+      if (err && !res.headersSent) {
         return res.status(404).json({ success: false, message: 'file not found' });
       }
     });

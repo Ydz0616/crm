@@ -48,6 +48,9 @@ const adminSchema = new Schema({
   transcribeProvider: {
     type: String,
     enum: ['openai', 'paraformer'],
+    // null = fall back to TRANSCRIPTION_PROVIDER env, then to 'openai'.
+    // Mongoose bypasses enum validation for null/undefined, which is the
+    // sentinel we rely on — do NOT add null to the enum list.
     default: null,
   },
 

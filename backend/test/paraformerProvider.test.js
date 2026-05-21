@@ -156,16 +156,20 @@ test('submitTask: response missing task_id → throws', async () => {
 
 // =========== pollTask ===========
 
-test('pollTask: SUCCEEDED on first poll returns data', async () => {
-  axios.post.mockResolvedValueOnce({
+test('pollTask: SUCCEEDED on first poll returns data (uses GET per DashScope doc)', async () => {
+  axios.get.mockResolvedValueOnce({
     data: { output: { task_id: 't1', task_status: 'SUCCEEDED', results: [{ subtask_status: 'SUCCEEDED' }] } },
   });
   const out = await pollTask('t1');
   expect(out.output.task_status).toBe('SUCCEEDED');
+  expect(axios.get).toHaveBeenCalledWith(
+    'https://dashscope.aliyuncs.com/api/v1/tasks/t1',
+    expect.objectContaining({ headers: expect.objectContaining({ Authorization: 'Bearer sk-fake-for-tests' }) })
+  );
 });
 
 test('pollTask: heartbeat callback invoked each poll iteration', async () => {
-  axios.post
+  axios.get
     .mockResolvedValueOnce({ data: { output: { task_status: 'RUNNING' } } })
     .mockResolvedValueOnce({ data: { output: { task_status: 'RUNNING' } } })
     .mockResolvedValueOnce({ data: { output: { task_status: 'SUCCEEDED' } } });
@@ -175,7 +179,7 @@ test('pollTask: heartbeat callback invoked each poll iteration', async () => {
 });
 
 test('pollTask: FAILED status returned (caller decides what to do)', async () => {
-  axios.post.mockResolvedValueOnce({
+  axios.get.mockResolvedValueOnce({
     data: { output: { task_status: 'FAILED' }, code: 'InternalError' },
   });
   const out = await pollTask('t1');
@@ -183,9 +187,44 @@ test('pollTask: FAILED status returned (caller decides what to do)', async () =>
 });
 
 test('pollTask: never-finishing task → timeout throw', async () => {
-  axios.post.mockResolvedValue({ data: { output: { task_status: 'RUNNING' } } });
+  axios.get.mockResolvedValue({ data: { output: { task_status: 'RUNNING' } } });
   // POLL_MAX_WAIT_MS=500ms, POLL_INTERVAL_MS=5ms → ~100 polls then throw
   await expect(pollTask('stuck')).rejects.toThrow(/poll timeout/);
+});
+
+test('pollTask: transient ECONNRESET retried, then SUCCEEDED returned', async () => {
+  const err1 = Object.assign(new Error('socket hang up'), { code: 'ECONNRESET' });
+  const err2 = Object.assign(new Error('timeout'), { code: 'ETIMEDOUT' });
+  axios.get
+    .mockRejectedValueOnce(err1)
+    .mockRejectedValueOnce(err2)
+    .mockResolvedValueOnce({ data: { output: { task_status: 'SUCCEEDED' } } });
+  const out = await pollTask('flaky');
+  expect(out.output.task_status).toBe('SUCCEEDED');
+  expect(axios.get).toHaveBeenCalledTimes(3);
+});
+
+test('pollTask: HTTP 5xx treated as transient (retried)', async () => {
+  const err5xx = { response: { status: 503, data: { error: 'gateway' } }, message: '503' };
+  axios.get
+    .mockRejectedValueOnce(err5xx)
+    .mockResolvedValueOnce({ data: { output: { task_status: 'SUCCEEDED' } } });
+  const out = await pollTask('flaky5xx');
+  expect(out.output.task_status).toBe('SUCCEEDED');
+});
+
+test('pollTask: HTTP 4xx aborts immediately (NOT retried)', async () => {
+  const err4xx = { response: { status: 401, data: { error: 'unauthorized' } }, message: '401' };
+  axios.get.mockRejectedValueOnce(err4xx);
+  await expect(pollTask('badauth')).rejects.toThrow(/Paraformer poll failed: HTTP 401/);
+  expect(axios.get).toHaveBeenCalledTimes(1);
+});
+
+test('pollTask: persistent transient errors > MAX_CONSECUTIVE_TRANSIENT abort', async () => {
+  const err = Object.assign(new Error('reset'), { code: 'ECONNRESET' });
+  // MAX_CONSECUTIVE_TRANSIENT=5, so 6th throws
+  axios.get.mockRejectedValue(err);
+  await expect(pollTask('downhost')).rejects.toThrow(/Paraformer poll failed/);
 });
 
 // =========== fetchTranscripts ===========
@@ -209,11 +248,12 @@ test('fetchTranscripts: HTTP error surfaced', async () => {
 
 // =========== transcribeViaParaformer (full orchestration) ===========
 
-test('transcribeViaParaformer: happy path constructs URL, submits, polls, fetches, formats, OpenCC', async () => {
-  axios.post
-    // submit
-    .mockResolvedValueOnce({ data: { output: { task_id: 'task-xyz' } } })
-    // poll SUCCEEDED
+test('transcribeViaParaformer: happy path constructs URL, submits (POST), polls (GET), fetches (GET), formats, OpenCC', async () => {
+  // submit uses POST
+  axios.post.mockResolvedValueOnce({ data: { output: { task_id: 'task-xyz' } } });
+  // poll uses GET (per DashScope task-query doc)
+  // fetch transcripts also uses GET
+  axios.get
     .mockResolvedValueOnce({
       data: {
         output: {
@@ -221,17 +261,17 @@ test('transcribeViaParaformer: happy path constructs URL, submits, polls, fetche
           results: [{ subtask_status: 'SUCCEEDED', transcription_url: 'https://result.example.com/out.json' }],
         },
       },
+    })
+    .mockResolvedValueOnce({
+      data: {
+        transcripts: [{
+          sentences: [
+            { speaker_id: 0, begin_time: 0, text: '系咯系咯' },
+            { speaker_id: 1, begin_time: 5000, text: '即系咁样' },
+          ],
+        }],
+      },
     });
-  axios.get.mockResolvedValueOnce({
-    data: {
-      transcripts: [{
-        sentences: [
-          { speaker_id: 0, begin_time: 0, text: '系咯系咯' },
-          { speaker_id: 1, begin_time: 5000, text: '即系咁样' },
-        ],
-      }],
-    },
-  });
 
   const fileDoc = { sourcePath: 'aaaaaaaaaaaaaaaaaaaaaaaa/2026/05/9f8a3b2c-7e1d-4a5b-9c6d-1f2e3a4b5c6d.m4a' };
   const out = await transcribeViaParaformer(fileDoc);
@@ -245,8 +285,6 @@ test('transcribeViaParaformer: happy path constructs URL, submits, polls, fetche
   // Verify output is HK traditional with A/B speakers + mmss
   expect(out).toContain('A 00:00');
   expect(out).toContain('B 00:05');
-  // 系 → 係 conversion happens at line start "系咯" too (post-fix catches 繫)
-  // Both lines should NOT contain simplified-only chars
 });
 
 test('transcribeViaParaformer: no BACKEND_PUBLIC_BASE_URL → throws', async () => {
@@ -264,16 +302,15 @@ test('transcribeViaParaformer: fileDoc without sourcePath → throws', async () 
 });
 
 test('transcribeViaParaformer: task FAILED bubbles up specific error', async () => {
-  axios.post
-    .mockResolvedValueOnce({ data: { output: { task_id: 'task-fail' } } })
-    .mockResolvedValueOnce({
-      data: {
-        output: {
-          task_status: 'FAILED',
-          results: [{ message: 'InvalidFile.DownloadFailed' }],
-        },
+  axios.post.mockResolvedValueOnce({ data: { output: { task_id: 'task-fail' } } });
+  axios.get.mockResolvedValueOnce({
+    data: {
+      output: {
+        task_status: 'FAILED',
+        results: [{ message: 'InvalidFile.DownloadFailed' }],
       },
-    });
+    },
+  });
   const fileDoc = { sourcePath: 'aaa/2026/05/file.mp3' };
   await expect(transcribeViaParaformer(fileDoc)).rejects.toThrow(/Paraformer task FAILED.*DownloadFailed/);
 });

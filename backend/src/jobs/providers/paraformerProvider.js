@@ -98,6 +98,22 @@ async function submitTask(fileUrl, opts = {}) {
   return taskId;
 }
 
+// Network errors that are usually transient — we retry the poll iteration
+// instead of aborting the whole transcription. HTTP 4xx still aborts (those
+// indicate API contract violations: bad task_id, bad auth, etc.). HTTP 5xx
+// is treated as transient since DashScope occasionally has brief blips.
+const TRANSIENT_ERR_CODES = new Set([
+  'ECONNRESET', 'ETIMEDOUT', 'ECONNREFUSED', 'EAI_AGAIN', 'ENOTFOUND', 'ECONNABORTED',
+]);
+const MAX_CONSECUTIVE_TRANSIENT = 5; // safety: don't spin forever if DashScope is fully down
+
+function isTransientError(err) {
+  if (!err) return false;
+  if (err.code && TRANSIENT_ERR_CODES.has(err.code)) return true;
+  if (err.response && err.response.status >= 500 && err.response.status < 600) return true;
+  return false;
+}
+
 async function pollTask(taskId, opts = {}) {
   const apiKey = process.env.DASHSCOPE_API_KEY;
   if (!apiKey) throw new Error('DASHSCOPE_API_KEY not set');
@@ -108,14 +124,26 @@ async function pollTask(taskId, opts = {}) {
   const t0 = Date.now();
   const deadline = t0 + POLL_MAX_WAIT_MS;
   let lastStatus = null;
+  let consecutiveTransient = 0;
 
   while (Date.now() < deadline) {
     let resp;
     try {
-      // DashScope's REST query endpoint accepts both GET and POST; we use POST
-      // to mirror the spike script which proved this path works.
-      resp = await axios.post(url, null, { headers, timeout: 30000 });
+      // GET per DashScope task-query API doc:
+      // https://www.alibabacloud.com/help/en/model-studio/paraformer-recorded-speech-recognition-restful-api
+      resp = await axios.get(url, { headers, timeout: 30000 });
+      consecutiveTransient = 0;
     } catch (err) {
+      if (isTransientError(err) && consecutiveTransient < MAX_CONSECUTIVE_TRANSIENT) {
+        consecutiveTransient += 1;
+        const elapsedSec = Math.floor((Date.now() - t0) / 1000);
+        console.warn(
+          `[paraformer] poll [${String(elapsedSec).padStart(4)}s] transient error ` +
+          `${err.code || err.response?.status} (retry ${consecutiveTransient}/${MAX_CONSECUTIVE_TRANSIENT})`
+        );
+        await sleep(POLL_INTERVAL_MS);
+        continue;
+      }
       const status = err.response && err.response.status;
       const detail = err.response && err.response.data
         ? JSON.stringify(err.response.data).slice(0, 300)
