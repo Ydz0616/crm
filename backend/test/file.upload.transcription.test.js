@@ -41,7 +41,7 @@ const adminAId = new mongoose.Types.ObjectId();
 let mongo;
 let File;
 let Job;
-let transcribeWithOpenAI;
+let runTranscription;
 
 beforeAll(async () => {
   process.env.OPENAI_API_KEY = 'sk-test-key';
@@ -52,7 +52,7 @@ beforeAll(async () => {
   await mongoose.connect(mongo.getUri());
   File = mongoose.model('File');
   Job = mongoose.model('Job');
-  transcribeWithOpenAI = require(path.join(
+  runTranscription = require(path.join(
     BACKEND_ROOT, 'src/jobs/transcriptionWorker'
   ));
 }, 120000);
@@ -111,7 +111,7 @@ test('1. Happy: small mp3 (no compress) → axios called, sidecar written, Job.d
   const { fileDoc, jobDoc, relativeSourcePath, absoluteSourcePath } =
     await setupAudioFile({ sizeBytes: 5_000_000 });
 
-  await transcribeWithOpenAI(fileDoc, jobDoc);
+  await runTranscription(fileDoc, jobDoc);
 
   expect(child_process.execFile).not.toHaveBeenCalled();
   expect(axios.post).toHaveBeenCalledTimes(1);
@@ -143,7 +143,7 @@ test('2. Large WAV → ffmpeg compress invoked with mono 16k 64k flags → Job.d
     mimeType: 'audio/wav',
   });
 
-  await transcribeWithOpenAI(fileDoc, jobDoc);
+  await runTranscription(fileDoc, jobDoc);
 
   expect(child_process.execFile).toHaveBeenCalledTimes(1);
   const [cmd, args] = child_process.execFile.mock.calls[0];
@@ -161,7 +161,7 @@ test('3. OpenAI 401 → Job.failed + error captured + worker throws', async () =
 
   const { fileDoc, jobDoc } = await setupAudioFile();
 
-  await expect(transcribeWithOpenAI(fileDoc, jobDoc)).rejects.toThrow(/401/);
+  await expect(runTranscription(fileDoc, jobDoc)).rejects.toThrow(/401/);
 
   const finalJob = await Job.findById(jobDoc._id);
   expect(finalJob.status).toBe('failed');
@@ -179,7 +179,7 @@ test('4. ffmpeg ENOENT → Job.failed + axios never called', async () => {
     mimeType: 'audio/wav',
   });
 
-  await expect(transcribeWithOpenAI(fileDoc, jobDoc)).rejects.toThrow(/ffmpeg|ENOENT/i);
+  await expect(runTranscription(fileDoc, jobDoc)).rejects.toThrow(/ffmpeg|ENOENT/i);
 
   const finalJob = await Job.findById(jobDoc._id);
   expect(finalJob.status).toBe('failed');
@@ -192,7 +192,7 @@ test('5. Empty transcript (no segments + no text) → Job.failed', async () => {
 
   const { fileDoc, jobDoc } = await setupAudioFile();
 
-  await expect(transcribeWithOpenAI(fileDoc, jobDoc)).rejects.toThrow(/empty transcript/i);
+  await expect(runTranscription(fileDoc, jobDoc)).rejects.toThrow(/empty transcript/i);
 
   const finalJob = await Job.findById(jobDoc._id);
   expect(finalJob.status).toBe('failed');

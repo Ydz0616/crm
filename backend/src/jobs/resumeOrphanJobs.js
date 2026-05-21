@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const transcribeWithOpenAI = require('./transcriptionWorker');
+const runTranscription = require('./transcriptionWorker');
 
 const ORPHAN_THRESHOLD_MS = 30 * 1000;
 const MAX_ATTEMPTS = 3;
@@ -62,7 +62,7 @@ const resumeOrphanJobs = async () => {
       `[resume-orphan-jobs] job=${job._id} file=${file._id} ${prevStatus}→pending attempts=${job.attempts + 1}`
     );
 
-    transcribeWithOpenAI(file, job).catch((err) => {
+    runTranscription(file, job).catch((err) => {
       console.error(`[resume-orphan-jobs] worker failed for Job ${job._id}: ${err.message}`);
     });
     resumed += 1;
