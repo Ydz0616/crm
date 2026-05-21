@@ -1,6 +1,8 @@
 const fs = require('fs').promises;
 const mongoose = require('mongoose');
 
+const { resolveUploadPath } = require('@/utils/uploadsPath');
+
 const FileModel = mongoose.model('File');
 const JobModel = mongoose.model('Job');
 
@@ -66,12 +68,26 @@ const getTranscript = async (req, res) => {
     });
   }
 
-  const sidecarPath = job.result?.sidecarPath;
-  if (!sidecarPath) {
+  const relativeSidecarPath = job.result?.sidecarPath;
+  if (!relativeSidecarPath) {
     return res.status(500).json({
       success: false,
       result: null,
       message: `Sidecar transcript 路径缺失 (${file.originalName}): job.result.sidecarPath empty`,
+    });
+  }
+  // #266: Job.result.sidecarPath stored as relative path; resolve to absolute
+  // for fs.readFile. resolveUploadPath() throws if the stored value is still
+  // absolute (un-migrated legacy doc) — that's intentional fail-fast, surfaces
+  // as a clear 500 instead of silently ENOENT on a wrong host's path.
+  let sidecarPath;
+  try {
+    sidecarPath = resolveUploadPath(relativeSidecarPath);
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      result: null,
+      message: `Sidecar transcript 路径无效 (${file.originalName}): ${err.message}`,
     });
   }
   let transcript;

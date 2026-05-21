@@ -33,6 +33,9 @@ const child_process = require('child_process');
 
 const BACKEND_ROOT = path.join(__dirname, '..');
 const TMP_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'transcribe-test-'));
+// #266: worker resolves File.sourcePath via UPLOADS_DIR; point it at TMP_DIR
+// before requiring the worker so resolveUploadPath() reads the right root.
+process.env.UPLOADS_DIR = TMP_DIR;
 const adminAId = new mongoose.Types.ObjectId();
 
 let mongo;
@@ -74,14 +77,16 @@ async function setupAudioFile({
   sizeBytes = 5_000_000,
   mimeType = 'audio/mpeg',
 } = {}) {
-  const sourcePath = path.join(TMP_DIR, `${Date.now()}-${Math.random()}-${name}`);
-  fs.writeFileSync(sourcePath, Buffer.alloc(Math.min(sizeBytes, 1024), 0));
+  // #266: sourcePath stored RELATIVE to TMP_DIR (= UPLOADS_DIR in this test).
+  const relativeSourcePath = `${Date.now()}-${Math.random()}-${name}`;
+  const absoluteSourcePath = path.join(TMP_DIR, relativeSourcePath);
+  fs.writeFileSync(absoluteSourcePath, Buffer.alloc(Math.min(sizeBytes, 1024), 0));
   const fileDoc = await File.create({
     createdBy: adminAId,
     originalName: name,
     mimeType,
     sizeBytes,
-    sourcePath,
+    sourcePath: relativeSourcePath,
   });
   const jobDoc = await Job.create({
     createdBy: adminAId,
@@ -89,7 +94,7 @@ async function setupAudioFile({
     refModel: 'File',
     refId: fileDoc._id,
   });
-  return { fileDoc, jobDoc, sourcePath };
+  return { fileDoc, jobDoc, relativeSourcePath, absoluteSourcePath };
 }
 
 test('1. Happy: small mp3 (no compress) → axios called, sidecar written, Job.done', async () => {
@@ -103,14 +108,15 @@ test('1. Happy: small mp3 (no compress) → axios called, sidecar written, Job.d
     },
   });
 
-  const { fileDoc, jobDoc, sourcePath } = await setupAudioFile({ sizeBytes: 5_000_000 });
+  const { fileDoc, jobDoc, relativeSourcePath, absoluteSourcePath } =
+    await setupAudioFile({ sizeBytes: 5_000_000 });
 
   await transcribeWithOpenAI(fileDoc, jobDoc);
 
   expect(child_process.execFile).not.toHaveBeenCalled();
   expect(axios.post).toHaveBeenCalledTimes(1);
 
-  const sidecar = fs.readFileSync(sourcePath + '.txt', 'utf-8');
+  const sidecar = fs.readFileSync(absoluteSourcePath + '.txt', 'utf-8');
   expect(sidecar).toContain('A 00:00');
   expect(sidecar).toContain('你好');
   expect(sidecar).toContain('B 00:03');
@@ -118,7 +124,10 @@ test('1. Happy: small mp3 (no compress) → axios called, sidecar written, Job.d
 
   const finalJob = await Job.findById(jobDoc._id);
   expect(finalJob.status).toBe('done');
-  expect(finalJob.result.sidecarPath).toBe(sourcePath + '.txt');
+  // #266: sidecarPath stored RELATIVE (matches relativeSourcePath + '.txt'),
+  // not absolute. Disk write uses the resolver under the hood.
+  expect(path.isAbsolute(finalJob.result.sidecarPath)).toBe(false);
+  expect(finalJob.result.sidecarPath).toBe(relativeSourcePath + '.txt');
   expect(finalJob.result.sizeBytes).toBeGreaterThan(0);
   expect(finalJob.result.durationMs).toBeGreaterThanOrEqual(0);
 });
