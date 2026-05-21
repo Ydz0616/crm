@@ -26,6 +26,10 @@ const { MongoMemoryServer } = require('mongodb-memory-server');
 
 const BACKEND_ROOT = path.join(__dirname, '..', '..');
 const TMP_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'file-tools-test-'));
+// #266: file.get_transcript flows through getTranscript which resolves
+// sidecarPath via UPLOADS_DIR. Point UPLOADS_DIR at TMP_DIR before requiring
+// any controller code.
+process.env.UPLOADS_DIR = TMP_DIR;
 
 const { runWithContext } = require(path.join(BACKEND_ROOT, 'src/mcp/context'));
 
@@ -68,22 +72,25 @@ async function createFileWithJob(admin, opts = {}) {
   const FileModel = mongoose.model('File');
   const JobModel = mongoose.model('Job');
   const originalName = opts.originalName || 'rec.mp3';
-  const sourcePath = path.join(TMP_DIR, `${admin._id}-${Date.now()}-${Math.random()}-${originalName}`);
-  fs.writeFileSync(sourcePath, Buffer.from([0xff, 0xfb, 0x90, 0x00]));
+  // #266: sourcePath stored RELATIVE to TMP_DIR (= UPLOADS_DIR).
+  const relativeSourcePath = `${admin._id}-${Date.now()}-${Math.random()}-${originalName}`;
+  const absoluteSourcePath = path.join(TMP_DIR, relativeSourcePath);
+  fs.writeFileSync(absoluteSourcePath, Buffer.from([0xff, 0xfb, 0x90, 0x00]));
 
   const file = await FileModel.create({
     createdBy: admin._id,
     originalName,
     mimeType: 'audio/mpeg',
     sizeBytes: 1024,
-    sourcePath,
+    sourcePath: relativeSourcePath,
     contentHash: opts.contentHash || 'abc',
   });
 
   if (opts.skipJob) return { file };
 
   const transcriptText = opts.transcriptText || 'A 00:00  test transcript';
-  fs.writeFileSync(sourcePath + '.txt', transcriptText, 'utf-8');
+  const relativeSidecarPath = relativeSourcePath + '.txt';
+  fs.writeFileSync(absoluteSourcePath + '.txt', transcriptText, 'utf-8');
 
   const job = await JobModel.create({
     createdBy: admin._id,
@@ -91,7 +98,7 @@ async function createFileWithJob(admin, opts = {}) {
     refModel: 'File',
     refId: file._id,
     status: opts.jobStatus || 'done',
-    result: opts.jobResult || { sidecarPath: sourcePath + '.txt', sizeBytes: transcriptText.length, durationMs: 1234 },
+    result: opts.jobResult || { sidecarPath: relativeSidecarPath, sizeBytes: transcriptText.length, durationMs: 1234 },
     error: opts.jobError || '',
   });
   await FileModel.findByIdAndUpdate(file._id, { transcriptionJobId: job._id });
